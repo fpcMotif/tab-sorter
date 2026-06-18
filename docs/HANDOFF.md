@@ -5,61 +5,53 @@
 
 ## TL;DR
 
-A Manifest V3 Chrome extension that **sorts the current window's tabs** (A→Z by title, or grouped by domain) and **extracts tabs matching a domain or regex into a new window**. Stack: **Better-T-Stack → WXT addon (React template)**, TypeScript, Vite, MV3.
+A Manifest V3 Chrome extension that **sorts the current window's tabs** (A→Z by title, or grouped by domain), **extracts tabs matching a domain or regex into a new window**, and **exports all tab URLs as Markdown or plain text**. Stack: **Better-T-Stack → WXT addon (React template)**, Manifest V3, TypeScript, Vite.
 
-Brainstorming and design are **done and approved**. The project is **scaffolded and verified building**. **Implementation has not started.**
+Implementation is **complete and tested**. The project now uses **Bun** as its package manager/runtime, **@rslint/tsgo** for native type checking, **oxc** (oxlint/oxfmt) for linting/formatting, **Vitest** for unit tests, and **react-doctor** for codebase health checks.
 
 ## Where things stand
 
 | Phase | Status |
 |-------|--------|
-| Brainstorming / requirements | ✅ Done (6 decisions locked — see spec) |
+| Brainstorming / requirements | ✅ Done |
 | Design spec | ✅ Written: [`docs/superpowers/specs/2026-06-18-tab-sorter-extension-design.md`](superpowers/specs/2026-06-18-tab-sorter-extension-design.md) |
-| Scaffold (Better-T-Stack + WXT React) | ✅ Generated at `apps/extension/`, `npm install` + `npm run build` verified |
-| Implementation plan | ⬜ Not started → next step |
-| Implementation (lib + entrypoints) | ⬜ Not started |
-| Tests | ⬜ Not started |
+| Scaffold (Better-T-Stack + WXT React) | ✅ Generated at `apps/extension/` |
+| Core logic (`lib/`) | ✅ Implemented and unit-tested |
+| UI entrypoints (popup, options, background) | ✅ Implemented |
+| Tab URL export feature | ✅ Implemented |
+| Tooling migration (bun + tsgo + oxc + react-doctor) | ✅ Done |
+| CI / GitHub Actions | ✅ `.github/workflows/ci.yml` |
+| Tests | ✅ 63 Vitest tests passing |
 
 ## Canonical design
 
-**Do not re-derive the design** — read the spec: [`docs/superpowers/specs/2026-06-18-tab-sorter-extension-design.md`](superpowers/specs/2026-06-18-tab-sorter-extension-design.md).
-It contains the 6 locked decisions, architecture (with Mermaid diagrams), module breakdown, data flows, permissions, edge cases, and testing plan.
+Read the design spec: [`docs/superpowers/specs/2026-06-18-tab-sorter-extension-design.md`](superpowers/specs/2026-06-18-tab-sorter-extension-design.md).
 
-One-line summary of the architecture: **pure logic** (`domain.ts`, `sort.ts`, `match.ts`) is fully separated from a **single Chrome-API adapter** (`tabs-service.ts`), wired by a shared `orchestration.ts`, with thin React entrypoints (popup, options) and a background worker (commands + context menu).
-
-## Next steps (in order)
-
-1. **Create the implementation plan** with the `superpowers:writing-plans` skill, driven by the spec above.
-2. Build `apps/extension/lib/` **test-first** (`superpowers:test-driven-development`): `types.ts` → `domain.ts` → `sort.ts` → `match.ts` (pure, Vitest) → `tabs-service.ts` / `storage.ts` (mock `chrome.*`) → `orchestration.ts`.
-3. Wire entrypoints: rebuild `popup/App.tsx`, add `options/` page, implement `background.ts` (commands + context menu).
-4. **Delete** the placeholder `apps/extension/entrypoints/content.ts` — the design uses no content scripts.
-5. Add `tabs`, `storage`, `contextMenus`, `commands` to the manifest in `wxt.config.ts` (no `host_permissions`, no `tabGroups`).
-6. Manual E2E: load unpacked from `apps/extension/.output/chrome-mv3`.
+One-line summary of the architecture: **pure logic** (`domain.ts`, `sort.ts`, `match.ts`, `export.ts`) is fully separated from a **single Chrome-API adapter** (`tabs-service.ts`), wired by shared `orchestration.ts`, with thin React entrypoints (popup, options) and a background worker (commands + context menu). `storage.ts` persists `Prefs` via `chrome.storage.sync`.
 
 ## How to build / run
 
 ```bash
 cd apps/extension
-npm run build      # → apps/extension/.output/chrome-mv3  (load unpacked in chrome://extensions)
-npm run dev        # WXT dev server on port 5555 (HMR)
-npm run compile    # tsc --noEmit type check
+bun run build      # → apps/extension/.output/chrome-mv3  (load unpacked in chrome://extensions)
+bun run dev        # WXT dev server on port 5555 (HMR)
+bun run test       # Vitest unit tests
+bun run check-types # tsgo native type-check
+bun run lint       # oxlint
+bun run format     # oxfmt
+bunx react-doctor@latest --yes --no-score --blocking error
 ```
-(Root scripts `npm run dev|build|check-types` run across workspaces.)
+
+Root scripts (`bun run dev|build|check-types|test|lint|format|format:check|check:doctor`) run across workspaces.
 
 ## Gotchas / environment notes
 
-- **Stray `~/node_modules`:** `C:\Users\fenchem\node_modules` exists and is known to poison Vite dep-optimization in subprojects on this machine. `wxt build` worked fine, but if `wxt dev` misbehaves, this is the first suspect.
-- **npm allow-scripts:** install gated `esbuild` / `spawn-sync` postinstall scripts. The build still succeeded; if a native-binary error appears, run `npm approve-scripts` in the project.
-- **Monorepo:** the extension is at `apps/extension/`, not the repo root. `bts.jsonc` records the exact Better-T-Stack config (safe to delete).
+- **Bun workspaces:** root scripts use `bun run --workspaces --if-present <script>`.
+- **tsgo:** type checking is performed by `@rslint/tsgo` (native/Go preview). The `typescript` package is retained for declaration files and editor language service support; `tsc` is no longer invoked directly.
+- **oxfmt scope:** formats TS/TSX files under `apps/extension`. Generated files in `.output` and `.wxt` are ignored.
+- **react-doctor:** configured via `doctor.config.json` (project: `apps/extension`). CI uses `--no-score` to avoid telemetry/network calls.
 - **Windows + Git Bash:** Node reads `/tmp` as `C:\tmp`; use full `C:/Users/...` paths when scripting.
 - No secrets or PII in this repo.
-
-## Suggested skills (invoke these)
-
-- `superpowers:writing-plans` — **next step**; turn the spec into an implementation plan.
-- `superpowers:test-driven-development` — build the pure `lib/` modules red-green-refactor.
-- `superpowers:executing-plans` or `superpowers:subagent-driven-development` — to execute the plan.
-- `superpowers:verification-before-completion` — before declaring done.
 
 ## Reference
 

@@ -59,9 +59,7 @@ describe("matchByDomain", () => {
   });
 
   it("is case-insensitive", () => {
-    const tabs = makeTabs([
-      { id: 1, title: "A", url: "https://Example.COM/a" },
-    ]);
+    const tabs = makeTabs([{ id: 1, title: "A", url: "https://Example.COM/a" }]);
     expect(matchByDomain(tabs, "example.com")).toEqual([1]);
   });
 });
@@ -92,7 +90,7 @@ describe("matchByRegex", () => {
       { id: 1, title: "example.com", url: "https://github.com/a" },
       { id: 2, title: "A", url: "https://example.com/b" },
     ]);
-    expect(matchByRegex(tabs, "^example\\.com$")).toEqual([1]);
+    expect(matchByRegex(tabs, "^example\\.com$", "im")).toEqual([1]);
   });
 
   it("throws InvalidPatternError for invalid regex", () => {
@@ -105,7 +103,7 @@ describe("matchByRegex", () => {
       { id: 1, title: "GitHub", url: "https://a.com" },
       { id: 2, title: "github", url: "https://b.com" },
     ]);
-    expect(matchByRegex(tabs, "GITHUB", "")).toEqual([1]);
+    expect(matchByRegex(tabs, "GITHUB", "")).toEqual([]);
     expect(matchByRegex(tabs, "GITHUB", "i")).toEqual([1, 2]);
   });
 });

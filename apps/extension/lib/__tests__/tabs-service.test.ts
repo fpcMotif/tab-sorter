@@ -2,11 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fakeBrowser } from "@webext-core/fake-browser";
 
-import {
-  applyOrder,
-  getCurrentWindowTabs,
-  moveTabsToNewWindow,
-} from "../tabs-service.ts";
+import { applyOrder, getCurrentWindowTabs, moveTabsToNewWindow } from "../tabs-service.ts";
 import type { TabLite } from "../types.ts";
 
 function makeChromeTabs(
@@ -24,7 +20,7 @@ function makeChromeTabs(
     selected: item.selected ?? false,
     discarded: item.discarded ?? false,
     autoDiscardable: item.autoDiscardable ?? true,
-    groupId: item.groupId ?? chrome.tabGroups?.TAB_GROUP_ID_NONE ?? -1,
+    groupId: item.groupId ?? -1,
     windowId: item.windowId ?? 1,
   })) as chrome.tabs.Tab[];
 }
@@ -35,7 +31,7 @@ describe("getCurrentWindowTabs", () => {
   });
 
   it("maps chrome tabs to TabLite", async () => {
-    fakeBrowser.tabs.query.mockImplementation(async () =>
+    vi.spyOn(fakeBrowser.tabs, "query").mockResolvedValue(
       makeChromeTabs([
         { id: 10, title: "A", url: "https://a.com", index: 0, pinned: true },
         { id: 20, title: "B", url: "https://b.com", index: 1 },
@@ -50,13 +46,11 @@ describe("getCurrentWindowTabs", () => {
   });
 
   it("skips tabs without id or URL", async () => {
-    fakeBrowser.tabs.query.mockImplementation(async () =>
-      [
-        { id: 10, title: "A", url: "https://a.com" },
-        { title: "No id", url: "https://b.com" },
-        { id: 20, title: "No url" },
-      ] as chrome.tabs.Tab[],
-    );
+    vi.spyOn(fakeBrowser.tabs, "query").mockResolvedValue([
+      { id: 10, title: "A", url: "https://a.com" },
+      { title: "No id", url: "https://b.com" },
+      { id: 20, title: "No url" },
+    ] as chrome.tabs.Tab[]);
 
     const tabs = await getCurrentWindowTabs();
     expect(tabs).toHaveLength(1);
@@ -67,16 +61,18 @@ describe("getCurrentWindowTabs", () => {
 describe("applyOrder", () => {
   beforeEach(() => {
     fakeBrowser.reset();
+    vi.clearAllMocks();
+    vi.spyOn(fakeBrowser.tabs, "move").mockResolvedValue({} as chrome.tabs.Tab);
   });
 
   it("is a no-op for fewer than two tabs", async () => {
-    fakeBrowser.tabs.query.mockImplementation(async () => makeChromeTabs([]));
+    vi.spyOn(fakeBrowser.tabs, "query").mockResolvedValue(makeChromeTabs([]));
     await applyOrder([1]);
     expect(fakeBrowser.tabs.move).not.toHaveBeenCalled();
   });
 
   it("moves unpinned tabs after pinned block by default", async () => {
-    fakeBrowser.tabs.query.mockImplementation(async () =>
+    vi.spyOn(fakeBrowser.tabs, "query").mockResolvedValue(
       makeChromeTabs([
         { id: 1, title: "Pinned", url: "https://p.com", pinned: true, index: 0 },
         { id: 2, title: "A", url: "https://a.com", index: 1 },
@@ -90,10 +86,8 @@ describe("applyOrder", () => {
   });
 
   it("ignores stale ids", async () => {
-    fakeBrowser.tabs.query.mockImplementation(async () =>
-      makeChromeTabs([
-        { id: 2, title: "A", url: "https://a.com", index: 0 },
-      ]),
+    vi.spyOn(fakeBrowser.tabs, "query").mockResolvedValue(
+      makeChromeTabs([{ id: 2, title: "A", url: "https://a.com", index: 0 }]),
     );
 
     await applyOrder([2, 99]);
@@ -101,13 +95,13 @@ describe("applyOrder", () => {
   });
 
   it("continues after move errors", async () => {
-    fakeBrowser.tabs.query.mockImplementation(async () =>
+    vi.spyOn(fakeBrowser.tabs, "query").mockResolvedValue(
       makeChromeTabs([
         { id: 1, title: "A", url: "https://a.com", index: 0 },
         { id: 2, title: "B", url: "https://b.com", index: 1 },
       ]),
     );
-    fakeBrowser.tabs.move.mockRejectedValueOnce(new Error("Tab closed"));
+    vi.spyOn(fakeBrowser.tabs, "move").mockRejectedValueOnce(new Error("Tab closed"));
 
     await applyOrder([1, 2]);
     expect(fakeBrowser.tabs.move).toHaveBeenCalledTimes(2);
@@ -117,6 +111,10 @@ describe("applyOrder", () => {
 describe("moveTabsToNewWindow", () => {
   beforeEach(() => {
     fakeBrowser.reset();
+    vi.clearAllMocks();
+    vi.spyOn(fakeBrowser.tabs, "move").mockResolvedValue({} as never);
+    vi.spyOn(fakeBrowser.windows, "create").mockResolvedValue({ id: 1 } as never);
+    vi.spyOn(fakeBrowser.windows, "update").mockResolvedValue({} as never);
   });
 
   it("is a no-op for empty ids", async () => {
@@ -125,10 +123,10 @@ describe("moveTabsToNewWindow", () => {
   });
 
   it("creates a window with the first tab and moves the rest", async () => {
-    fakeBrowser.windows.create.mockImplementation(async ({ tabId }) => ({
+    vi.spyOn(fakeBrowser.windows, "create").mockResolvedValue({
       id: 100,
-      tabs: [{ id: tabId }],
-    }));
+      tabs: [{ id: 10 }],
+    } as never);
 
     await moveTabsToNewWindow([10, 20, 30]);
     expect(fakeBrowser.windows.create).toHaveBeenCalledWith({ tabId: 10 });
@@ -140,7 +138,9 @@ describe("moveTabsToNewWindow", () => {
   });
 
   it("throws when window creation fails", async () => {
-    fakeBrowser.windows.create.mockImplementation(async () => ({ id: undefined }));
+    vi.spyOn(fakeBrowser.windows, "create").mockResolvedValue({
+      id: undefined,
+    } as never);
     await expect(moveTabsToNewWindow([10])).rejects.toThrow("Failed to create new window");
   });
 });

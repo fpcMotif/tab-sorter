@@ -17,9 +17,7 @@ function makeTabs(
 
 describe("buildExportEntries", () => {
   it("maps tabs to export entries", () => {
-    const tabs = makeTabs([
-      { id: 1, title: "GitHub", url: "https://github.com/a" },
-    ]);
+    const tabs = makeTabs([{ id: 1, title: "GitHub", url: "https://github.com/a" }]);
     expect(buildExportEntries(tabs)).toEqual([
       { title: "GitHub", url: "https://github.com/a", domain: "github.com" },
     ]);
@@ -55,9 +53,7 @@ describe("buildUrlExport (markdown)", () => {
   });
 
   it("escapes brackets in titles", () => {
-    const tabs = makeTabs([
-      { id: 1, title: "[Bug] Issue", url: "https://github.com/bug" },
-    ]);
+    const tabs = makeTabs([{ id: 1, title: "[Bug] Issue", url: "https://github.com/bug" }]);
     const { content } = buildUrlExport(tabs, "markdown");
     expect(content).toContain("- [\\[Bug\\] Issue](https://github.com/bug)");
   });

@@ -1,13 +1,6 @@
-import {
-  matchByDomain,
-  matchByRegex,
-} from "./match.ts";
+import { matchByDomain, matchByRegex } from "./match.ts";
 import { getPrefs } from "./storage.ts";
-import {
-  applyOrder,
-  getCurrentWindowTabs,
-  moveTabsToNewWindow,
-} from "./tabs-service.ts";
+import { applyOrder, getCurrentWindowTabs, moveTabsToNewWindow } from "./tabs-service.ts";
 import { sortByDomain, sortByTitle } from "./sort.ts";
 import type { SortMode, TabLite } from "./types.ts";
 
@@ -43,8 +36,7 @@ export async function runSort(mode: SortMode): Promise<SortResult> {
     return { count: 0 };
   }
 
-  const orderedIds =
-    mode === "domain" ? sortByDomain(unpinned) : sortByTitle(unpinned);
+  const orderedIds = mode === "domain" ? sortByDomain(unpinned) : sortByTitle(unpinned);
 
   await applyOrder(orderedIds, { afterPinned: pinned.length });
 

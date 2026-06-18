@@ -13,7 +13,7 @@ function titleComparator(a: TabLite, b: TabLite): number {
 }
 
 export function sortByTitle(tabs: TabLite[]): number[] {
-  return [...tabs].sort(titleComparator).map((tab) => tab.id);
+  return tabs.toSorted(titleComparator).map((tab) => tab.id);
 }
 
 export function sortByDomain(tabs: TabLite[]): number[] {
@@ -26,13 +26,13 @@ export function sortByDomain(tabs: TabLite[]): number[] {
     grouped.set(domain, group);
   }
 
-  const domains = [...grouped.keys()].sort((a, b) => collator.compare(a, b));
+  const domains = [...grouped.keys()].toSorted((a, b) => collator.compare(a, b));
   const orderedIds: number[] = [];
 
   for (const domain of domains) {
     const group = grouped.get(domain);
     if (!group) continue;
-    orderedIds.push(...[...group].sort(titleComparator).map((tab) => tab.id));
+    orderedIds.push(...group.toSorted(titleComparator).map((tab) => tab.id));
   }
 
   return orderedIds;

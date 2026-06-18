@@ -73,7 +73,7 @@ function App() {
         <h2>Regex presets</h2>
         <ul className="preset-list">
           {prefs.regexPresets.map((preset, index) => (
-            <li key={index}>
+            <li key={`${preset.label}:${preset.source}:${preset.flags}:${index}`}>
               <span>
                 <strong>{preset.label}</strong> /{preset.source}/{preset.flags}
               </span>
@@ -89,25 +89,19 @@ function App() {
             type="text"
             placeholder="Label"
             value={newPreset.label}
-            onChange={(e) =>
-              setNewPreset((prev) => ({ ...prev, label: e.target.value }))
-            }
+            onChange={(e) => setNewPreset((prev) => ({ ...prev, label: e.target.value }))}
           />
           <input
             type="text"
             placeholder="Pattern"
             value={newPreset.source}
-            onChange={(e) =>
-              setNewPreset((prev) => ({ ...prev, source: e.target.value }))
-            }
+            onChange={(e) => setNewPreset((prev) => ({ ...prev, source: e.target.value }))}
           />
           <input
             type="text"
             placeholder="Flags"
             value={newPreset.flags}
-            onChange={(e) =>
-              setNewPreset((prev) => ({ ...prev, flags: e.target.value }))
-            }
+            onChange={(e) => setNewPreset((prev) => ({ ...prev, flags: e.target.value }))}
           />
           <button onClick={addPreset} type="button">
             Add preset
@@ -129,7 +123,11 @@ function App() {
         </div>
       </section>
 
-      {saved && <p className="saved" role="status">Saved</p>}
+      {saved && (
+        <p className="saved" role="status">
+          Saved
+        </p>
+      )}
     </div>
   );
 }

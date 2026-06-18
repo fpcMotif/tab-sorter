@@ -1,13 +1,6 @@
 import type { TabLite } from "./types.ts";
 
-const SCHEME_BUCKET = new Set([
-  "about",
-  "chrome",
-  "edge",
-  "file",
-  "javascript",
-  "data",
-]);
+const SCHEME_BUCKET = new Set(["about", "chrome", "edge", "file", "javascript", "data"]);
 
 export function getDomain(url: string): string {
   if (!url) {

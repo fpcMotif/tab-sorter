@@ -3,9 +3,12 @@ import type { TabLite } from "./types.ts";
 export async function getCurrentWindowTabs(): Promise<TabLite[]> {
   const tabs = await chrome.tabs.query({ currentWindow: true });
   return tabs
-    .filter((tab): tab is chrome.tabs.Tab & { id: number; url: string; title: string } =>
-      typeof tab.id === "number" && tab.id !== chrome.tabs.TAB_ID_NONE &&
-      typeof tab.url === "string" && typeof tab.title === "string",
+    .filter(
+      (tab): tab is chrome.tabs.Tab & { id: number; url: string; title: string } =>
+        typeof tab.id === "number" &&
+        tab.id !== chrome.tabs.TAB_ID_NONE &&
+        typeof tab.url === "string" &&
+        typeof tab.title === "string",
     )
     .map((tab) => ({
       id: tab.id,
@@ -33,14 +36,17 @@ export async function applyOrder(
 
   const freshIds = new Set(
     freshTabs
-      .filter((tab): tab is chrome.tabs.Tab & { id: number } =>
-        typeof tab.id === "number" && tab.id !== chrome.tabs.TAB_ID_NONE,
+      .filter(
+        (tab): tab is chrome.tabs.Tab & { id: number } =>
+          typeof tab.id === "number" && tab.id !== chrome.tabs.TAB_ID_NONE,
       )
       .map((tab) => tab.id),
   );
 
   const validIds = orderedIds.filter((id) => freshIds.has(id));
 
+  // Sequential moves avoid races with Chrome's tab ordering.
+  // eslint-disable-next-line no-await-in-loop
   for (let i = 0; i < validIds.length; i++) {
     try {
       await chrome.tabs.move(validIds[i], { index: startIndex + i });

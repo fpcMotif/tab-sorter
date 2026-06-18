@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { buildUrlExport } from "@/lib/export.ts";
-import { groupByDomain, matchByDomain, matchByRegex } from "@/lib/match.ts";
+import { groupByDomain, matchByRegex } from "@/lib/match.ts";
 import { runExtract, runSort } from "@/lib/orchestration.ts";
-import { getPrefs } from "@/lib/storage.ts";
+import { getCurrentWindowTabs } from "@/lib/tabs-service.ts";
 import {
-  getCurrentWindowTabs,
+  InvalidPatternError,
+  type ExportFormat,
+  type SortMode,
   type TabLite,
-} from "@/lib/tabs-service.ts";
-import { InvalidPatternError, type ExportFormat, type SortMode } from "@/lib/types.ts";
+} from "@/lib/types.ts";
 
 import "./App.css";
 
@@ -27,7 +28,6 @@ function App() {
   const [status, setStatus] = useState<string>("");
   const [regex, setRegex] = useState("");
   const [regexError, setRegexError] = useState<string>("");
-  const [defaultSort, setDefaultSort] = useState<SortMode>("title");
   const [exportFormat, setExportFormat] = useState<ExportFormat>("markdown");
 
   const domainGroups = useMemo(() => groupByDomain(tabs), [tabs]);
@@ -42,7 +42,6 @@ function App() {
 
   useEffect(() => {
     void loadTabs();
-    void getPrefs().then((prefs) => setDefaultSort(prefs.defaultSort));
   }, []);
 
   async function loadTabs() {
@@ -54,9 +53,7 @@ function App() {
     try {
       const result = await runSort(mode);
       setStatus(
-        result.count > 0
-          ? `Sorted ${result.count} tab(s) by ${mode}.`
-          : "Nothing to sort.",
+        result.count > 0 ? `Sorted ${result.count} tab(s) by ${mode}.` : "Nothing to sort.",
       );
       await loadTabs();
     } catch (error) {
@@ -68,9 +65,7 @@ function App() {
     try {
       const result = await runExtract({ type: "domain", domain });
       setStatus(
-        result.count > 0
-          ? `Moved ${result.count} tab(s) to a new window.`
-          : "No matching tabs.",
+        result.count > 0 ? `Moved ${result.count} tab(s) to a new window.` : "No matching tabs.",
       );
       window.close();
     } catch (error) {
@@ -155,9 +150,7 @@ function App() {
           placeholder="Pattern"
           aria-label="Regex pattern"
         />
-        {regex.trim() && (
-          <p className="match-count">{regexMatches.length} match(es)</p>
-        )}
+        {regex.trim() && <p className="match-count">{regexMatches.length} match(es)</p>}
         {regexError && <p className="error">{regexError}</p>}
         <button
           onClick={handleExtractByRegex}
@@ -185,7 +178,11 @@ function App() {
         </div>
       </section>
 
-      {status && <p className="status" role="status">{status}</p>}
+      {status && (
+        <p className="status" role="status">
+          {status}
+        </p>
+      )}
     </div>
   );
 }

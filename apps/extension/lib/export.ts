@@ -27,7 +27,7 @@ function formatPlainText(entries: ExportEntry[]): string {
   const lines: string[] = [`Exported ${entries.length} tab(s)`, ""];
   const grouped = groupEntriesByDomain(entries);
 
-  for (const domain of [...grouped.keys()].sort((a, b) => a.localeCompare(b))) {
+  for (const domain of [...grouped.keys()].toSorted((a, b) => a.localeCompare(b))) {
     const list = grouped.get(domain);
     if (!list) continue;
     lines.push(`## ${domain}`);
@@ -45,16 +45,11 @@ function formatMarkdown(entries: ExportEntry[]): string {
     return "# Exported tabs\n\nNo tabs to export.\n";
   }
 
-  const lines: string[] = [
-    "# Exported tabs",
-    "",
-    `Total: ${entries.length} tab(s)`,
-    "",
-  ];
+  const lines: string[] = ["# Exported tabs", "", `Total: ${entries.length} tab(s)`, ""];
 
   const grouped = groupEntriesByDomain(entries);
 
-  for (const domain of [...grouped.keys()].sort((a, b) => a.localeCompare(b))) {
+  for (const domain of [...grouped.keys()].toSorted((a, b) => a.localeCompare(b))) {
     const list = grouped.get(domain);
     if (!list) continue;
     lines.push(`## ${domain}`);

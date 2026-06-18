@@ -17,7 +17,7 @@ export function groupByDomain(tabs: TabLite[]): DomainGroup[] {
     tabIds,
   }));
 
-  return groups.sort((a, b) => {
+  return groups.toSorted((a, b) => {
     if (b.count !== a.count) return b.count - a.count;
     return a.domain.localeCompare(b.domain);
   });
@@ -25,16 +25,10 @@ export function groupByDomain(tabs: TabLite[]): DomainGroup[] {
 
 export function matchByDomain(tabs: TabLite[], domain: string): number[] {
   const needle = domain.toLowerCase();
-  return tabs
-    .filter((tab) => getDomain(tab.url) === needle)
-    .map((tab) => tab.id);
+  return tabs.filter((tab) => getDomain(tab.url) === needle).map((tab) => tab.id);
 }
 
-export function matchByRegex(
-  tabs: TabLite[],
-  source: string,
-  flags = "i",
-): number[] {
+export function matchByRegex(tabs: TabLite[], source: string, flags = "i"): number[] {
   let pattern: RegExp;
   try {
     pattern = new RegExp(source, flags);
@@ -43,7 +37,5 @@ export function matchByRegex(
     throw new InvalidPatternError(message);
   }
 
-  return tabs
-    .filter((tab) => pattern.test(`${tab.title}\n${tab.url}`))
-    .map((tab) => tab.id);
+  return tabs.filter((tab) => pattern.test(`${tab.title}\n${tab.url}`)).map((tab) => tab.id);
 }

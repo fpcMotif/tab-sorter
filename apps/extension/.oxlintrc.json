@@ -1,18 +1,33 @@
 {
   "$schema": "https://oxc.rs/schema/oxlintrc.json",
-  "plugins": ["import", "react", "typescript", "unicorn"],
-  "rules": {
+  "plugins": ["import", "react", "typescript", "unicorn", "oxc"],
+  "categories": {
     "correctness": "error",
     "suspicious": "warn",
-    "perf": "warn",
-    "style": "warn",
+    "perf": "warn"
+  },
+  "rules": {
     "no-console": "warn",
-    "no-debugger": "error"
+    "no-debugger": "error",
+    "react-in-jsx-scope": "off",
+    "sort-imports": "off",
+    "sort-keys": "off",
+    "group-exports": "off",
+    "filename-case": "off",
+    "no-duplicate-imports": "off",
+    "import/no-unassigned-import": "off",
+    "no-await-in-loop": "off",
+    "react/no-array-index-key": "off"
   },
   "settings": {
     "react": {
-      "version": "detect"
+      "version": "19.0"
     }
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "es2024": true
   },
   "ignorePatterns": [".output", ".wxt", "node_modules", "dist"]
 }

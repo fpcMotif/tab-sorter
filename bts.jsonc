@@ -28,7 +28,7 @@
   "examples": [],
   "auth": "none",
   "payments": "none",
-  "packageManager": "npm",
+  "packageManager": "bun",
   "dbSetup": "none",
   "api": "none",
   "webDeploy": "none",
