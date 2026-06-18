@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tab Sorter Extension</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400..700;1,400..700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@200..400,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "paper": "#F6F4EF",
+                        "paper-dim": "#EFECE3",
+                        "paper-dark": "#E6E2D4",
+                        "sage": "#7A8B7A",
+                        "sage-light": "#A3B1A3",
+                        "sage-dark": "#526052",
+                        "ink": "#2C2C2C",
+                        "ink-light": "#595959",
+                        "ink-lighter": "#8C8C8C",
+                        "divider": "#E6E2D4"
+                    },
+                    "fontFamily": {
+                        "display": ["'Crimson Pro'", "serif"],
+                        "sans": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #E2DFD6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .popup-container {
+            width: 380px;
+            height: 520px;
+            background-color: #F6F4EF;
+            border-radius: 8px;
+            box-shadow: 0 12px 24px -8px rgba(44, 44, 44, 0.1), 0 4px 8px -4px rgba(44, 44, 44, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body>
+<div class="popup-container">
+<!-- Header -->
+<div class="flex justify-between items-end px-8 pt-8 pb-4 w-full bg-paper border-b border-divider shrink-0">
+<div class="flex flex-col gap-1">
+<h1 class="font-display text-2xl text-ink font-semibold tracking-tight">Tab Sorter</h1>
+</div>
+<div class="flex items-center pb-1">
+<span class="text-ink-lighter font-sans text-[11px] uppercase tracking-[0.08em] font-medium">14 tabs active</span>
+</div>
+</div>
+<!-- Main Content -->
+<div class="flex-1 overflow-y-auto px-8 py-6 flex flex-col gap-8 bg-paper">
+<!-- Sorting Section -->
+<div class="flex flex-col gap-3">
+<span class="font-sans text-[10px] text-ink-lighter uppercase tracking-[0.1em] font-medium">Sort Options</span>
+<div class="flex bg-paper-dim rounded-md p-1 border border-divider/50">
+<button class="flex-1 bg-paper py-1.5 px-3 rounded shadow-[0_1px_2px_rgba(0,0,0,0.03)] font-sans text-xs text-sage-dark font-medium text-center transition-colors">A→Z by title</button>
+<button class="flex-1 py-1.5 px-3 rounded font-sans text-xs text-ink-light text-center hover:bg-paper/50 transition-colors">By domain</button>
+</div>
+</div>
+<!-- Extraction Section -->
+<div class="flex flex-col gap-3">
+<span class="font-sans text-[10px] text-ink-lighter uppercase tracking-[0.1em] font-medium mt-2">Extract to Window</span>
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-ink-lighter text-[18px]">search</span>
+<input class="w-full h-10 pl-10 pr-3 rounded-md border border-divider bg-white/50 font-sans text-sm focus:outline-none focus:border-sage focus:ring-1 focus:ring-sage transition-colors text-ink placeholder:text-ink-lighter placeholder:font-light" placeholder="/regex/ or match text" type="text"/>
+</div>
+<!-- Domain List -->
+<div class="flex flex-col mt-4 gap-1">
+<!-- Item 1 (Active) -->
+<div class="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-md bg-paper-dim cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-sage-light"></div>
+<span class="font-sans text-[13px] text-ink font-medium tracking-wide">github.com</span>
+</div>
+<span class="font-sans text-[10px] text-sage-dark bg-sage/10 px-2 py-0.5 rounded font-medium">5 tabs</span>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-md hover:bg-paper-dim/50 cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-divider"></div>
+<span class="font-sans text-[13px] text-ink-light tracking-wide group-hover:text-ink transition-colors">figma.com</span>
+</div>
+<span class="font-sans text-[10px] text-ink-light bg-paper-dark/30 px-2 py-0.5 rounded font-medium">4 tabs</span>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-md hover:bg-paper-dim/50 cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-divider"></div>
+<span class="font-sans text-[13px] text-ink-light tracking-wide group-hover:text-ink transition-colors">google.com</span>
+</div>
+<span class="font-sans text-[10px] text-ink-light bg-paper-dark/30 px-2 py-0.5 rounded font-medium">3 tabs</span>
+</div>
+<!-- Item 4 -->
+<div class="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-md hover:bg-paper-dim/50 cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-divider"></div>
+<span class="font-sans text-[13px] text-ink-light tracking-wide group-hover:text-ink transition-colors">youtube.com</span>
+</div>
+<span class="font-sans text-[10px] text-ink-light bg-paper-dark/30 px-2 py-0.5 rounded font-medium">2 tabs</span>
+</div>
+<!-- Item 5 -->
+<div class="flex items-center justify-between py-2.5 px-3 -mx-3 rounded-md hover:bg-paper-dim/50 cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-divider"></div>
+<span class="font-sans text-[13px] text-ink-light tracking-wide group-hover:text-ink transition-colors">news.ycombinator.com</span>
+</div>
+<span class="font-sans text-[10px] text-ink-light bg-paper-dark/30 px-2 py-0.5 rounded font-medium">1 tab</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="flex justify-between items-center px-8 py-4 w-full mt-auto bg-paper border-t border-divider shrink-0">
+<span class="font-sans text-[11px] text-ink-lighter font-light">Alt + S to quick-sort</span>
+<div class="flex gap-4">
+<a class="font-sans text-[11px] text-ink-lighter hover:text-sage-dark transition-colors" href="#">Help</a>
+<a class="font-sans text-[11px] text-ink-lighter hover:text-sage-dark transition-colors" href="#">Preferences</a>
+</div>
+</div>
+</div>
+</body></html>

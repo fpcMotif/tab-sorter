@@ -7,17 +7,25 @@
   ],
   "type": "module",
   "scripts": {
-    "dev": "npm run dev --workspaces",
-    "build": "npm run build --workspaces",
-    "check-types": "npm run check-types --workspaces"
+    "dev": "bun run --workspaces --if-present dev",
+    "build": "bun run --workspaces --if-present build",
+    "check-types": "bun run --workspaces --if-present check-types",
+    "test": "bun run --workspaces --if-present test",
+    "lint": "bun run --workspaces --if-present lint",
+    "format": "bun run --workspaces --if-present format",
+    "format:check": "bun run --workspaces --if-present format:check",
+    "check:doctor": "bunx react-doctor@latest --yes --no-score --blocking error"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@rslint/tsgo": "^0.6.2",
     "@tab-sorter/config": "*",
-    "typescript": "^6"
+    "oxfmt": "^0.55.0",
+    "oxlint": "^1.70.0",
+    "typescript": "^5.9.3"
   },
-  "packageManager": "npm@11.16.0"
+  "packageManager": "bun@1.4.0"
 }

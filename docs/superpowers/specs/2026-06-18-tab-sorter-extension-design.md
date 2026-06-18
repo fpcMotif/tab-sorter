@@ -39,6 +39,18 @@ npx create-better-t-stack@latest tab-sorter \
 
 Verified: `npm install` + `npm run build` produces a working `chrome-mv3` bundle.
 
+## 3a. Visual design — Soft Editorial (canonical)
+
+The UI adopts the **Soft Editorial** language: warm paper surfaces (`#F6F4EF`), a
+muted **sage** accent (`#7A8B7A`, deep `#526052`), and a **Crimson Pro** serif
+title paired with **Inter** body/labels. Hairline beige borders, 12px cards, no
+shadows or gradients. Light and warm-dark themes; popup and options share the token
+set. **This supersedes** the cool blue/indigo accent (`#3B82F6` / `#4F46E5`) used in
+the first Figma and Stitch drafts.
+
+Full tokens, renders, and live HTML: [`design/stitch/SOFT-EDITORIAL.md`](../../../design/stitch/SOFT-EDITORIAL.md)
+and the `design/stitch/` folder. Stitch design-system asset `8f2a052188ba46babdf398d1eb09c7ce`.
+
 ## 4. Permissions (manifest)
 
 | Permission | Why |

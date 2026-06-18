@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tab Sorter Extension</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "inverse-on-surface": "#f2f0f0",
+                        "surface-container-highest": "#e3e2e2",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#a44100",
+                        "on-primary-container": "#dad7ff",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#7e3000",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "surface-container-low": "#f5f3f3",
+                        "primary": "#3525cd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "secondary-fixed": "#e5e2e1",
+                        "inverse-primary": "#c3c0ff",
+                        "surface-bright": "#fbf9f9",
+                        "surface": "#fbf9f9",
+                        "outline": "#777587",
+                        "secondary-container": "#e2dfde",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "outline-variant": "#c7c4d8",
+                        "on-tertiary-fixed": "#351000",
+                        "on-surface-variant": "#464555",
+                        "tertiary-fixed": "#ffdbcc",
+                        "primary-fixed": "#e2dfff",
+                        "background": "#fbf9f9",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-container": "#efeded",
+                        "on-secondary-container": "#636262",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e9e8e7",
+                        "primary-container": "#4f46e5",
+                        "surface-tint": "#4d44e3",
+                        "inverse-surface": "#303031",
+                        "surface-dim": "#dbdad9",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-variant": "#e3e2e2",
+                        "on-background": "#1b1c1c",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "on-tertiary-container": "#ffd2be"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "xl": "40px",
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "margin-desktop": "32px",
+                        "sm": "8px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-sm-mobile": ["Inter"],
+                        "label-xs": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "headline-sm": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-sm-mobile": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+                        "label-xs": ["11px", { "lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #EEF0F3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        .popup-container {
+            width: 360px;
+            height: 460px;
+            background-color: #FAFAFA;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body>
+<div class="popup-container">
+<!-- TopAppBar -->
+<div class="flex justify-between items-center px-md py-sm w-full bg-surface border-b border-outline-variant docked full-width top-0">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">tabs</span>
+<h1 class="font-headline-sm text-headline-sm text-on-surface">Tab Sorter</h1>
+</div>
+<div class="flex items-center">
+<span class="bg-surface-container-high text-on-surface-variant px-2 py-1 rounded-full font-label-xs text-label-xs tracking-wider">current window · 14 tabs</span>
+</div>
+</div>
+<!-- Main Content -->
+<div class="flex-1 overflow-y-auto p-md flex flex-col gap-lg">
+<!-- Sorting Section -->
+<div class="flex flex-col gap-sm">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">SORT</span>
+<div class="flex bg-surface-container-highest rounded p-xs">
+<button class="flex-1 bg-surface py-1 px-3 rounded shadow-sm font-body-sm text-body-sm text-primary font-medium border border-outline-variant text-center transition-colors">A→Z by title</button>
+<button class="flex-1 py-1 px-3 rounded font-body-sm text-body-sm text-on-surface-variant text-center hover:bg-surface-container-low transition-colors">By domain</button>
+</div>
+</div>
+<!-- Extraction Section -->
+<div class="flex flex-col gap-sm">
+<span class="font-label-xs text-label-xs text-on-surface-variant uppercase tracking-wider">EXTRACT TO NEW WINDOW</span>
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm" style="font-size: 16px;">search</span>
+<input class="w-full h-9 pl-8 pr-3 rounded border border-outline-variant bg-surface font-body-sm text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-on-surface placeholder:text-on-surface-variant/50" placeholder="/regex/ or text..." type="text"/>
+</div>
+<!-- Domain List -->
+<div class="flex flex-col mt-2">
+<!-- Item 1 (Hovered) -->
+<div class="flex items-center justify-between py-2 px-2 -mx-2 rounded bg-surface-container-low cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></div>
+<span class="font-body-md text-body-md text-on-surface">github.com</span>
+</div>
+<span class="font-label-xs text-label-xs text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded-full">5 tabs</span>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between py-2 px-2 -mx-2 rounded hover:bg-surface-container-low cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></div>
+<span class="font-body-md text-body-md text-on-surface">figma.com</span>
+</div>
+<span class="font-label-xs text-label-xs text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded-full">4 tabs</span>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between py-2 px-2 -mx-2 rounded hover:bg-surface-container-low cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></div>
+<span class="font-body-md text-body-md text-on-surface">google.com</span>
+</div>
+<span class="font-label-xs text-label-xs text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded-full">3 tabs</span>
+</div>
+<!-- Item 4 -->
+<div class="flex items-center justify-between py-2 px-2 -mx-2 rounded hover:bg-surface-container-low cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></div>
+<span class="font-body-md text-body-md text-on-surface">youtube.com</span>
+</div>
+<span class="font-label-xs text-label-xs text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded-full">2 tabs</span>
+</div>
+<!-- Item 5 -->
+<div class="flex items-center justify-between py-2 px-2 -mx-2 rounded hover:bg-surface-container-low cursor-pointer transition-colors group">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></div>
+<span class="font-body-md text-body-md text-on-surface">news.ycombinator.com</span>
+</div>
+<span class="font-label-xs text-label-xs text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded-full">1 tab</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="flex justify-between items-center px-md py-sm w-full mt-auto bg-surface-container-lowest border-t border-outline-variant docked full-width bottom-0">
+<span class="font-body-sm text-body-sm text-on-surface-variant opacity-70">Alt + S to quick-sort tabs</span>
+<div class="flex gap-4">
+<a class="font-body-sm text-body-sm text-on-surface-variant opacity-70 hover:text-primary transition-colors" href="#">Help</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant opacity-70 hover:text-primary transition-colors" href="#">Settings</a>
+</div>
+</div>
+</div>
+</body></html>

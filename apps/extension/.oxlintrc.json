@@ -1,0 +1,18 @@
+{
+  "$schema": "https://oxc.rs/schema/oxlintrc.json",
+  "plugins": ["import", "react", "typescript", "unicorn"],
+  "rules": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn",
+    "style": "warn",
+    "no-console": "warn",
+    "no-debugger": "error"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "ignorePatterns": [".output", ".wxt", "node_modules", "dist"]
+}
