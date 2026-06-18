@@ -13,8 +13,7 @@
 
 body {
   margin: 0;
-  min-width: 320px;
-  width: 380px;
+  min-width: 360px;
 }
 
 * {
@@ -22,7 +21,9 @@ body {
 }
 
 button:focus,
-button:focus-visible {
+button:focus-visible,
+input:focus,
+select:focus {
   outline: 3px solid #93c5fd;
   outline-offset: 2px;
 }

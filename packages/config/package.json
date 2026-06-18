@@ -1,5 +1,9 @@
 {
   "name": "@tab-sorter/config",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "scripts": {
+    "build": "echo \"No build needed\"",
+    "check-types": "echo \"No typecheck needed\""
+  }
 }
