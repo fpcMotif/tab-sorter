@@ -1,0 +1,3 @@
+{
+  "extends": "@tab-sorter/config/tsconfig.base.json"
+}
