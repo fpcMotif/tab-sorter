@@ -1,24 +1,34 @@
 import { defineConfig } from "wxt";
 
+// See https://wxt.dev/api/config.html
 export default defineConfig({
   modules: ["@wxt-dev/module-react"],
   manifest: {
-    name: "Tab Sorter",
-    description: "Sort, extract, and export your browser tabs",
-    permissions: ["tabs", "storage", "contextMenus", "commands"],
+    action: {
+      default_title: "Tab Sorter",
+    },
     commands: {
-      "sort-by-title": {
+      "sort-default": {
+        description: "Sort tabs using your default sort",
         suggested_key: {
-          default: "Alt+Shift+T",
+          default: "Alt+Shift+S",
         },
-        description: "Sort current window tabs A→Z by title",
       },
       "sort-by-domain": {
+        description: "Sort tabs by domain",
         suggested_key: {
           default: "Alt+Shift+D",
         },
-        description: "Sort current window tabs by domain",
+      },
+      "sort-by-title": {
+        description: "Sort tabs A to Z",
+        suggested_key: {
+          default: "Alt+Shift+T",
+        },
       },
     },
+    description: "Sort the current window's tabs or move matching tabs into a new window.",
+    name: "Tab Sorter",
+    permissions: ["tabs", "storage", "contextMenus"],
   },
 });

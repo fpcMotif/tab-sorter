@@ -1,75 +1,70 @@
-import type { TabLite } from "./types.ts";
+import type { TabLite } from "./types";
+
+interface RawTab {
+  id?: number;
+  url?: string;
+  title?: string;
+  index?: number;
+  pinned?: boolean;
+}
+
+function toTabLite(tab: RawTab): TabLite | undefined {
+  if (typeof tab.id !== "number") {
+    return undefined;
+  }
+
+  return {
+    id: tab.id,
+    url: tab.url ?? "",
+    title: tab.title ?? tab.url ?? "",
+    index: tab.index ?? 0,
+    pinned: tab.pinned ?? false,
+  };
+}
 
 export async function getCurrentWindowTabs(): Promise<TabLite[]> {
-  const tabs = await chrome.tabs.query({ currentWindow: true });
-  return tabs
-    .filter(
-      (tab): tab is chrome.tabs.Tab & { id: number; url: string; title: string } =>
-        typeof tab.id === "number" &&
-        tab.id !== chrome.tabs.TAB_ID_NONE &&
-        typeof tab.url === "string" &&
-        typeof tab.title === "string",
-    )
-    .map((tab) => ({
-      id: tab.id,
-      url: tab.url,
-      title: tab.title,
-      index: tab.index ?? 0,
-      pinned: tab.pinned ?? false,
-    }));
+  const tabs = (await browser.tabs.query({ currentWindow: true })) as RawTab[];
+
+  return tabs.flatMap((tab) => {
+    const tabLite = toTabLite(tab);
+
+    return tabLite === undefined ? [] : [tabLite];
+  });
 }
 
-export interface ApplyOrderOptions {
-  afterPinned?: number;
-}
+// `orderedIds` is the desired absolute order of every tab in the window
+// (pinned block first, then unpinned). Re-queries a fresh snapshot so ids that
+// vanished mid-operation are dropped, then moves survivors to consecutive
+// indices from 0. Positioning relative to 0 keeps pinned/unpinned in their
+// Chrome-enforced regions and is immune to a stale pinned-count boundary.
+export async function applyOrder(orderedIds: number[]): Promise<void> {
+  if (orderedIds.length <= 1) {
+    return;
+  }
 
-export async function applyOrder(
-  orderedIds: number[],
-  options: ApplyOrderOptions = {},
-): Promise<void> {
-  if (orderedIds.length < 2) return;
-
-  const { afterPinned = 0 } = options;
-  const freshTabs = await chrome.tabs.query({ currentWindow: true });
-  const pinnedCount = freshTabs.filter((t) => t.pinned).length;
-  const startIndex = Math.max(afterPinned, pinnedCount);
-
-  const freshIds = new Set(
-    freshTabs
-      .filter(
-        (tab): tab is chrome.tabs.Tab & { id: number } =>
-          typeof tab.id === "number" && tab.id !== chrome.tabs.TAB_ID_NONE,
-      )
-      .map((tab) => tab.id),
+  const currentTabs = (await browser.tabs.query({ currentWindow: true })) as RawTab[];
+  const currentIds = new Set(
+    currentTabs.flatMap((tab) => (typeof tab.id === "number" ? [tab.id] : [])),
   );
+  const movableIds = orderedIds.filter((id) => currentIds.has(id));
 
-  const validIds = orderedIds.filter((id) => freshIds.has(id));
-
-  // Sequential moves avoid races with Chrome's tab ordering.
-  // eslint-disable-next-line no-await-in-loop
-  for (let i = 0; i < validIds.length; i++) {
-    try {
-      await chrome.tabs.move(validIds[i], { index: startIndex + i });
-    } catch {
-      // Tab may have closed; ignore and continue.
-    }
+  for (const [index, tabId] of movableIds.entries()) {
+    await browser.tabs.move(tabId, { index });
   }
 }
 
 export async function moveTabsToNewWindow(tabIds: number[]): Promise<void> {
-  if (tabIds.length === 0) return;
+  const [firstTabId, ...remainingTabIds] = tabIds;
 
-  const [first, ...rest] = tabIds;
-  const newWindow = await chrome.windows.create({ tabId: first });
-  const windowId = newWindow?.id;
-
-  if (!windowId) {
-    throw new Error("Failed to create new window");
+  if (firstTabId === undefined) {
+    return;
   }
 
-  if (rest.length > 0) {
-    await chrome.tabs.move(rest, { windowId, index: -1 });
+  const newWindow = await browser.windows.create({ tabId: firstTabId, focused: true });
+
+  if (newWindow === undefined || typeof newWindow.id !== "number" || remainingTabIds.length === 0) {
+    return;
   }
 
-  await chrome.windows.update(windowId, { focused: true });
+  await browser.tabs.move(remainingTabIds, { windowId: newWindow.id, index: -1 });
 }

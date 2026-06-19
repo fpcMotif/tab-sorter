@@ -1,5 +1,3 @@
-export type SortMode = "title" | "domain";
-
 export interface TabLite {
   id: number;
   url: string;
@@ -7,6 +5,8 @@ export interface TabLite {
   index: number;
   pinned: boolean;
 }
+
+export type SortMode = "title" | "domain";
 
 export interface RegexPreset {
   label: string;
@@ -20,7 +20,11 @@ export interface Prefs {
   regexPresets: RegexPreset[];
 }
 
-export type ExportFormat = "markdown" | "text";
+export const DEFAULT_PREFS: Prefs = {
+  defaultSort: "title",
+  ignorePinned: true,
+  regexPresets: [],
+};
 
 export interface DomainGroup {
   domain: string;
@@ -28,15 +32,12 @@ export interface DomainGroup {
   tabIds: number[];
 }
 
+// Preserved from master's tab-export feature. The logic lives in lib/export.ts
+// but is not yet wired into PR #1's popup UI — see the integration TODOs.
+export type ExportFormat = "markdown" | "text";
+
 export interface ExportEntry {
   title: string;
   url: string;
   domain: string;
-}
-
-export class InvalidPatternError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "InvalidPatternError";
-  }
 }

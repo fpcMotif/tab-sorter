@@ -1,35 +1,35 @@
-import type { TabLite } from "./types.ts";
-
-const SCHEME_BUCKET = new Set(["about", "chrome", "edge", "file", "javascript", "data"]);
+const SPECIAL_SCHEME_BUCKETS = new Map([
+  ["about:", "(about)"],
+  ["chrome:", "(chrome)"],
+  ["chrome-extension:", "(extension)"],
+  ["edge:", "(edge)"],
+  ["file:", "(file)"],
+  ["moz-extension:", "(extension)"],
+]);
 
 export function getDomain(url: string): string {
-  if (!url) {
-    return "(empty)";
+  const trimmedUrl = url.trim();
+
+  if (trimmedUrl.length === 0) {
+    return "(unknown)";
   }
 
   try {
-    const parsed = new URL(url);
-    const scheme = parsed.protocol.replace(":", "");
+    const parsed = new URL(trimmedUrl);
+    const specialBucket = SPECIAL_SCHEME_BUCKETS.get(parsed.protocol);
 
-    if (SCHEME_BUCKET.has(scheme)) {
-      return `(${scheme})`;
-    }
-
-    if (scheme === "extension") {
-      return "(extension)";
+    if (specialBucket !== undefined) {
+      return specialBucket;
     }
 
     const host = parsed.hostname.toLowerCase();
-    if (!host) {
-      return `(${scheme})`;
+
+    if (host.length === 0) {
+      return `(${parsed.protocol.replace(":", "")})`;
     }
 
     return host.startsWith("www.") ? host.slice(4) : host;
   } catch {
-    return "(invalid)";
+    return "(unknown)";
   }
-}
-
-export function getDomainForTab(tab: Pick<TabLite, "url">): string {
-  return getDomain(tab.url);
 }

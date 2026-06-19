@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { buildExportEntries, buildUrlExport } from "../export.ts";
-import type { TabLite } from "../types.ts";
+import { buildExportEntries, buildUrlExport } from "./export.ts";
+import type { TabLite } from "./types.ts";
 
 function makeTabs(
   items: Array<Partial<TabLite> & { id: number; title: string; url: string }>,

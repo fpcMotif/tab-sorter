@@ -1,37 +1,32 @@
-import type { Prefs, SortMode } from "./types.ts";
+import { DEFAULT_PREFS, type Prefs } from "./types";
 
-export const DEFAULT_PREFS: Prefs = {
-  defaultSort: "title" as SortMode,
-  ignorePinned: true,
-  regexPresets: [],
+const PREFS_KEY = "prefs";
+
+type StoredPrefs = {
+  prefs?: Partial<Prefs>;
 };
 
-const STORAGE_KEY = "prefs";
-
-export async function getPrefs(): Promise<Prefs> {
-  const result = await chrome.storage.sync.get(STORAGE_KEY);
-  const raw = result[STORAGE_KEY];
-
-  if (!raw || typeof raw !== "object") {
-    return { ...DEFAULT_PREFS };
-  }
-
-  const partial = raw as Partial<Prefs>;
-
+function normalizePrefs(storedPrefs: Partial<Prefs> | undefined): Prefs {
   return {
-    defaultSort: partial.defaultSort ?? DEFAULT_PREFS.defaultSort,
-    ignorePinned: partial.ignorePinned ?? DEFAULT_PREFS.ignorePinned,
-    regexPresets: Array.isArray(partial.regexPresets)
-      ? partial.regexPresets
-      : DEFAULT_PREFS.regexPresets,
+    defaultSort: storedPrefs?.defaultSort ?? DEFAULT_PREFS.defaultSort,
+    ignorePinned: storedPrefs?.ignorePinned ?? DEFAULT_PREFS.ignorePinned,
+    regexPresets: storedPrefs?.regexPresets ?? DEFAULT_PREFS.regexPresets,
   };
 }
 
-export async function setPrefs(prefs: Prefs): Promise<void> {
-  await chrome.storage.sync.set({ [STORAGE_KEY]: prefs });
+export async function getPrefs(): Promise<Prefs> {
+  const stored = (await browser.storage.sync.get(PREFS_KEY)) as StoredPrefs;
+
+  return normalizePrefs(stored.prefs);
 }
 
-export async function resetPrefs(): Promise<Prefs> {
-  await chrome.storage.sync.set({ [STORAGE_KEY]: DEFAULT_PREFS });
-  return { ...DEFAULT_PREFS };
+export async function setPrefs(patch: Partial<Prefs>): Promise<Prefs> {
+  const prefs = {
+    ...(await getPrefs()),
+    ...patch,
+  };
+
+  await browser.storage.sync.set({ [PREFS_KEY]: prefs });
+
+  return prefs;
 }

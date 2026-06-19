@@ -1,41 +1,54 @@
-import { getDomain } from "./domain.ts";
-import { InvalidPatternError, type DomainGroup, type TabLite } from "./types.ts";
+import { getDomain } from "./domain";
+import type { DomainGroup, TabLite } from "./types";
+
+const collator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: "base",
+});
+
+export class InvalidPatternError extends Error {
+  constructor(source: string, options?: ErrorOptions) {
+    super(`Invalid regular expression: ${source}`, options);
+    this.name = "InvalidPatternError";
+  }
+}
 
 export function groupByDomain(tabs: TabLite[]): DomainGroup[] {
-  const map = new Map<string, number[]>();
+  const groups = new Map<string, DomainGroup>();
 
   for (const tab of tabs) {
     const domain = getDomain(tab.url);
-    const ids = map.get(domain) ?? [];
-    ids.push(tab.id);
-    map.set(domain, ids);
+    const group = groups.get(domain);
+
+    if (group === undefined) {
+      groups.set(domain, { domain, count: 1, tabIds: [tab.id] });
+    } else {
+      group.count += 1;
+      group.tabIds.push(tab.id);
+    }
   }
 
-  const groups: DomainGroup[] = [...map.entries()].map(([domain, tabIds]) => ({
-    domain,
-    count: tabIds.length,
-    tabIds,
-  }));
-
-  return groups.toSorted((a, b) => {
-    if (b.count !== a.count) return b.count - a.count;
-    return a.domain.localeCompare(b.domain);
-  });
+  return [...groups.values()].sort(
+    (left, right) => right.count - left.count || collator.compare(left.domain, right.domain),
+  );
 }
 
 export function matchByDomain(tabs: TabLite[], domain: string): number[] {
-  const needle = domain.toLowerCase();
-  return tabs.filter((tab) => getDomain(tab.url) === needle).map((tab) => tab.id);
+  return tabs.filter((tab) => getDomain(tab.url) === domain).map((tab) => tab.id);
 }
 
 export function matchByRegex(tabs: TabLite[], source: string, flags = "i"): number[] {
-  let pattern: RegExp;
+  let matcher: RegExp;
+
+  // Strip stateful flags: a reused `g`/`y` regex advances `lastIndex` between
+  // `test()` calls and would silently skip matching tabs across the filter loop.
+  const safeFlags = flags.replace(/[gy]/g, "");
+
   try {
-    pattern = new RegExp(source, flags);
+    matcher = new RegExp(source, safeFlags);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new InvalidPatternError(message);
+    throw new InvalidPatternError(source, { cause: error });
   }
 
-  return tabs.filter((tab) => pattern.test(`${tab.title}\n${tab.url}`)).map((tab) => tab.id);
+  return tabs.filter((tab) => matcher.test(`${tab.title}\n${tab.url}`)).map((tab) => tab.id);
 }

@@ -1,54 +1,108 @@
-import { runExtract, runSort } from "@/lib/orchestration.ts";
-import { getDomain } from "@/lib/domain.ts";
-import type { SortMode } from "@/lib/types.ts";
+import { getDomain } from "@/lib/domain";
+import { runDefaultSort, runExtract, runSort } from "@/lib/orchestration";
 
-const SORT_COMMANDS: Record<string, SortMode> = {
-  "sort-by-title": "title",
-  "sort-by-domain": "domain",
-};
+const MENU_IDS = {
+  extractSite: "extract-site",
+  sortByDomain: "sort-by-domain",
+  sortByTitle: "sort-by-title",
+  sortDefault: "sort-default",
+} as const;
+
+interface MenuClickInfo {
+  menuItemId: string | number;
+  pageUrl?: string;
+}
+
+interface ClickedTab {
+  url?: string;
+}
+
+async function setupContextMenus(): Promise<void> {
+  await browser.contextMenus.removeAll();
+
+  browser.contextMenus.create({
+    contexts: ["page"],
+    id: MENU_IDS.sortDefault,
+    title: "Sort tabs (your default)",
+  });
+  browser.contextMenus.create({
+    contexts: ["page"],
+    id: MENU_IDS.sortByTitle,
+    title: "Sort tabs A to Z",
+  });
+  browser.contextMenus.create({
+    contexts: ["page"],
+    id: MENU_IDS.sortByDomain,
+    title: "Sort tabs by domain",
+  });
+  browser.contextMenus.create({
+    contexts: ["page"],
+    id: MENU_IDS.extractSite,
+    title: "Extract this site to new window",
+  });
+}
+
+async function handleCommand(command: string): Promise<void> {
+  if (command === MENU_IDS.sortDefault) {
+    await runDefaultSort();
+    return;
+  }
+
+  if (command === MENU_IDS.sortByTitle) {
+    await runSort("title");
+    return;
+  }
+
+  if (command === MENU_IDS.sortByDomain) {
+    await runSort("domain");
+  }
+}
+
+async function handleContextMenu(info: MenuClickInfo, tab: ClickedTab | undefined): Promise<void> {
+  if (info.menuItemId === MENU_IDS.sortDefault) {
+    await runDefaultSort();
+    return;
+  }
+
+  if (info.menuItemId === MENU_IDS.sortByTitle) {
+    await runSort("title");
+    return;
+  }
+
+  if (info.menuItemId === MENU_IDS.sortByDomain) {
+    await runSort("domain");
+    return;
+  }
+
+  if (info.menuItemId === MENU_IDS.extractSite) {
+    const url = tab?.url ?? info.pageUrl;
+
+    if (url !== undefined) {
+      await runExtract({ type: "domain", domain: getDomain(url) });
+    }
+  }
+}
+
+function reportBackgroundError(error: unknown): void {
+  console.error("Tab Sorter background action failed", error);
+}
 
 export default defineBackground(() => {
-  chrome.commands.onCommand.addListener((command) => {
-    const mode = SORT_COMMANDS[command];
-    if (mode) {
-      void runSort(mode);
-    }
+  // Run once on every service-worker startup so the menus also reappear after a
+  // mid-session disable/re-enable (which fires neither onInstalled nor onStartup).
+  // removeAll() inside makes this idempotent.
+  void setupContextMenus().catch(reportBackgroundError);
+
+  browser.runtime.onInstalled.addListener(() => {
+    void setupContextMenus().catch(reportBackgroundError);
   });
-
-  chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === "sort-by-title") {
-      void runSort("title");
-      return;
-    }
-
-    if (info.menuItemId === "sort-by-domain") {
-      void runSort("domain");
-      return;
-    }
-
-    if (info.menuItemId === "extract-this-site" && tab?.url) {
-      const domain = getDomain(tab.url);
-      void runExtract({ type: "domain", domain });
-    }
+  browser.runtime.onStartup.addListener(() => {
+    void setupContextMenus().catch(reportBackgroundError);
   });
-
-  chrome.runtime.onInstalled.addListener(() => {
-    chrome.contextMenus.create({
-      id: "sort-by-title",
-      title: "Sort tabs A→Z",
-      contexts: ["page"],
-    });
-
-    chrome.contextMenus.create({
-      id: "sort-by-domain",
-      title: "Sort tabs by domain",
-      contexts: ["page"],
-    });
-
-    chrome.contextMenus.create({
-      id: "extract-this-site",
-      title: "Extract this site to a new window",
-      contexts: ["page"],
-    });
+  browser.commands.onCommand.addListener((command) => {
+    void handleCommand(command).catch(reportBackgroundError);
+  });
+  browser.contextMenus.onClicked.addListener((info, tab) => {
+    void handleContextMenu(info, tab).catch(reportBackgroundError);
   });
 });

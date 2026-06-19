@@ -1,72 +1,92 @@
-import { matchByDomain, matchByRegex } from "./match.ts";
-import { getPrefs } from "./storage.ts";
-import { applyOrder, getCurrentWindowTabs, moveTabsToNewWindow } from "./tabs-service.ts";
-import { sortByDomain, sortByTitle } from "./sort.ts";
-import type { SortMode, TabLite } from "./types.ts";
-
-function splitPinned(tabs: TabLite[], ignorePinned: boolean) {
-  if (!ignorePinned) {
-    return { pinned: [] as TabLite[], unpinned: tabs };
-  }
-
-  const pinned: TabLite[] = [];
-  const unpinned: TabLite[] = [];
-
-  for (const tab of tabs) {
-    if (tab.pinned) {
-      pinned.push(tab);
-    } else {
-      unpinned.push(tab);
-    }
-  }
-
-  return { pinned, unpinned };
-}
-
-export interface SortResult {
-  count: number;
-}
-
-export async function runSort(mode: SortMode): Promise<SortResult> {
-  const prefs = await getPrefs();
-  const tabs = await getCurrentWindowTabs();
-  const { pinned, unpinned } = splitPinned(tabs, prefs.ignorePinned);
-
-  if (unpinned.length < 2) {
-    return { count: 0 };
-  }
-
-  const orderedIds = mode === "domain" ? sortByDomain(unpinned) : sortByTitle(unpinned);
-
-  await applyOrder(orderedIds, { afterPinned: pinned.length });
-
-  return { count: orderedIds.length };
-}
+import { groupByDomain, matchByDomain, matchByRegex } from "./match";
+import { sortByDomain, sortByTitle } from "./sort";
+import { getPrefs } from "./storage";
+import { applyOrder, getCurrentWindowTabs, moveTabsToNewWindow } from "./tabs-service";
+import type { DomainGroup, Prefs, SortMode, TabLite } from "./types";
 
 export type ExtractMatcher =
   | { type: "domain"; domain: string }
   | { type: "regex"; source: string; flags?: string };
 
-export interface ExtractResult {
-  count: number;
-  windowId?: number;
+export interface ActionResult {
+  moved: number;
 }
 
-export async function runExtract(matcher: ExtractMatcher): Promise<ExtractResult> {
-  const prefs = await getPrefs();
-  const tabs = await getCurrentWindowTabs();
-  const { unpinned } = splitPinned(tabs, prefs.ignorePinned);
+export interface PopupData {
+  domainGroups: DomainGroup[];
+  prefs: Prefs;
+  tabs: TabLite[];
+}
 
+function getActionTabs(tabs: TabLite[], prefs: Prefs): TabLite[] {
+  return prefs.ignorePinned ? tabs.filter((tab) => !tab.pinned) : tabs;
+}
+
+function countChanged(desired: number[], current: number[]): number {
+  return desired.filter((id, index) => current[index] !== id).length;
+}
+
+export async function runSort(mode: SortMode): Promise<ActionResult> {
+  const [tabs, prefs] = await Promise.all([getCurrentWindowTabs(), getPrefs()]);
+
+  if (tabs.length <= 1) {
+    return { moved: 0 };
+  }
+
+  const sortFn = mode === "title" ? sortByTitle : sortByDomain;
+  const pinned = tabs.filter((tab) => tab.pinned);
+  const unpinned = tabs.filter((tab) => !tab.pinned);
+
+  // Chrome keeps pinned tabs at the front of the window and clamps any move
+  // that would cross that boundary, so pinned and unpinned are sorted within
+  // their own regions and never interleaved. When ignorePinned is set the
+  // pinned block is left exactly as-is.
+  const pinnedOrder = prefs.ignorePinned ? pinned.map((tab) => tab.id) : sortFn(pinned);
+  const desiredOrder = [...pinnedOrder, ...sortFn(unpinned)];
+  const moved = countChanged(
+    desiredOrder,
+    tabs.map((tab) => tab.id),
+  );
+
+  if (moved === 0) {
+    return { moved: 0 };
+  }
+
+  await applyOrder(desiredOrder);
+
+  return { moved };
+}
+
+export async function runDefaultSort(): Promise<ActionResult> {
+  const prefs = await getPrefs();
+
+  return runSort(prefs.defaultSort);
+}
+
+export async function runExtract(matcher: ExtractMatcher): Promise<ActionResult> {
+  const [tabs, prefs] = await Promise.all([getCurrentWindowTabs(), getPrefs()]);
+  const extractableTabs = getActionTabs(tabs, prefs);
   const matchedIds =
     matcher.type === "domain"
-      ? matchByDomain(unpinned, matcher.domain)
-      : matchByRegex(unpinned, matcher.source, matcher.flags ?? "i");
+      ? matchByDomain(extractableTabs, matcher.domain)
+      : matchByRegex(extractableTabs, matcher.source, matcher.flags);
 
   if (matchedIds.length === 0) {
-    return { count: 0 };
+    return { moved: 0 };
   }
 
   await moveTabsToNewWindow(matchedIds);
 
-  return { count: matchedIds.length };
+  return { moved: matchedIds.length };
+}
+
+export async function getPopupData(): Promise<PopupData> {
+  const [tabs, prefs] = await Promise.all([getCurrentWindowTabs(), getPrefs()]);
+  const extractableTabs = getActionTabs(tabs, prefs);
+
+  return {
+    domainGroups: groupByDomain(extractableTabs),
+    prefs,
+    tabs: extractableTabs,
+  };
 }

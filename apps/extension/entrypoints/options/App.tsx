@@ -1,134 +1,229 @@
 import { useEffect, useState } from "react";
 
-import { DEFAULT_PREFS } from "@/lib/storage.ts";
-import { getPrefs, setPrefs } from "@/lib/storage.ts";
-import type { Prefs, RegexPreset, SortMode } from "@/lib/types.ts";
+import { getPrefs, setPrefs } from "@/lib/storage";
+import type { Prefs, RegexPreset, SortMode } from "@/lib/types";
+import { DEFAULT_PREFS } from "@/lib/types";
 
 import "./App.css";
 
+interface PresetDraft {
+  label: string;
+  source: string;
+  flags: string;
+}
+
+// Bounds keep the whole prefs object well under chrome.storage.sync's
+// ~8KB-per-item quota, beyond which every save (not just presets) would fail.
+const MAX_PRESETS = 50;
+const MAX_PRESET_SOURCE_LENGTH = 500;
+const MAX_PRESET_LABEL_LENGTH = 60;
+
+function validatePreset(draft: PresetDraft, existingCount: number): string {
+  if (draft.label.trim().length === 0) {
+    return "Preset label is required.";
+  }
+
+  if (draft.label.length > MAX_PRESET_LABEL_LENGTH) {
+    return `Label is too long (max ${MAX_PRESET_LABEL_LENGTH} characters).`;
+  }
+
+  if (draft.source.trim().length === 0) {
+    return "Pattern is required.";
+  }
+
+  if (draft.source.length > MAX_PRESET_SOURCE_LENGTH) {
+    return `Pattern is too long (max ${MAX_PRESET_SOURCE_LENGTH} characters).`;
+  }
+
+  if (existingCount >= MAX_PRESETS) {
+    return `Preset limit reached (${MAX_PRESETS}). Delete one to add another.`;
+  }
+
+  try {
+    new RegExp(draft.source, draft.flags);
+  } catch {
+    return "Pattern or flags are not a valid regular expression.";
+  }
+
+  return "";
+}
+
 function App() {
   const [prefs, setLocalPrefs] = useState<Prefs>(DEFAULT_PREFS);
-  const [saved, setSaved] = useState(false);
-  const [newPreset, setNewPreset] = useState<RegexPreset>({
-    label: "",
-    source: "",
-    flags: "i",
-  });
+  const [draft, setDraft] = useState<PresetDraft>({ label: "", source: "", flags: "i" });
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
-    void getPrefs().then(setLocalPrefs);
+    void getPrefs()
+      .then(setLocalPrefs)
+      .catch((loadError) => {
+        console.error(loadError);
+        setError("Could not load preferences.");
+      });
+
+    // Keep this page in sync when another tab/popup writes prefs, so concurrent
+    // edits don't clobber each other from stale local state.
+    const onChanged = (changes: Record<string, unknown>, area: string) => {
+      if (area === "sync" && "prefs" in changes) {
+        void getPrefs()
+          .then(setLocalPrefs)
+          .catch(() => {});
+      }
+    };
+
+    browser.storage.onChanged.addListener(onChanged);
+
+    return () => browser.storage.onChanged.removeListener(onChanged);
   }, []);
 
-  async function save(update: Partial<Prefs>) {
-    const next = { ...prefs, ...update };
-    setLocalPrefs(next);
-    await setPrefs(next);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+  async function persistPrefs(patch: Partial<Prefs>) {
+    setPending(true);
+    setError("");
+    setStatus("");
+
+    try {
+      const nextPrefs = await setPrefs(patch);
+      setLocalPrefs(nextPrefs);
+      setStatus("Saved.");
+    } catch (saveError) {
+      console.error(saveError);
+      setError("Could not save preferences.");
+    } finally {
+      setPending(false);
+    }
   }
 
-  function addPreset() {
-    if (!newPreset.label.trim() || !newPreset.source.trim()) return;
-    const presets = [...prefs.regexPresets, { ...newPreset }];
-    void save({ regexPresets: presets });
-    setNewPreset({ label: "", source: "", flags: "i" });
+  function handleDefaultSortChange(defaultSort: SortMode) {
+    void persistPrefs({ defaultSort });
   }
 
-  function removePreset(index: number) {
-    const presets = prefs.regexPresets.filter((_, i) => i !== index);
-    void save({ regexPresets: presets });
+  function handleIgnorePinnedChange(ignorePinned: boolean) {
+    void persistPrefs({ ignorePinned });
+  }
+
+  function handleAddPreset() {
+    const validationError = validatePreset(draft, prefs.regexPresets.length);
+
+    if (validationError.length > 0) {
+      setError(validationError);
+      return;
+    }
+
+    const preset: RegexPreset = {
+      label: draft.label.trim(),
+      source: draft.source,
+      flags: draft.flags,
+    };
+
+    void persistPrefs({ regexPresets: [...prefs.regexPresets, preset] });
+    setDraft({ label: "", source: "", flags: "i" });
+  }
+
+  function handleDeletePreset(indexToDelete: number) {
+    void persistPrefs({
+      regexPresets: prefs.regexPresets.filter((_, index) => index !== indexToDelete),
+    });
   }
 
   return (
-    <div className="options">
-      <header className="options-header">
-        <h1>Tab Sorter</h1>
-        <p className="subtitle">Settings</p>
+    <main className="options-shell">
+      <header>
+        <p className="eyebrow">Tab Sorter</p>
+        <h1>Options</h1>
       </header>
 
-      <section className="field">
-        <label htmlFor="defaultSort">Default sort mode</label>
-        <select
-          id="defaultSort"
-          value={prefs.defaultSort}
-          onChange={(e) => save({ defaultSort: e.target.value as SortMode })}
-        >
-          <option value="title">A→Z by title</option>
-          <option value="domain">By domain</option>
-        </select>
-      </section>
-
-      <section className="field">
-        <label className="checkbox">
+      <section className="panel">
+        <h2>Sorting</h2>
+        <label>
+          Default sort for background actions
+          <select
+            disabled={pending}
+            onChange={(event) => handleDefaultSortChange(event.target.value as SortMode)}
+            value={prefs.defaultSort}
+          >
+            <option value="title">A to Z by title</option>
+            <option value="domain">By domain</option>
+          </select>
+        </label>
+        <label className="checkbox-row">
           <input
-            type="checkbox"
             checked={prefs.ignorePinned}
-            onChange={(e) => save({ ignorePinned: e.target.checked })}
+            disabled={pending}
+            onChange={(event) => handleIgnorePinnedChange(event.target.checked)}
+            type="checkbox"
           />
-          Ignore pinned tabs when sorting or extracting
+          Keep pinned tabs fixed and skip them during extract
         </label>
       </section>
 
-      <section className="field">
+      <section className="panel">
         <h2>Regex presets</h2>
+        <div className="preset-form">
+          <label>
+            Label
+            <input
+              disabled={pending}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, label: event.target.value }))
+              }
+              placeholder="Docs"
+              value={draft.label}
+            />
+          </label>
+          <label>
+            Pattern
+            <input
+              disabled={pending}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, source: event.target.value }))
+              }
+              placeholder="docs|guide"
+              value={draft.source}
+            />
+          </label>
+          <label>
+            Flags
+            <input
+              disabled={pending}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, flags: event.target.value }))
+              }
+              placeholder="i"
+              value={draft.flags}
+            />
+          </label>
+          <button disabled={pending} onClick={handleAddPreset} type="button">
+            Add preset
+          </button>
+        </div>
+
+        {prefs.regexPresets.length === 0 ? <p className="muted">No presets yet.</p> : null}
         <ul className="preset-list">
           {prefs.regexPresets.map((preset, index) => (
-            <li key={`${preset.label}:${preset.source}:${preset.flags}:${index}`}>
+            <li key={`${preset.label}:${preset.source}:${preset.flags}`}>
               <span>
-                <strong>{preset.label}</strong> /{preset.source}/{preset.flags}
+                <strong>{preset.label}</strong>
+                <code>
+                  /{preset.source}/{preset.flags}
+                </code>
               </span>
-              <button onClick={() => removePreset(index)} type="button">
-                Remove
+              <button disabled={pending} onClick={() => handleDeletePreset(index)} type="button">
+                Delete
               </button>
             </li>
           ))}
         </ul>
-
-        <div className="preset-form">
-          <input
-            type="text"
-            placeholder="Label"
-            value={newPreset.label}
-            onChange={(e) => setNewPreset((prev) => ({ ...prev, label: e.target.value }))}
-          />
-          <input
-            type="text"
-            placeholder="Pattern"
-            value={newPreset.source}
-            onChange={(e) => setNewPreset((prev) => ({ ...prev, source: e.target.value }))}
-          />
-          <input
-            type="text"
-            placeholder="Flags"
-            value={newPreset.flags}
-            onChange={(e) => setNewPreset((prev) => ({ ...prev, flags: e.target.value }))}
-          />
-          <button onClick={addPreset} type="button">
-            Add preset
-          </button>
-        </div>
       </section>
 
-      <section className="field">
-        <h2>Keyboard shortcuts</h2>
-        <div className="shortcuts">
-          <div className="shortcut-row">
-            <span>Sort A→Z by title</span>
-            <kbd>Alt + Shift + T</kbd>
-          </div>
-          <div className="shortcut-row">
-            <span>Sort by domain</span>
-            <kbd>Alt + Shift + D</kbd>
-          </div>
-        </div>
-      </section>
-
-      {saved && (
-        <p className="saved" role="status">
-          Saved
-        </p>
-      )}
-    </div>
+      <p className="status error" hidden={error.length === 0} role="alert">
+        {error}
+      </p>
+      <p className="status success" aria-live="polite" hidden={status.length === 0} role="status">
+        {status}
+      </p>
+    </main>
   );
 }
 

@@ -1,39 +1,33 @@
-import { getDomain } from "./domain.ts";
-import type { TabLite } from "./types.ts";
+import { getDomain } from "./domain";
+import type { TabLite } from "./types";
 
 const collator = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: "base",
 });
 
-function titleComparator(a: TabLite, b: TabLite): number {
-  const byTitle = collator.compare(a.title, b.title);
-  if (byTitle !== 0) return byTitle;
-  return collator.compare(a.url, b.url);
+function compareText(left: string, right: string): number {
+  return collator.compare(left, right);
+}
+
+function compareByTitle(left: TabLite, right: TabLite): number {
+  return (
+    compareText(left.title, right.title) ||
+    compareText(left.url, right.url) ||
+    left.index - right.index ||
+    left.id - right.id
+  );
 }
 
 export function sortByTitle(tabs: TabLite[]): number[] {
-  return tabs.toSorted(titleComparator).map((tab) => tab.id);
+  return [...tabs].sort(compareByTitle).map((tab) => tab.id);
 }
 
 export function sortByDomain(tabs: TabLite[]): number[] {
-  const grouped = new Map<string, TabLite[]>();
-
-  for (const tab of tabs) {
-    const domain = getDomain(tab.url);
-    const group = grouped.get(domain) ?? [];
-    group.push(tab);
-    grouped.set(domain, group);
-  }
-
-  const domains = [...grouped.keys()].toSorted((a, b) => collator.compare(a, b));
-  const orderedIds: number[] = [];
-
-  for (const domain of domains) {
-    const group = grouped.get(domain);
-    if (!group) continue;
-    orderedIds.push(...group.toSorted(titleComparator).map((tab) => tab.id));
-  }
-
-  return orderedIds;
+  return [...tabs]
+    .sort(
+      (left, right) =>
+        compareText(getDomain(left.url), getDomain(right.url)) || compareByTitle(left, right),
+    )
+    .map((tab) => tab.id);
 }
