@@ -3,7 +3,7 @@ import type { Rendered } from "@/lib/copy/types.ts";
 // A pure description of one clipboard representation: a mime type mapped to its
 // string payload. The adapter (navigator-clipboard.ts) turns these into Blobs.
 export interface ClipboardPart {
-  mimeType: string;
+  mimeType: "text/plain" | "text/html";
   data: string;
 }
 

@@ -45,6 +45,9 @@ describe("writeToClipboard", () => {
     await writeToClipboard({ text: "hello", html: "<a>hello</a>" });
 
     const items = write.mock.calls[0]![0] as FakeClipboardItem[];
+    const textBlob = items[0]!.items["text/plain"] as FakeBlob;
+    expect(textBlob.parts).toEqual(["hello"]);
+    expect(textBlob.options).toEqual({ type: "text/plain" });
     const htmlBlob = items[0]!.items["text/html"] as FakeBlob;
     expect(htmlBlob.parts).toEqual(["<a>hello</a>"]);
     expect(htmlBlob.options).toEqual({ type: "text/html" });
