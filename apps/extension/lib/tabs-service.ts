@@ -1,4 +1,9 @@
 import type { TabLite } from "./types";
+import type {
+  ScopeSnapshot,
+  TabLite as CopyTabLite,
+  WindowLite,
+} from "@/lib/copy/types.ts";
 
 interface RawTab {
   id?: number;
@@ -6,6 +11,14 @@ interface RawTab {
   title?: string;
   index?: number;
   pinned?: boolean;
+  favIconUrl?: string;
+  highlighted?: boolean;
+  windowId?: number;
+}
+
+interface RawWindow {
+  id?: number;
+  tabs?: RawTab[];
 }
 
 function toTabLite(tab: RawTab): TabLite | undefined {
@@ -19,6 +32,25 @@ function toTabLite(tab: RawTab): TabLite | undefined {
     title: tab.title ?? tab.url ?? "",
     index: tab.index ?? 0,
     pinned: tab.pinned ?? false,
+  };
+}
+
+// Maps a raw Chrome tab to the copy engine's TabLite (includes favIconUrl + highlighted).
+// Tabs missing an id are dropped (returns undefined).
+export function toCopyTabLite(tab: RawTab): CopyTabLite | undefined {
+  if (typeof tab.id !== "number") {
+    return undefined;
+  }
+
+  return {
+    id: tab.id,
+    url: tab.url ?? "",
+    title: tab.title ?? tab.url ?? "",
+    index: tab.index ?? 0,
+    pinned: tab.pinned ?? false,
+    // Only carry favIconUrl when present (undefined means absent, not "")
+    ...(tab.favIconUrl === undefined ? {} : { favIconUrl: tab.favIconUrl }),
+    highlighted: tab.highlighted ?? false,
   };
 }
 
@@ -67,4 +99,41 @@ export async function moveTabsToNewWindow(tabIds: number[]): Promise<void> {
   }
 
   await browser.tabs.move(remainingTabIds, { windowId: newWindow.id, index: -1 });
+}
+
+// Single raw read for the copy engine: all windows + tabs (mirrors donor getWindowsAndTabs)
+// plus the highlighted ids of the current window (mirrors donor getTabs highlighted branch).
+// No pinned filtering here — selectScope (scope.ts) owns that.
+export async function getScopeSnapshot(): Promise<ScopeSnapshot> {
+  const rawWindows = (await browser.windows.getAll({ populate: true })) as RawWindow[];
+  const highlightedTabs = (await browser.tabs.query({
+    highlighted: true,
+    currentWindow: true,
+  })) as RawTab[];
+
+  const windows: WindowLite[] = rawWindows.flatMap((win) => {
+    if (typeof win.id !== "number") {
+      return [];
+    }
+
+    const tabs = (win.tabs ?? []).flatMap((tab) => {
+      const copyTab = toCopyTabLite(tab);
+      return copyTab === undefined ? [] : [copyTab];
+    });
+
+    return [{ id: win.id, tabs }];
+  });
+
+  const highlightedTabIds = highlightedTabs.flatMap((tab) =>
+    typeof tab.id === "number" ? [tab.id] : [],
+  );
+
+  // currentWindowId: derived from the windowId of any highlighted tab (they all share
+  // the current window). Falls back to the first window id, then -1 if snapshot is empty.
+  const currentWindowId =
+    highlightedTabs.find((tab) => typeof tab.windowId === "number")?.windowId ??
+    windows[0]?.id ??
+    -1;
+
+  return { windows, currentWindowId, highlightedTabIds };
 }
