@@ -225,6 +225,10 @@ pinned with a "Default" pill; sage-tinted active row) · footer sage **Copy** ac
 + `⌘C` chip. Clicking a format copies the current scope in that format and shows
 "Copied N tabs".
 
+![Tab Sorter copy popup in the Soft Editorial style — header with title and settings gear, a 2×2 scope tile grid with live count badges (This window active), a format list with Link pinned as Default, and a sage Copy action with a ⌘C chip.](assets/2026-06-26-copy-popup-soft-editorial.png)
+
+*M1 Copy popup, built in Figma in the Soft Editorial language ([live file](https://www.figma.com/design/4cqqFsI0Bu32nD5wGFabsV)).*
+
 **M3 — Options page**: format manager (drag-reorder, visibility toggles,
 set-default, per-format opts editors, **custom-format template editor with live
 preview**), scope visibility, and the 9 settings toggles with sub-option gating.
