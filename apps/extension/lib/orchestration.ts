@@ -4,11 +4,10 @@ import { getPrefs } from "./storage";
 import { applyOrder, getCurrentWindowTabs, getScopeSnapshot, moveTabsToNewWindow } from "./tabs-service";
 import type { DomainGroup, Prefs, SortMode, TabLite } from "./types";
 import { resolveConfiguredFormat } from "./copy/configured-format.ts";
-import { BUILTIN_FORMATS, getFormat } from "./copy/format.ts";
+import { BUILTIN_FORMATS, getFormat, type FormatId } from "./copy/format.ts";
 import { buildPayload } from "./copy/payload.ts";
 import { render } from "./copy/render.ts";
 import { SCOPES, selectScope } from "./copy/scope.ts";
-import type { FormatId } from "./copy/format.ts";
 import type { CopyPayload, ScopeId } from "./copy/types.ts";
 import type { Sink } from "./sinks/sink.ts";
 

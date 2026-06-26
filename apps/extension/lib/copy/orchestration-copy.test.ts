@@ -114,8 +114,13 @@ describe("runCopy", () => {
 
     // includePinned defaults to true (DEVIATION #2): pinned tabs must NOT be filtered out
     expect(mocks.selectScope).toHaveBeenCalledWith(snapshot, "all-tabs", true);
-    // resolveConfiguredFormat receives the Format object + undefined storedOpts + getFormat
-    expect(mocks.resolveConfiguredFormat).toHaveBeenCalledTimes(1);
+    // resolveConfiguredFormat receives the resolved Format object (id "link"),
+    // undefined storedOpts (no persisted opts in M1), and getFormat as the resolver.
+    expect(mocks.resolveConfiguredFormat).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "link" }),
+      undefined,
+      expect.any(Function),
+    );
     expect(mocks.render).toHaveBeenCalledWith(
       { scope: "tab", tabs: snapshot.windows[0]!.tabs },
       { id: "link", label: "Link", transforms: { text: { tab: expect.any(Function) } } },
@@ -125,7 +130,10 @@ describe("runCopy", () => {
       { text: "rendered-text" },
     );
     expect(sink.consume).toHaveBeenCalledTimes(1);
+    // Integration seam: the sink must receive the exact rendered payload + entries.
     expect(consumed[0]).toMatchObject({ scope: "tab" });
+    expect(consumed[0]?.rendered?.text).toBe("rendered-text");
+    expect(consumed[0]?.entries.length).toBe(2);
     // count = flattened entries from the returned payload
     expect(result).toEqual({ count: 2 });
   });
@@ -144,10 +152,20 @@ describe("runCopy", () => {
       rendered: { text: "rendered-text" },
     });
 
-    const sink: Sink = { consume: vi.fn(async () => {}) };
+    const consumed: CopyPayload[] = [];
+    const sink: Sink = {
+      consume: vi.fn(async (payload: CopyPayload) => {
+        consumed.push(payload);
+      }),
+    };
 
     const result = await runCopy("all-windows-and-tabs", "link", sink);
 
+    // Integration seam: the window-scoped payload reaches the sink intact.
+    expect(sink.consume).toHaveBeenCalledTimes(1);
+    expect(consumed[0]).toMatchObject({ scope: "window" });
+    expect(consumed[0]?.rendered?.text).toBe("rendered-text");
+    expect(consumed[0]?.entries.length).toBe(1);
     // count uses the flat `entries` array regardless of scope
     expect(result).toEqual({ count: 1 });
   });
@@ -182,6 +200,8 @@ describe("getCopyPopupData", () => {
   it("returns 4 scopes with live tab counts (pinned counted, DEVIATION #2)", async () => {
     const data = await getCopyPopupData();
 
+    // window-tabs and all-tabs counts are 2 because the pinned tab (t10) IS counted
+    // — copy includes pinned by default (DEVIATION #2), unlike the sort feature.
     expect(data.scopes).toEqual([
       { id: "highlighted-tabs", label: "Highlighted", count: 1 },
       { id: "window-tabs", label: "This window", count: 2 },
