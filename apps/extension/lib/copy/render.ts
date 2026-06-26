@@ -96,8 +96,10 @@ function applyTabScope(
   const start =
     hooks.start?.({ formatName, tabCount: tabs.length, scope: "tab" }) ?? "";
 
-  const body = tabs
-    .map((tab, i) => hooks.tab({ tab, globalSeq: i + 1 }))
+  // Tab numbering comes from the shared helper (reconciliation #6) so render and
+  // entries never diverge. Tab scope carries only globalSeq (no window seqs).
+  const body = [...enumerateSelection({ scope: "tab", tabs })]
+    .map(({ tab, globalSeq }) => hooks.tab({ tab, globalSeq }))
     .join(hooks.tabDelimiter ?? "");
 
   const end =
@@ -117,10 +119,19 @@ function applyWindowScope(
   const start =
     hooks.start?.({ formatName, tabCount, windowCount, scope: "window" }) ?? "";
 
-  let globalSeq = 1;
+  // Single numbering source (reconciliation #6): the walk pulls each tab's
+  // globalSeq/windowSeq/windowTabSeq from enumerateSelection — the same generator
+  // Module H consumes — rather than re-deriving the counters inline. The
+  // window-BOUNDARY hooks (windowStart/windowEnd/windowDelimiter) stay here since
+  // they fence the per-window tab join, not the numbering.
+  const enumerated = [...enumerateSelection({ scope: "window", windows })];
+  let ei = 0;
 
   const body = windows
     .map((window, wi) => {
+      // Naming asymmetry mirrors the donor (copy.ts:187-211): the window hooks
+      // receive the window's index as `seq`, while the tab hook receives the same
+      // value as `windowSeq`. Both are wi + 1 — do not "unify" the names.
       const seq = wi + 1;
       const windowTabCount = window.tabs.length;
 
@@ -128,15 +139,16 @@ function applyWindowScope(
         hooks.windowStart?.({ window, seq, windowCount, windowTabCount }) ?? "";
 
       const tabsText = window.tabs
-        .map((tab, ti) =>
-          hooks.tab({
+        .map(() => {
+          const { tab, globalSeq, windowSeq, windowTabSeq } = enumerated[ei++]!;
+          return hooks.tab({
             tab,
-            globalSeq: globalSeq++,
-            windowTabSeq: ti + 1,
-            windowSeq: seq,
+            globalSeq,
+            windowTabSeq,
+            windowSeq,
             windowCount,
-          }),
-        )
+          });
+        })
         .join(hooks.tabDelimiter ?? "");
 
       const windowEnd =
