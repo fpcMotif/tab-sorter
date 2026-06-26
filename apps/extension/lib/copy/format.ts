@@ -1,11 +1,13 @@
 import type {
   Hooks,
+  StartCtx,
   TabCtx,
   TabLite,
   Transforms,
   WindowCtx,
 } from "@/lib/copy/types.ts";
-import { encodeHtml, sentenceCase } from "@/lib/copy/string.ts";
+import { encodeHtml, indent, sentenceCase } from "@/lib/copy/string.ts";
+import { stringifyCSVRow } from "@/lib/copy/csv.ts";
 
 // --- Format type machinery (donor: tab-copy-master/src/format.ts Format<T>, but
 // O is INFERRED from defaultOpts via defineFormat so callbacks are typed — removes
@@ -20,10 +22,30 @@ export type Format<O = unknown> = {
   isInvalid?(opts: O): boolean;
 };
 
-// identity helper: returns the spec unchanged, inferring O from defaultOpts (or
-// from the callback param types when no defaultOpts is present).
+// Registry helper: infers O from defaultOpts so each format's label/transforms/
+// isInvalid callbacks get a typed `opts` (the deliberate improvement over the
+// donor's `Record<string, any>`). When a callback is invoked with no opts it
+// substitutes `defaultOpts`, mirroring the donor pipeline where opts are always
+// resolved (via getConfiguredFormat) before transforms run — so a bare
+// `getFormat(id).transforms()` reflects the format's defaults. `id` and
+// `defaultOpts` pass through unchanged.
 export function defineFormat<O>(spec: Format<O>): Format<O> {
-  return spec;
+  if (spec.defaultOpts === undefined) return spec;
+
+  const orElseDefault = (opts: O | undefined): O | undefined =>
+    opts ?? spec.defaultOpts;
+
+  return {
+    ...spec,
+    label: (opts?: O) => spec.label(orElseDefault(opts)),
+    transforms: (opts?: O) => spec.transforms(orElseDefault(opts)),
+    ...(spec.description && {
+      description: (opts?: O) => spec.description!(orElseDefault(opts)),
+    }),
+    ...(spec.isInvalid && {
+      isInvalid: (opts: O) => spec.isInvalid!(orElseDefault(opts) as O),
+    }),
+  };
 }
 
 // donor: FormatId = builtin ids | `custom-${string}`
@@ -132,6 +154,64 @@ function linkTextHooks(plaintextFallback?: string): Hooks {
   return getFormat(fallbackId as FormatId).transforms().text;
 }
 
+// --- structured-format helpers (donor format.ts:637-686)
+
+const DEFAULT_INDENT_SIZE = 2;
+export const MAX_INDENT_SIZE = 10; // matches JSON.stringify() max
+
+// donor parseIndent (format.ts:680-686): int in [1,10] else undefined
+export function parseIndent(value: string): number | undefined {
+  const n = Number.parseInt(value, 10);
+  if (n && n <= MAX_INDENT_SIZE && n >= 1) return n;
+  return undefined;
+}
+
+// donor wrap/list (format.ts:671-677)
+function wrapTag(text: string, tag: string, contentIndent: number): string {
+  return `<${tag}>\n${indent(text, contentIndent)}\n</${tag}>`;
+}
+function joinTruthy(...args: (string | null)[]): string {
+  return args.filter(Boolean).join("\n");
+}
+
+// donor getHtmlTableHeaderHtml (format.ts:637-652)
+function htmlTableHeaderHtml(
+  scope: "tab" | "window",
+  contentIndent: number,
+): string {
+  return wrapTag(
+    wrapTag(
+      joinTruthy(
+        scope === "window" ? "<th>Window</th>" : null,
+        "<th>Title</th>",
+        "<th>URL</th>",
+      ),
+      "tr",
+      contentIndent,
+    ),
+    "thead",
+    contentIndent,
+  );
+}
+
+// donor getHtmlTableTabHtml (format.ts:654-669)
+function htmlTableTabHtml(
+  title: string,
+  url: string,
+  windowSeq: number | undefined,
+  contentIndent: number,
+): string {
+  return wrapTag(
+    joinTruthy(
+      windowSeq ? `<td>${numberedWindowText(windowSeq)}</td>` : null,
+      `<td>${title || ""}</td>`,
+      `<td>${url || ""}</td>`,
+    ),
+    "tr",
+    contentIndent,
+  );
+}
+
 // --- builtin registry (donor format.ts:49-331)
 
 const builtinFormats: Format<unknown>[] = [
@@ -214,6 +294,119 @@ const builtinFormats: Format<unknown>[] = [
         windowDelimiter: "\n\n",
       },
     }),
+  }) as Format<unknown>,
+
+  defineFormat({
+    id: "csv",
+    label: () => "CSV",
+    transforms: (): Transforms => ({
+      text: {
+        // donor format.ts:189-190
+        start: ({ scope, tabCount }: StartCtx) =>
+          tabCount ? `${scope === "window" ? "Window," : ""}Title,URL\n` : "",
+        // donor format.ts:192-204
+        tab: ({ tab: { title, url }, windowSeq }: TabCtx) =>
+          stringifyCSVRow(
+            [
+              windowSeq ? numberedWindowText(windowSeq) : undefined,
+              title || null,
+              url,
+            ].filter((item) => item !== undefined),
+          ),
+        tabDelimiter: "\n",
+        windowDelimiter: "\n",
+      },
+    }),
+  }) as Format<unknown>,
+
+  defineFormat<{
+    properties: ("title" | "url" | "favIconUrl")[];
+    pretty: boolean;
+    indent: string;
+  }>({
+    id: "json",
+    label: () => "JSON",
+    transforms: (opts) => {
+      const newline = opts?.pretty ? "\n" : "";
+      const indentSize = opts?.pretty
+        ? parseIndent(opts.indent) || DEFAULT_INDENT_SIZE
+        : 0;
+      const noProperties = !opts?.properties?.length;
+      const wants = (key: "title" | "url" | "favIconUrl") =>
+        noProperties || (opts?.properties ?? []).includes(key);
+      return {
+        text: {
+          // donor format.ts:224-268
+          start: () => "[",
+          windowStart: ({ seq }: WindowCtx) =>
+            `${newline}${indent(
+              JSON.stringify(
+                { title: numberedWindowText(seq), tabs: [] },
+                undefined,
+                indentSize,
+              ).replace(/\[\][\s\n]*\}$/, "["),
+              indentSize,
+            )}`,
+          tab: ({ tab: { title, url, favIconUrl }, windowSeq }: TabCtx) =>
+            `${newline}${indent(
+              JSON.stringify(
+                {
+                  ...(title && wants("title") ? { title } : null),
+                  ...(url && wants("url") ? { url } : null),
+                  ...(favIconUrl && wants("favIconUrl") ? { favIconUrl } : null),
+                },
+                undefined,
+                indentSize,
+              ),
+              windowSeq ? indentSize * 3 : indentSize,
+            )}`,
+          tabDelimiter: ",",
+          windowEnd: () =>
+            `${newline}${indent("]", indentSize * 2)}${newline}${indent(
+              "}",
+              indentSize,
+            )}`,
+          windowDelimiter: ",",
+          end: ({ tabCount }: StartCtx) => `${tabCount ? newline : ""}]`,
+        },
+      };
+    },
+    defaultOpts: {
+      properties: ["title", "url"],
+      pretty: true,
+      indent: `${DEFAULT_INDENT_SIZE}`,
+    },
+    // donor format.ts:286
+    isInvalid: (opts) => !!opts.pretty && !parseIndent(opts.indent),
+  }) as Format<unknown>,
+
+  defineFormat<{ includeHeader: boolean }>({
+    id: "htmlTable",
+    label: () => "HTML table",
+    transforms: (opts) => ({
+      text: {
+        // donor format.ts:310-324
+        start: ({ scope, tabCount }: StartCtx) =>
+          tabCount
+            ? `<table>\n${
+                opts?.includeHeader
+                  ? `${indent(
+                      htmlTableHeaderHtml(scope, DEFAULT_INDENT_SIZE),
+                      DEFAULT_INDENT_SIZE,
+                    )}\n`
+                  : ""
+              }${indent("<tbody>", DEFAULT_INDENT_SIZE)}\n`
+            : "",
+        tab: ({ tab: { title, url }, windowSeq }: TabCtx) =>
+          `${indent(
+            htmlTableTabHtml(title, url, windowSeq, DEFAULT_INDENT_SIZE),
+            DEFAULT_INDENT_SIZE * 2,
+          )}\n`,
+        end: ({ tabCount }: StartCtx) =>
+          tabCount ? `${indent("</tbody>", DEFAULT_INDENT_SIZE)}\n</table>` : "",
+      },
+    }),
+    defaultOpts: { includeHeader: false },
   }) as Format<unknown>,
 ];
 
