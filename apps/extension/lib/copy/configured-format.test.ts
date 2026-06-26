@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { resolveConfiguredFormat } from "./configured-format.ts";
 import { defineFormat } from "./format.ts";
-import type { Format, FormatId, TabCtx } from "./format.ts";
+import type { Format, FormatId } from "./format.ts";
+// TabCtx is a Module A type (its canonical home is types.ts); format.ts consumes
+// it but does not re-export it, so import it from its source.
+import type { TabCtx } from "./types.ts";
 
 // --- test fixtures: minimal Formats built via the Module D identity helper ---
 
@@ -16,8 +19,6 @@ const urlFormat = defineFormat({
 });
 
 // A format WITH opts: a single `separator` whose default is ": ".
-// Whole-object overlay means a stored `{ separator: " | " }` fully replaces
-// the default `{ separator: ": " }` — there is no other key to merge.
 const titleUrlFormat = defineFormat({
   id: "titleUrl1Line" as FormatId,
   label: (o?: { separator: string }) => `Title${o?.separator ?? ": "}URL`,
@@ -29,13 +30,32 @@ const titleUrlFormat = defineFormat({
   defaultOpts: { separator: ": " },
 });
 
-// The `link` format: its text channel delegates to a fallback format resolved
-// by id. Here it always delegates to `url`'s text transform via getFormatById.
+// A format with TWO opts keys, so the replace-vs-merge distinction is provable:
+// pass storedOpts that OMITS `suffix` and assert it is GONE (falls back to the
+// callback's `?? ""`), proving the overlay REPLACES defaultOpts wholesale rather
+// than merging the missing key back in from defaults.
+type TwoKeyOpts = { prefix: string; suffix: string };
+const twoKeyFormat = defineFormat({
+  id: "titleUrl1Line" as FormatId, // id reused only as a stand-in; behavior is the point
+  label: (o?: TwoKeyOpts) => `${o?.prefix ?? "<P>"}|${o?.suffix ?? "<S>"}`,
+  transforms: (o?: TwoKeyOpts) => ({
+    text: {
+      tab: ({ tab }: TabCtx) =>
+        `${o?.prefix ?? "<P>"}${tab.url}${o?.suffix ?? "<S>"}`,
+    },
+  }),
+  defaultOpts: { prefix: "PRE-", suffix: "-SUF" },
+});
+
+// The `link` format. Its OWN text channel emits a DISTINCT marker so that when
+// the resolver redirects to the `url` fallback we can tell the two apart: if the
+// guard fired and redirected to `url`, output is the plain url (no marker); if
+// link's own channel had leaked through, output would carry "LINK-TEXT:".
 const linkFormat = defineFormat({
   id: "link" as FormatId,
   label: () => "Link",
   transforms: () => ({
-    text: { tab: ({ tab }: TabCtx) => tab.url },
+    text: { tab: ({ tab }: TabCtx) => `LINK-TEXT:${tab.url}` },
     html: { tab: ({ tab }: TabCtx) => `<a href="${tab.url}">${tab.title}</a>` },
   }),
   defaultOpts: { plaintextFallback: "url" as FormatId },
@@ -74,35 +94,46 @@ describe("resolveConfiguredFormat", () => {
     );
   });
 
-  it("applies stored opts as a WHOLE-OBJECT replace (not a deep merge)", () => {
-    // stored opts replace defaults entirely; a partial object that omits a
-    // default key must NOT inherit it — proving overlay is replace, not merge.
+  it("applies stored opts as a WHOLE-OBJECT replace, dropping omitted keys (not a merge)", () => {
+    // defaultOpts has TWO keys { prefix, suffix }; storedOpts supplies ONLY
+    // `prefix`. A whole-object overlay REPLACES the entire defaultOpts, so the
+    // omitted `suffix` is GONE (callback falls back to "<S>"), NOT inherited
+    // from the default "-SUF". A deep merge would keep "-SUF"; this asserts it
+    // does not.
     const cf = resolveConfiguredFormat(
-      titleUrlFormat,
-      { separator: " | " },
+      twoKeyFormat,
+      { prefix: "X-" },
       getFormatById,
     );
-    expect(cf.label).toBe("Title | URL");
+    // suffix dropped → "<S>" placeholder, NOT the default "-SUF"
+    expect(cf.label).toBe("X-|<S>");
     expect(cf.transforms.text.tab({ tab: sampleTab, globalSeq: 1 })).toBe(
-      "Example | https://example.com",
+      "X-https://example.com<S>",
     );
+    // explicit no-merge assertion: the default suffix must not survive.
+    expect(cf.label).not.toContain("-SUF");
   });
 
   it("resolves the link text channel through the injected getFormatById fallback", () => {
     const cf = resolveConfiguredFormat(linkFormat, undefined, getFormatById);
-    // text channel delegates to `url`'s tab transform (plaintext fallback)
+    // text channel is redirected to `url`'s tab transform (plaintext fallback):
+    // the plain url with NO "LINK-TEXT:" marker proves it is url's channel, not
+    // link's own.
     expect(cf.transforms.text.tab({ tab: sampleTab, globalSeq: 1 })).toBe(
       "https://example.com",
     );
-    // html channel is link's own anchor markup
+    // html channel is link's own anchor markup (untouched by the fallback swap)
     expect(cf.transforms.html?.tab({ tab: sampleTab, globalSeq: 1 })).toBe(
       '<a href="https://example.com">Example</a>',
     );
   });
 
-  it("guards the link fallback against self-reference (no infinite recursion)", () => {
+  it("guards the link fallback against self-reference, redirecting to url (no recursion)", () => {
     // even if stored opts point the fallback back at `link`, resolution must
-    // not recurse — it falls through to the default `url` text transform.
+    // not recurse — it falls through to the default `url` text transform. The
+    // url channel emits the plain url; link's own channel would have emitted
+    // "LINK-TEXT:…", so the absence of that marker proves the guard redirected
+    // to url rather than leaving link's own (self-referential) channel in place.
     const cf = resolveConfiguredFormat(
       linkFormat,
       { plaintextFallback: "link" as FormatId },
@@ -110,6 +141,9 @@ describe("resolveConfiguredFormat", () => {
     );
     expect(cf.transforms.text.tab({ tab: sampleTab, globalSeq: 1 })).toBe(
       "https://example.com",
+    );
+    expect(cf.transforms.text.tab({ tab: sampleTab, globalSeq: 1 })).not.toContain(
+      "LINK-TEXT:",
     );
   });
 });

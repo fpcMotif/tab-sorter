@@ -43,6 +43,12 @@ export function resolveConfiguredFormat(
     const resolvedFallbackId: FormatId =
       fallbackId && fallbackId !== "link" ? fallbackId : "url";
     const fallbackFormat = getFormatById(resolvedFallbackId);
+    // TODO(M1 limitation): the fallback's text channel is resolved using the
+    // FALLBACK format's DEFAULT opts only. This resolver is synchronous and
+    // storage-less, so a fallback format's *stored* opts are NOT honored here
+    // (the donor re-resolves the fallback asynchronously via getFormatOpts). In
+    // practice the default fallback "url" carries no opts, so this is a no-op
+    // today; revisit if a fallback format ever gains text-affecting opts.
     transforms.text = fallbackFormat.transforms(fallbackFormat.defaultOpts).text;
   }
 
