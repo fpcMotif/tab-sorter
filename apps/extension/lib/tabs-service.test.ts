@@ -11,6 +11,7 @@ const query = vi.fn();
 const move = vi.fn();
 const create = vi.fn();
 const getWindowsAll = vi.fn();
+const getCurrentWindow = vi.fn();
 
 describe("tabs service", () => {
   beforeEach(() => {
@@ -18,9 +19,10 @@ describe("tabs service", () => {
     move.mockReset();
     create.mockReset();
     getWindowsAll.mockReset();
+    getCurrentWindow.mockReset();
     vi.stubGlobal("browser", {
       tabs: { query, move },
-      windows: { create, getAll: getWindowsAll },
+      windows: { create, getAll: getWindowsAll, getCurrent: getCurrentWindow },
     });
   });
 
@@ -110,12 +112,15 @@ describe("tabs service", () => {
         },
       ]);
       // tabs.query({ highlighted: true, currentWindow: true }) -> donor highlighted branch
-      query.mockResolvedValue([{ id: 2, windowId: 10 }]);
+      query.mockResolvedValue([{ id: 2 }]);
+      // windows.getCurrent() -> the focused window (source of currentWindowId)
+      getCurrentWindow.mockResolvedValue({ id: 10 });
 
       const snapshot = await getScopeSnapshot();
 
       expect(getWindowsAll).toHaveBeenCalledWith({ populate: true });
       expect(query).toHaveBeenCalledWith({ highlighted: true, currentWindow: true });
+      expect(getCurrentWindow).toHaveBeenCalled();
       expect(snapshot).toEqual({
         windows: [
           {
@@ -171,6 +176,7 @@ describe("tabs service", () => {
         { tabs: [{ id: 9, url: "https://x.test", title: "X", index: 0, pinned: false }] },
       ]);
       query.mockResolvedValue([]);
+      getCurrentWindow.mockResolvedValue({ id: 10 });
 
       const snapshot = await getScopeSnapshot();
 
@@ -192,18 +198,36 @@ describe("tabs service", () => {
       expect(snapshot.highlightedTabIds).toEqual([]);
     });
 
-    it("derives currentWindowId from the highlighted query and falls back to the first window", async () => {
-      // highlighted query is currentWindow-scoped, so its tabs reveal the current window id
+    it("takes currentWindowId from windows.getCurrent, not the getAll order", async () => {
+      // getAll returns window 10 first, but the focused window is 20 — currentWindowId
+      // must follow windows.getCurrent(), not the array order.
       getWindowsAll.mockResolvedValue([
         { id: 10, tabs: [{ id: 1, url: "https://a.test", title: "A", index: 0, pinned: false }] },
         { id: 20, tabs: [{ id: 2, url: "https://b.test", title: "B", index: 0, pinned: false }] },
       ]);
-      query.mockResolvedValue([{ id: 2, windowId: 20 }]);
+      query.mockResolvedValue([{ id: 2 }]);
+      getCurrentWindow.mockResolvedValue({ id: 20 });
 
       const snapshot = await getScopeSnapshot();
 
       expect(snapshot.currentWindowId).toBe(20);
       expect(snapshot.highlightedTabIds).toEqual([2]);
+    });
+
+    it("reports currentWindowId even when no tabs are highlighted", async () => {
+      // Ctrl+click can deselect the active tab → highlighted query returns []. The
+      // focused window id must still come through from windows.getCurrent().
+      getWindowsAll.mockResolvedValue([
+        { id: 10, tabs: [{ id: 1, url: "https://a.test", title: "A", index: 0, pinned: false }] },
+        { id: 20, tabs: [{ id: 2, url: "https://b.test", title: "B", index: 0, pinned: false }] },
+      ]);
+      query.mockResolvedValue([]);
+      getCurrentWindow.mockResolvedValue({ id: 20 });
+
+      const snapshot = await getScopeSnapshot();
+
+      expect(snapshot.currentWindowId).toBe(20);
+      expect(snapshot.highlightedTabIds).toEqual([]);
     });
 
     it("covers a tab missing favIconUrl (field absent from copy TabLite)", async () => {
@@ -223,6 +247,7 @@ describe("tabs service", () => {
         },
       ]);
       query.mockResolvedValue([]);
+      getCurrentWindow.mockResolvedValue({ id: 10 });
 
       const snapshot = await getScopeSnapshot();
       const tab = snapshot.windows[0]!.tabs[0]!;

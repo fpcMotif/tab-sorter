@@ -13,7 +13,6 @@ interface RawTab {
   pinned?: boolean;
   favIconUrl?: string;
   highlighted?: boolean;
-  windowId?: number;
 }
 
 interface RawWindow {
@@ -36,6 +35,8 @@ function toTabLite(tab: RawTab): TabLite | undefined {
 }
 
 // Maps a raw Chrome tab to the copy engine's TabLite (includes favIconUrl + highlighted).
+// Deliberately distinct from the sort path's private toTabLite above: the copy engine
+// uses its own TabLite (with favIconUrl/highlighted) from @/lib/copy/types.ts.
 // Tabs missing an id are dropped (returns undefined).
 export function toCopyTabLite(tab: RawTab): CopyTabLite | undefined {
   if (typeof tab.id !== "number") {
@@ -110,6 +111,10 @@ export async function getScopeSnapshot(): Promise<ScopeSnapshot> {
     highlighted: true,
     currentWindow: true,
   })) as RawTab[];
+  // currentWindowId must be the FOCUSED window (window-tabs scope depends on it).
+  // Cannot derive it from highlighted tabs: highlightedTabIds may legitimately be
+  // empty (Ctrl+click can deselect the active tab), and getAll order is not stable.
+  const currentWindow = (await browser.windows.getCurrent()) as RawWindow;
 
   const windows: WindowLite[] = rawWindows.flatMap((win) => {
     if (typeof win.id !== "number") {
@@ -128,12 +133,7 @@ export async function getScopeSnapshot(): Promise<ScopeSnapshot> {
     typeof tab.id === "number" ? [tab.id] : [],
   );
 
-  // currentWindowId: derived from the windowId of any highlighted tab (they all share
-  // the current window). Falls back to the first window id, then -1 if snapshot is empty.
-  const currentWindowId =
-    highlightedTabs.find((tab) => typeof tab.windowId === "number")?.windowId ??
-    windows[0]?.id ??
-    -1;
+  const currentWindowId = currentWindow.id ?? -1;
 
   return { windows, currentWindowId, highlightedTabIds };
 }
