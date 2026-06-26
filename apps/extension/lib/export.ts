@@ -1,3 +1,7 @@
+// DEVIATION #7 (spec §9): buildUrlExport's domain-grouped Markdown/text is now
+// LEGACY. The canonical file path is FileSink (lib/sinks/file-download-sink.ts),
+// which writes Module G render() output (donor-parity Markdown). This grouped
+// variant is retained as a future "group-by-domain" format opt — NOT deleted.
 import { getDomain } from "./domain.ts";
 import type { ExportEntry, ExportFormat, TabLite } from "./types.ts";
 
