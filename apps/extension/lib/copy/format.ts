@@ -213,8 +213,12 @@ function htmlTableTabHtml(
 }
 
 // --- builtin registry (donor format.ts:49-331)
+//
+// Each format is typed by its own opts via the defineFormat<O> arg; assigning the
+// resulting Format<O> into Format[] (Format<unknown>[]) needs no cast — method-form
+// `transforms(opts?: O)` is checked bivariantly, so the typed callbacks widen.
 
-const builtinFormats: Format<unknown>[] = [
+const builtinFormats: Format[] = [
   defineFormat<{ plaintextFallback: string }>({
     id: "link",
     label: () => "Link",
@@ -229,13 +233,13 @@ const builtinFormats: Format<unknown>[] = [
       },
     }),
     defaultOpts: { plaintextFallback: DEFAULT_LINK_PLAINTEXT_FALLBACK },
-  }) as Format<unknown>,
+  }),
 
   defineFormat({
     id: "url",
     label: () => "URL",
     transforms: (): Transforms => ({ text: urlTextHooks }),
-  }) as Format<unknown>,
+  }),
 
   defineFormat<{ separator: string }>({
     id: "titleUrl1Line",
@@ -250,7 +254,7 @@ const builtinFormats: Format<unknown>[] = [
       },
     }),
     defaultOpts: { separator: DEFAULT_TITLE_URL_1_LINE_SEPARATOR },
-  }) as Format<unknown>,
+  }),
 
   defineFormat({
     id: "titleUrl2Line",
@@ -263,7 +267,7 @@ const builtinFormats: Format<unknown>[] = [
         windowDelimiter: "\n\n",
       },
     }),
-  }) as Format<unknown>,
+  }),
 
   defineFormat({
     id: "title",
@@ -276,7 +280,7 @@ const builtinFormats: Format<unknown>[] = [
         windowDelimiter: "\n\n",
       },
     }),
-  }) as Format<unknown>,
+  }),
 
   defineFormat({
     id: "markdown",
@@ -294,7 +298,7 @@ const builtinFormats: Format<unknown>[] = [
         windowDelimiter: "\n\n",
       },
     }),
-  }) as Format<unknown>,
+  }),
 
   defineFormat({
     id: "csv",
@@ -317,7 +321,7 @@ const builtinFormats: Format<unknown>[] = [
         windowDelimiter: "\n",
       },
     }),
-  }) as Format<unknown>,
+  }),
 
   defineFormat<{
     properties: ("title" | "url" | "favIconUrl")[];
@@ -339,6 +343,13 @@ const builtinFormats: Format<unknown>[] = [
           // donor format.ts:224-268
           start: () => "[",
           windowStart: ({ seq }: WindowCtx) =>
+            // Open the window object and LEAVE its "tabs" array open: serialize a
+            // window with an empty `tabs: []`, then strip the closing `[]…}` so the
+            // string ends at `"tabs": [`. The `tab` hooks append each tab, and the
+            // matching `windowEnd` hook below closes the array (`]`) and object
+            // (`}`). The regex matches `[]` + optional whitespace/newlines + the
+            // trailing `}` at end-of-string and replaces it with a bare `[`.
+            // (donor format.ts:226-237)
             `${newline}${indent(
               JSON.stringify(
                 { title: numberedWindowText(seq), tabs: [] },
@@ -378,7 +389,7 @@ const builtinFormats: Format<unknown>[] = [
     },
     // donor format.ts:286
     isInvalid: (opts) => !!opts.pretty && !parseIndent(opts.indent),
-  }) as Format<unknown>,
+  }),
 
   defineFormat<{ includeHeader: boolean }>({
     id: "htmlTable",
@@ -407,7 +418,7 @@ const builtinFormats: Format<unknown>[] = [
       },
     }),
     defaultOpts: { includeHeader: false },
-  }) as Format<unknown>,
+  }),
 ];
 
 // --- lookup (donor getFormat, but SOUND: explicit throw instead of `as`)

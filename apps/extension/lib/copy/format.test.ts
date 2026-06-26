@@ -8,7 +8,12 @@ import {
   type Format,
   type FormatId,
 } from "@/lib/copy/format.ts";
-import type { StartCtx, TabCtx, TabLite } from "@/lib/copy/types.ts";
+import type {
+  StartCtx,
+  TabCtx,
+  TabLite,
+  WindowCtx,
+} from "@/lib/copy/types.ts";
 
 describe("defineFormat", () => {
   it("is an identity helper that infers opts type for typed callbacks", () => {
@@ -17,9 +22,39 @@ describe("defineFormat", () => {
       label: () => "URL",
       transforms: () => ({ text: { tab: ({ tab }: TabCtx) => tab.url } }),
     });
-    // identity: returns exactly what was passed
+    // identity (no defaultOpts): returns exactly what was passed
     expect(spec.id).toBe("url");
     expect(spec.label()).toBe("URL");
+  });
+
+  it("substitutes defaultOpts when a callback is invoked with no opts", () => {
+    // The reason defineFormat is NOT a pure identity for opts-carrying formats:
+    // a bare label()/transforms() must reflect defaultOpts, mirroring the donor
+    // pipeline where opts are always resolved before transforms run.
+    const spec = defineFormat({
+      id: "custom-x" as FormatId,
+      label: (o?: { sep: string }) => `A${o?.sep ?? "?"}B`,
+      transforms: (o?: { sep: string }) => ({
+        text: { tab: ({ tab }: TabCtx) => `${tab.title}${o?.sep ?? "?"}${tab.url}` },
+      }),
+      defaultOpts: { sep: " :: " },
+    });
+
+    const sampleTab = {
+      id: 1,
+      url: "https://x.test",
+      title: "X",
+      index: 0,
+      pinned: false,
+    };
+
+    // No opts -> defaultOpts.sep applied (would be "A?B" / "X?..." if identity).
+    expect(spec.label()).toBe("A :: B");
+    expect(spec.transforms().text.tab({ tab: sampleTab, globalSeq: 1 })).toBe(
+      "X :: https://x.test",
+    );
+    // Explicit opts still override the default (no injection when opts present).
+    expect(spec.label({ sep: " | " })).toBe("A | B");
   });
 });
 
@@ -190,7 +225,13 @@ const tabFav: TabLite = {
 };
 
 function start(scope: "tab" | "window", tabCount: number): StartCtx {
+  // formatName unused by builtins (only the custom-format template engine reads it).
   return { formatName: "test", tabCount, scope };
+}
+
+// Window context helper for pinning windowStart/windowEnd output directly.
+function win(seq: number): WindowCtx {
+  return { window: { id: seq, tabs: [] }, seq, windowCount: 1, windowTabCount: 0 };
 }
 
 describe("csv format", () => {
@@ -230,6 +271,26 @@ describe("json format", () => {
     );
     expect(t.tabDelimiter).toBe(",");
     expect(t.end!(start("tab", 1))).toBe("\n]");
+  });
+
+  it("opens the window 'tabs' array in windowStart and closes it in windowEnd, pretty (donor:226-264)", () => {
+    // Pins the `.replace(/\[\][\s\n]*\}$/, "[")` graft: windowStart must end at
+    // `"tabs": [` (array left open), windowEnd must close `]` then `}`.
+    const t = getFormat("json").transforms().text;
+    expect(t.windowStart!(win(3))).toBe(
+      '\n  {\n    "title": "Window 3",\n    "tabs": [',
+    );
+    expect(t.windowEnd!(win(3))).toBe("\n    ]\n  }");
+  });
+
+  it("opens/closes the window 'tabs' array in compact mode too (donor:226-264)", () => {
+    const t = getFormat("json").transforms({
+      properties: ["title", "url"],
+      pretty: false,
+      indent: "2",
+    }).text;
+    expect(t.windowStart!(win(3))).toBe('{"title":"Window 3","tabs":[');
+    expect(t.windowEnd!(win(3))).toBe("]}");
   });
 
   it("includes favIconUrl when present and selected (donor:251-253)", () => {
