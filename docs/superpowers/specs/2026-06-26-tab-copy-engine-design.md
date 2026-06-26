@@ -280,6 +280,18 @@ logic carries the suite. Locale/TZ pinned for date/time tokens.
 7. Donor-parity Markdown becomes canonical; the existing `export.ts`
    domain-grouped Markdown is demoted to a future format opt (avoids two
    incompatible Markdowns).
+8. The donor builtins `bbcode` and the standalone `html` (single `<h2>`-style)
+   format are intentionally **not ported** — the 9 ported builtins (`link`,
+   `url`, `titleUrl1Line`, `titleUrl2Line`, `title`, `markdown`, `csv`, `json`,
+   `htmlTable`) are the scoped set for M1 work. Byte-deviation on any copy
+   request that referenced those two formats in the donor.
+9. Module K uses a **separate copy-engine `TabLite`** in `lib/copy/types.ts`
+   (carrying `favIconUrl` and `highlighted`) rather than widening the sort
+   feature's `lib/types.ts` `TabLite`. The sort and copy pipelines never bridge,
+   so duplicating the fields in the sort type would be confusing. This diverges
+   from the plan's file-table wording (which listed both features sharing one
+   `TabLite`) — that wording is an inaccuracy in the plan, not an intent to
+   couple the pipelines.
 
 ## 10. Permissions / manifest deltas (`wxt.config.ts`)
 
