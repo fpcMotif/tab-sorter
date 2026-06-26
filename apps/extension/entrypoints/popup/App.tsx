@@ -5,6 +5,7 @@ import "./App.css";
 import { InvalidPatternError, matchByRegex } from "@/lib/match";
 import { getPopupData, runExtract, runSort, type PopupData } from "@/lib/orchestration";
 import type { DomainGroup, SortMode } from "@/lib/types";
+import { CopyPanel } from "./CopyPanel";
 
 type StatusTone = "idle" | "success" | "error";
 
@@ -241,6 +242,8 @@ function App() {
       >
         {status.message}
       </p>
+
+      <CopyPanel />
     </main>
   );
 }
