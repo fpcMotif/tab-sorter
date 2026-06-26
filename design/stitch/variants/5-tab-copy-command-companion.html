@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tab Sorter — Copy popup (Companion: command palette)</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root{--bg:#15181D;--panel:#1C2027;--panel-2:#1E293B;--hair:#2A2F37;--hair-2:#23272F;--text:#E6E8EB;--text-2:#CBD5E1;--mut:#9CA3AF;--mut-2:#6B7280;--indigo:#A5B4FC;--indigo-chip:#312E81;--indigo-line:#4338CA;--indigo-text:#C7D2FE;}
+  *{box-sizing:border-box;}
+  body{margin:0;min-height:100vh;background:#0C0E12;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono','Inter',monospace;color:var(--text);}
+  .pop{width:360px;background:var(--bg);border:1px solid var(--hair);border-radius:12px;overflow:hidden;}
+  .chip{font-size:11px;padding:4px 9px;border-radius:999px;background:var(--panel);color:var(--mut);border:1px solid var(--hair);}
+  .kbd{font-size:11px;color:var(--mut);background:var(--panel);border:1px solid var(--hair);border-radius:5px;padding:2px 6px;}
+  .cmd{display:flex;align-items:center;gap:10px;padding:9px 10px;}
+</style></head>
+<body>
+<div class="pop">
+  <div style="padding:12px 12px 11px;border-bottom:1px solid var(--hair-2);">
+    <div style="display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--hair);border-radius:8px;padding:9px 10px;">
+      <span style="color:var(--mut-2);">&#9906;</span><span style="font-size:13px;color:var(--mut-2);">Copy tabs as…</span><span class="kbd" style="margin-left:auto;">esc</span>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+      <span class="chip">highlighted · 3</span>
+      <span class="chip" style="background:var(--indigo-chip);color:var(--indigo-text);border-color:var(--indigo-line);">window · 12</span>
+      <span class="chip">all tabs · 28</span>
+      <span class="chip">all windows · 41</span>
+    </div>
+  </div>
+  <div style="padding:6px;">
+    <div class="cmd" style="border-radius:8px;background:var(--panel-2);"><span style="color:var(--indigo);">&#128279;</span><span style="flex:1;font-size:13px;">Link</span><span style="font-size:11px;color:var(--mut);">rich html</span><span class="kbd" style="color:var(--indigo-text);background:var(--indigo-chip);border-color:var(--indigo-line);">&#8997;1</span></div>
+    <div class="cmd"><span style="color:var(--mut-2);">&#127760;</span><span style="flex:1;font-size:13px;color:var(--text-2);">URL</span><span class="kbd">&#8997;2</span></div>
+    <div class="cmd"><span style="color:var(--mut-2);">&#9776;</span><span style="flex:1;font-size:13px;color:var(--text-2);">Title and URL</span><span class="kbd">&#8997;3</span></div>
+    <div class="cmd"><span style="color:var(--mut-2);">M&#8595;</span><span style="flex:1;font-size:13px;color:var(--text-2);">Markdown</span><span class="kbd">&#8997;4</span></div>
+    <div class="cmd"><span style="color:var(--mut-2);">&#9636;</span><span style="flex:1;font-size:13px;color:var(--text-2);">CSV</span><span class="kbd">&#8997;5</span></div>
+    <div class="cmd"><span style="color:var(--mut-2);">{ }</span><span style="flex:1;font-size:13px;color:var(--text-2);">JSON</span><span class="kbd">&#8997;6</span></div>
+  </div>
+  <div style="padding:9px 12px;border-top:1px solid var(--hair-2);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--mut-2);">
+    <span>&#8593;&#8595; navigate · &#8629; copy</span><span style="color:var(--indigo);">12 tabs ready</span>
+  </div>
+</div>
+</body></html>
