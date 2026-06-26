@@ -6,6 +6,22 @@ import type {
   WindowLite,
 } from "./types.ts";
 
+// Human-readable labels for each scope (consumed by getCopyPopupData in Module L).
+export const SCOPE_LABELS: Record<ScopeId, string> = {
+  "highlighted-tabs": "Highlighted",
+  "window-tabs": "This window",
+  "all-tabs": "All tabs",
+  "all-windows-and-tabs": "All windows",
+};
+
+// Catalog used by getCopyPopupData to fan one snapshot through selectScope×4.
+export const SCOPES: readonly { id: ScopeId; label: string }[] = [
+  { id: "highlighted-tabs", label: SCOPE_LABELS["highlighted-tabs"] },
+  { id: "window-tabs", label: SCOPE_LABELS["window-tabs"] },
+  { id: "all-tabs", label: SCOPE_LABELS["all-tabs"] },
+  { id: "all-windows-and-tabs", label: SCOPE_LABELS["all-windows-and-tabs"] },
+];
+
 function hasUrl(tab: TabLite): boolean {
   return typeof tab.url === "string" && tab.url.length > 0;
 }

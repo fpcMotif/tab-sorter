@@ -430,3 +430,7 @@ export function getFormat(id: FormatId): Format {
   }
   return found;
 }
+
+// Exported so orchestration (Module L) can build the visible format list without
+// re-importing the internal registry. Order matches the registry declaration order.
+export const BUILTIN_FORMATS: readonly Format[] = builtinFormats;
