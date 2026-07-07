@@ -31,4 +31,3 @@ export interface DomainGroup {
   count: number;
   tabIds: number[];
 }
-
