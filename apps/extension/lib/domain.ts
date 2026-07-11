@@ -28,7 +28,11 @@ export function getDomain(url: string): string {
       return `(${parsed.protocol.replace(":", "")})`;
     }
 
-    return host.startsWith("www.") ? host.slice(4) : host;
+    // A fully-qualified `example.com.` and a bare `example.com` are the same site;
+    // drop the root-zone trailing dot so they share one group.
+    const rooted = host.length > 1 && host.endsWith(".") ? host.slice(0, -1) : host;
+
+    return rooted.startsWith("www.") ? rooted.slice(4) : rooted;
   } catch {
     return "(unknown)";
   }
