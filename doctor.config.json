@@ -1,3 +1,17 @@
 {
-  "projects": ["apps/extension"]
+  "$schema": "https://react.doctor/schema/config.json",
+  "projects": [
+    "apps/extension"
+  ],
+  "rules": {},
+  "ignore": {
+    "files": ["**/.output/**", "**/.wxt/**"],
+    "overrides": [
+      {
+        "files": ["entrypoints/**", "hooks/**"],
+        "rules": ["deslop/unused-file"]
+      }
+    ],
+    "rules": ["deslop/unused-dev-dependency"]
+  }
 }

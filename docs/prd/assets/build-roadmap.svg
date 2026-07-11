@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 336" width="720" height="336" role="img" aria-labelledby="rt rd">
+<title id="rt">Build roadmap</title>
+<desc id="rd">Layer 1 ships first. Two foundation milestones — M-1.5 seam contract and M-multiwin — gate six surfaces built in order: sessions, tabctl, mcp, rules, ai bar, recall. Diamonds mark surfaces blocked on a milestone.</desc>
+<defs>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3 L0,6 Z" fill="#9a9486"/></marker>
+</defs>
+<rect x="0" y="0" width="720" height="336" rx="14" fill="#F6F4EF"/>
+<text x="24" y="32" font-family="Georgia, 'Times New Roman', serif" font-size="17" fill="#2E2A24">Build roadmap — Layer 1 first, then gated surfaces</text>
+<text x="24" y="52" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#6A6458">Two foundation milestones gate the six surfaces; order is recommended (CLI 2→3 and the AI bar 5 parallelize).</text>
+
+<rect x="160" y="66" width="400" height="46" rx="12" fill="#7A8B7A"/>
+<text x="360" y="88" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="14" fill="#FFFFFF">Layer 1 — TabPlan · tidy · groups · undo</text>
+<text x="360" y="104" text-anchor="middle" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="11" fill="#E7EDE4">+tabGroups · zero network cost · ships first</text>
+
+<path d="M360,112 L360,132" stroke="#9a9486" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+
+<rect x="150" y="134" width="185" height="46" rx="10" fill="#EFE7DD" stroke="#C9A98A"/>
+<text x="242" y="156" text-anchor="middle" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7A4F2E">M-1.5 — seam contract</text>
+<text x="242" y="172" text-anchor="middle" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="11" fill="#8A6A4E">dryRun · confirm-token</text>
+<rect x="385" y="134" width="185" height="46" rx="10" fill="#EFE7DD" stroke="#C9A98A"/>
+<text x="477" y="156" text-anchor="middle" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12.5" fill="#7A4F2E">M-multiwin</text>
+<text x="477" y="172" text-anchor="middle" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="11" fill="#8A6A4E">windows[] · cross-window</text>
+
+<path d="M360,180 L360,204" stroke="#9a9486" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+
+<g font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12.5" fill="#3A463A" text-anchor="middle">
+<rect x="24"  y="208" width="100" height="46" rx="10" fill="#EDF0EC" stroke="#CBD6C8"/><text x="74"  y="235">1 · sessions</text>
+<rect x="138" y="208" width="100" height="46" rx="10" fill="#EDF0EC" stroke="#CBD6C8"/><text x="188" y="235">2 · tabctl</text>
+<rect x="252" y="208" width="100" height="46" rx="10" fill="#EDF0EC" stroke="#CBD6C8"/><text x="302" y="235">3 · mcp</text>
+<rect x="366" y="208" width="100" height="46" rx="10" fill="#EDF0EC" stroke="#CBD6C8"/><text x="416" y="235">4 · rules</text>
+<rect x="480" y="208" width="100" height="46" rx="10" fill="#EDF0EC" stroke="#CBD6C8"/><text x="530" y="235">5 · ai bar</text>
+<rect x="594" y="208" width="100" height="46" rx="10" fill="#EDF0EC" stroke="#CBD6C8"/><text x="644" y="235">6 · recall</text>
+</g>
+<g font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#B07A4E" text-anchor="middle">
+<text x="112" y="223">◆</text><text x="226" y="223">◆</text><text x="340" y="223">◆</text><text x="682" y="223">◆</text>
+</g>
+<g stroke="#B7B0A2" stroke-width="1.3" fill="none" marker-end="url(#ar)">
+<path d="M124,231 L137,231"/><path d="M238,231 L251,231"/><path d="M352,231 L365,231"/><path d="M466,231 L479,231"/><path d="M580,231 L593,231"/>
+</g>
+
+<text x="24" y="298" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="11.5" fill="#B07A4E">◆ blocked on a foundation milestone</text>
+<text x="24" y="316" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="11.5" fill="#6A6458">Surfaces lower to the same TabPlan, so whichever track ships second is mostly wiring.</text>
+</svg>

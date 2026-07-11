@@ -1,0 +1,3 @@
+{
+  "ignorePatterns": [".output", ".wxt", "node_modules", "dist", "coverage"]
+}

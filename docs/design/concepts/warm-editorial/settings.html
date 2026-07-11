@@ -1,0 +1,433 @@
+<title>Tab Sorter — Settings (Warm Editorial)</title>
+<meta name="color-scheme" content="light dark">
+<style>
+  :root{
+    --paper:#FAF9F5; --paper-raised:#FFFFFF; --paper-sunken:#F1ECE3;
+    --backdrop:#EFE9DD;
+    --ink:#211E1A; --ink-muted:#5C564A; --ink-faint:#948C7E;
+    --hairline:rgba(33,30,26,0.14); --hairline-strong:rgba(33,30,26,0.26);
+    --accent:#B85630; --accent-strong:#9C4726; --accent-tint:#F4E3D6; --accent-on:#FFF8F0;
+    --danger:#A83B2A; --danger-tint:#F5E1DC; --danger-on:#FFF8F0;
+    --shadow-sm:0 1px 2px rgba(33,30,26,0.08);
+    --shadow-md:0 2px 5px rgba(33,30,26,0.06), 0 12px 28px rgba(33,30,26,0.10);
+    --focus-ring:#9C4726;
+    --font-serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%235C564A' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#1B1714; --paper-raised:#241F1A; --paper-sunken:#161210;
+      --backdrop:#121010;
+      --ink:#F3EEE4; --ink-muted:#C2B9AA; --ink-faint:#8A8175;
+      --hairline:rgba(255,255,255,0.12); --hairline-strong:rgba(255,255,255,0.22);
+      --accent:#D97757; --accent-strong:#E5966F; --accent-tint:#3A2A20; --accent-on:#1B1714;
+      --danger:#C4432E; --danger-tint:#3A211B; --danger-on:#FFF3EC;
+      --shadow-sm:0 1px 2px rgba(0,0,0,0.45);
+      --shadow-md:0 2px 6px rgba(0,0,0,0.4), 0 14px 30px rgba(0,0,0,0.55);
+      --focus-ring:#E5966F;
+      --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23C2B9AA' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1B1714; --paper-raised:#241F1A; --paper-sunken:#161210;
+    --backdrop:#121010;
+    --ink:#F3EEE4; --ink-muted:#C2B9AA; --ink-faint:#8A8175;
+    --hairline:rgba(255,255,255,0.12); --hairline-strong:rgba(255,255,255,0.22);
+    --accent:#D97757; --accent-strong:#E5966F; --accent-tint:#3A2A20; --accent-on:#1B1714;
+    --danger:#C4432E; --danger-tint:#3A211B; --danger-on:#FFF3EC;
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23C2B9AA' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  }
+  :root[data-theme="light"]{
+    --paper:#FAF9F5; --paper-raised:#FFFFFF; --paper-sunken:#F1ECE3;
+    --backdrop:#EFE9DD;
+    --ink:#211E1A; --ink-muted:#5C564A; --ink-faint:#948C7E;
+    --hairline:rgba(33,30,26,0.14); --hairline-strong:rgba(33,30,26,0.26);
+    --accent:#B85630; --accent-strong:#9C4726; --accent-tint:#F4E3D6; --accent-on:#FFF8F0;
+    --danger:#A83B2A; --danger-tint:#F5E1DC; --danger-on:#FFF8F0;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background-color:var(--backdrop);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat:repeat;
+    color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  button, input, select { font:inherit; color:inherit; }
+  button{ cursor:pointer; }
+  :focus-visible{ outline:2px solid var(--focus-ring); outline-offset:2px; border-radius:5px; }
+  :focus:not(:focus-visible){ outline:none; }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+  }
+
+  .page{ max-width:640px; margin:0 auto; padding:72px 24px 120px; }
+
+  .page-header{ margin-bottom:8px; }
+  .eyebrow{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 10px; display:flex; align-items:center; gap:7px; }
+  .eyebrow .mark{ color:var(--accent); font-size:13px; }
+  h1{ font-family:var(--font-serif); font-size:34px; font-weight:400; margin:0 0 10px; letter-spacing:.005em; }
+  .page-sub{ color:var(--ink-muted); font-size:14.5px; line-height:1.55; margin:0; max-width:46ch; }
+
+  .section-divider{ display:flex; align-items:center; gap:14px; color:var(--ink-faint); margin:8px 0 8px; font-size:13px; }
+  .section-divider::before, .section-divider::after{ content:""; flex:1; height:1px; background:var(--hairline); }
+
+  .pref-section{ padding:36px 0 8px; }
+  .section-head{ display:flex; align-items:baseline; gap:10px; margin:0 0 6px; }
+  h2{ font-family:var(--font-serif); font-size:21px; font-weight:400; margin:0; }
+  .saved-tag{
+    font-size:11.5px; font-weight:600; color:var(--accent); opacity:0; transform:translateY(-2px);
+    transition:opacity 160ms ease, transform 160ms ease; display:inline-flex; align-items:center; gap:4px;
+  }
+  .saved-tag.visible{ opacity:1; transform:translateY(0); }
+  .saved-tag svg{ width:12px; height:12px; }
+
+  .pref-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:28px; padding:18px 0; border-top:1px solid var(--hairline); }
+  .pref-row:first-of-type{ border-top:none; padding-top:14px; }
+  .pref-text label{ font-size:14.5px; font-weight:600; display:block; margin-bottom:5px; cursor:pointer; }
+  .consequence{ font-size:13px; color:var(--ink-muted); margin:0; max-width:40ch; line-height:1.5; }
+  .warning{ font-size:12.5px; color:var(--danger); margin:6px 0 0; max-width:40ch; line-height:1.5; display:flex; gap:5px; }
+  .pref-control{ flex-shrink:0; padding-top:1px; }
+
+  /* switch */
+  .switch{ position:relative; display:inline-block; width:38px; height:22px; flex-shrink:0; }
+  .switch input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; z-index:1; }
+  .switch .track{ position:absolute; inset:0; background:var(--paper-sunken); border:1px solid var(--hairline-strong); border-radius:999px; transition:background 140ms ease, border-color 140ms ease; }
+  .switch .thumb{ position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--ink-faint); transition:transform 140ms ease, background 140ms ease; }
+  .switch input:checked + .track{ background:var(--accent-tint); border-color:var(--accent); }
+  .switch input:checked + .track .thumb{ transform:translateX(16px); background:var(--accent); }
+  .switch input:focus-visible + .track{ outline:2px solid var(--focus-ring); outline-offset:2px; }
+
+  /* segmented */
+  .segmented{ display:inline-flex; border:1px solid var(--hairline-strong); border-radius:8px; overflow:hidden; }
+  .segmented button{ padding:8px 15px; font-size:13px; background:var(--paper-raised); border:0; border-right:1px solid var(--hairline-strong); transition:background 140ms ease, color 140ms ease; }
+  .segmented button:last-child{ border-right:0; }
+  .segmented button[aria-pressed="true"]{ background:var(--accent); color:var(--accent-on); font-weight:600; }
+  .segmented button:not([aria-pressed="true"]):hover{ background:var(--paper-sunken); }
+
+  /* stepper */
+  .stepper{ display:inline-flex; align-items:center; border:1px solid var(--hairline-strong); border-radius:8px; overflow:hidden; }
+  .stepper button{ width:30px; height:32px; background:var(--paper-raised); font-size:16px; line-height:1; }
+  .stepper button:hover{ background:var(--paper-sunken); }
+  .stepper input{ width:46px; height:32px; text-align:center; border:0; border-left:1px solid var(--hairline-strong); border-right:1px solid var(--hairline-strong); background:var(--paper); font-variant-numeric:tabular-nums; font-size:13px; -moz-appearance:textfield; }
+  .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+
+  /* select */
+  select.select{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    background-color:var(--paper-raised); background-image:var(--chevron); background-repeat:no-repeat;
+    background-position:right 10px center; background-size:11px;
+    border:1px solid var(--hairline-strong); border-radius:8px; padding:8px 30px 8px 12px; font-size:13px;
+  }
+
+  /* regex presets */
+  .preset-form{ display:grid; grid-template-columns:1fr 1.5fr 62px auto; gap:8px; margin:6px 0 20px; }
+  .preset-form input{ border:1px solid var(--hairline-strong); border-radius:8px; padding:9px 10px; font-size:13px; background:var(--paper-raised); width:100%; }
+  .preset-form input.mono{ font-family:var(--font-mono); font-size:12px; }
+  .preset-form button{ background:var(--accent); color:var(--accent-on); border:0; border-radius:8px; padding:0 14px; font-size:13px; font-weight:600; transition:background 140ms ease; }
+  .preset-form button:hover{ background:var(--accent-strong); }
+  .form-hint{ font-size:11.5px; color:var(--ink-faint); margin:-14px 0 20px; grid-column:1/-1; }
+
+  .preset-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .preset-row{ display:flex; align-items:center; gap:12px; padding:11px 12px; border:1px solid var(--hairline); border-radius:9px; background:var(--paper-raised); }
+  .preset-label{ font-weight:600; font-size:13px; min-width:78px; flex-shrink:0; }
+  .preset-pattern-wrap{ flex:1; min-width:0; overflow-x:auto; }
+  .preset-pattern{ font-family:var(--font-mono); font-size:12px; background:var(--paper-sunken); padding:4px 8px; border-radius:6px; white-space:nowrap; display:inline-block; }
+  .preset-flags{ font-family:var(--font-mono); font-size:11px; color:var(--ink-muted); flex-shrink:0; }
+  .delete-btn{ margin-left:auto; width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:var(--ink-faint); background:transparent; border:0; flex-shrink:0; transition:background 140ms ease, color 140ms ease; }
+  .delete-btn:hover{ background:var(--danger-tint); color:var(--danger); }
+  .delete-btn svg{ width:15px; height:15px; }
+
+  /* shortcuts */
+  .shortcut-list{ display:flex; flex-direction:column; }
+  .shortcut-row{ display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-top:1px solid var(--hairline); }
+  .shortcut-row:first-child{ border-top:none; }
+  .shortcut-name{ font-size:13.5px; }
+  .keys{ display:flex; gap:4px; }
+  kbd{ font-family:var(--font-mono); font-size:11px; background:var(--paper-sunken); border:1px solid var(--hairline-strong); border-bottom-width:2px; border-radius:5px; padding:4px 7px; box-shadow:var(--shadow-sm); }
+  .note{ font-size:12.5px; color:var(--ink-muted); margin:18px 0 0; line-height:1.6; }
+  code{ background:var(--paper-sunken); padding:1.5px 6px; border-radius:4px; font-family:var(--font-mono); font-size:11.5px; }
+
+  .page-footer{ margin-top:56px; padding-top:24px; border-top:1px solid var(--hairline); text-align:center; }
+  .page-footer p{ margin:0; font-size:11.5px; color:var(--ink-faint); }
+  .page-footer .mark{ color:var(--accent); margin:0 6px; }
+</style>
+
+<div class="page">
+
+  <header class="page-header">
+    <p class="eyebrow"><span class="mark">⁂</span>Tab Sorter</p>
+    <h1>Settings</h1>
+    <p class="page-sub">Preferences for sorting, tidying, and duplicate detection. Changes save immediately — no separate button to remember.</p>
+  </header>
+
+  <!-- ============ SORTING ============ -->
+  <section class="pref-section" id="sec-sorting">
+    <div class="section-head"><h2>Sorting</h2><span class="saved-tag"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4 4 8-8"/></svg>Saved</span></div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label id="lbl-default-sort">Default sort</label>
+        <p class="consequence">Applied automatically to windows you sort without choosing an order first.</p>
+      </div>
+      <div class="pref-control">
+        <div class="segmented" role="group" aria-labelledby="lbl-default-sort">
+          <button type="button" aria-pressed="true">A to Z</button>
+          <button type="button" aria-pressed="false">By domain</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label for="toggle-pinned">Keep pinned tabs fixed</label>
+        <p class="consequence">Pinned tabs stay exactly where they are and are never moved by sort or tidy.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-pinned" checked>
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"><span>⁂</span></div>
+
+  <!-- ============ TIDY ============ -->
+  <section class="pref-section" id="sec-tidy">
+    <div class="section-head"><h2>Tidy</h2><span class="saved-tag"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4 4 8-8"/></svg>Saved</span></div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label for="toggle-collapse">Collapse groups after tidy</label>
+        <p class="consequence">New groups start collapsed so the tab strip stays short.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-collapse" checked>
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label id="lbl-min-tabs">Minimum tabs to form a group</label>
+        <p class="consequence">Sites with fewer tabs than this stay ungrouped, sorted in place instead.</p>
+      </div>
+      <div class="pref-control">
+        <div class="stepper" role="group" aria-labelledby="lbl-min-tabs">
+          <button type="button" data-step="-1" aria-label="Decrease">−</button>
+          <input type="number" id="input-min-tabs" value="2" min="1" max="99" inputmode="numeric">
+          <button type="button" data-step="1" aria-label="Increase">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label for="select-group-order">Group order</label>
+        <p class="consequence">Determines the left-to-right order new groups appear in the tab strip.</p>
+      </div>
+      <div class="pref-control">
+        <select class="select" id="select-group-order">
+          <option>Alphabetical</option>
+          <option>Largest first</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label for="toggle-regroup">Also regroup tabs already in groups</label>
+        <p class="consequence">Includes tabs you've already grouped when a tidy runs.</p>
+        <p class="warning">⚠ Reshuffles tab groups you built by hand — use with care.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-regroup">
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"><span>⁂</span></div>
+
+  <!-- ============ DUPLICATES ============ -->
+  <section class="pref-section" id="sec-duplicates">
+    <div class="section-head"><h2>Duplicates</h2><span class="saved-tag"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4 4 8-8"/></svg>Saved</span></div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label for="toggle-fragment">Ignore #fragment</label>
+        <p class="consequence"><code>example.com/a#top</code> and <code>example.com/a</code> count as the same page.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-fragment" checked>
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label for="toggle-query">Ignore ?query</label>
+        <p class="consequence"><code>example.com/a?ref=1</code> and <code>example.com/a</code> count as the same page.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-query">
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"><span>⁂</span></div>
+
+  <!-- ============ REGEX PRESETS ============ -->
+  <section class="pref-section" id="sec-regex">
+    <div class="section-head"><h2>Regex presets</h2><span class="saved-tag"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4 4 8-8"/></svg>Saved</span></div>
+    <p class="consequence" style="margin-bottom:16px;">Presets appear as chips in the popup's "Extract by pattern" panel.</p>
+
+    <form class="preset-form" id="preset-form">
+      <input type="text" placeholder="Label" id="preset-label" aria-label="Preset label" required>
+      <input type="text" class="mono" placeholder="Pattern" id="preset-pattern" aria-label="Preset pattern" required>
+      <input type="text" class="mono" placeholder="flags" id="preset-flags" aria-label="Preset flags" value="i">
+      <button type="submit">Add</button>
+    </form>
+
+    <ul class="preset-list" id="preset-list">
+      <li class="preset-row">
+        <span class="preset-label">GitHub PRs</span>
+        <span class="preset-pattern-wrap"><span class="preset-pattern">github\.com/.*/pull/</span></span>
+        <span class="preset-flags">i</span>
+        <button class="delete-btn" aria-label="Delete preset" type="button"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M8 6V4.6A1.4 1.4 0 0 1 9.4 3.2h1.2A1.4 1.4 0 0 1 12 4.6V6M6.2 6l.6 9.4A1.4 1.4 0 0 0 8.2 16.8h3.6a1.4 1.4 0 0 0 1.4-1.4L14 6"/></svg></button>
+      </li>
+      <li class="preset-row">
+        <span class="preset-label">Docs</span>
+        <span class="preset-pattern-wrap"><span class="preset-pattern">docs\.(google|microsoft)\.com</span></span>
+        <span class="preset-flags">i</span>
+        <button class="delete-btn" aria-label="Delete preset" type="button"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M8 6V4.6A1.4 1.4 0 0 1 9.4 3.2h1.2A1.4 1.4 0 0 1 12 4.6V6M6.2 6l.6 9.4A1.4 1.4 0 0 0 8.2 16.8h3.6a1.4 1.4 0 0 0 1.4-1.4L14 6"/></svg></button>
+      </li>
+      <li class="preset-row">
+        <span class="preset-label">Local dev</span>
+        <span class="preset-pattern-wrap"><span class="preset-pattern">localhost|127\.0\.0\.1</span></span>
+        <span class="preset-flags">i</span>
+        <button class="delete-btn" aria-label="Delete preset" type="button"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M8 6V4.6A1.4 1.4 0 0 1 9.4 3.2h1.2A1.4 1.4 0 0 1 12 4.6V6M6.2 6l.6 9.4A1.4 1.4 0 0 0 8.2 16.8h3.6a1.4 1.4 0 0 0 1.4-1.4L14 6"/></svg></button>
+      </li>
+    </ul>
+  </section>
+
+  <div class="section-divider"><span>⁂</span></div>
+
+  <!-- ============ KEYBOARD SHORTCUTS ============ -->
+  <section class="pref-section" id="sec-shortcuts">
+    <div class="section-head"><h2>Keyboard shortcuts</h2></div>
+    <div class="shortcut-list">
+      <div class="shortcut-row">
+        <span class="shortcut-name">Tidy</span>
+        <span class="keys"><kbd>Alt</kbd><kbd>Shift</kbd><kbd>Space</kbd></span>
+      </div>
+      <div class="shortcut-row">
+        <span class="shortcut-name">Undo</span>
+        <span class="keys"><kbd>Alt</kbd><kbd>Shift</kbd><kbd>Z</kbd></span>
+      </div>
+      <div class="shortcut-row">
+        <span class="shortcut-name">Sort A–Z</span>
+        <span class="keys"><kbd>Alt</kbd><kbd>Shift</kbd><kbd>T</kbd></span>
+      </div>
+      <div class="shortcut-row">
+        <span class="shortcut-name">Default sort</span>
+        <span class="keys"><kbd>Alt</kbd><kbd>Shift</kbd><kbd>S</kbd></span>
+      </div>
+    </div>
+    <p class="note">These are read-only here. Customize them anytime at <code>chrome://extensions/shortcuts</code>.</p>
+  </section>
+
+  <footer class="page-footer">
+    <p>Tab Sorter <span class="mark">⁂</span> Settings <span class="mark">⁂</span> v0.4</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  function flashSaved(section){
+    var tag = section.querySelector('.saved-tag');
+    if (!tag) return;
+    tag.classList.add('visible');
+    clearTimeout(tag._t);
+    tag._t = setTimeout(function(){ tag.classList.remove('visible'); }, 1700);
+  }
+
+  document.querySelectorAll('.pref-section').forEach(function(section){
+    section.addEventListener('change', function(e){
+      if (e.target.matches('input, select')) flashSaved(section);
+    });
+  });
+
+  document.querySelectorAll('.segmented').forEach(function(group){
+    group.addEventListener('click', function(e){
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      group.querySelectorAll('button').forEach(function(b){ b.setAttribute('aria-pressed', String(b === btn)); });
+      flashSaved(group.closest('.pref-section'));
+    });
+  });
+
+  document.querySelectorAll('.stepper').forEach(function(stepper){
+    var input = stepper.querySelector('input');
+    stepper.querySelectorAll('button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var step = parseInt(btn.dataset.step, 10);
+        var val = parseInt(input.value, 10) || 1;
+        val = Math.min(99, Math.max(1, val + step));
+        input.value = val;
+        flashSaved(stepper.closest('.pref-section'));
+      });
+    });
+  });
+
+  var presetForm = document.getElementById('preset-form');
+  var presetList = document.getElementById('preset-list');
+  presetForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var label = document.getElementById('preset-label').value.trim();
+    var pattern = document.getElementById('preset-pattern').value.trim();
+    var flags = document.getElementById('preset-flags').value.trim() || 'i';
+    if (!label || !pattern) return;
+    var li = document.createElement('li');
+    li.className = 'preset-row';
+    li.innerHTML =
+      '<span class="preset-label"></span>' +
+      '<span class="preset-pattern-wrap"><span class="preset-pattern"></span></span>' +
+      '<span class="preset-flags"></span>' +
+      '<button class="delete-btn" aria-label="Delete preset" type="button"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M8 6V4.6A1.4 1.4 0 0 1 9.4 3.2h1.2A1.4 1.4 0 0 1 12 4.6V6M6.2 6l.6 9.4A1.4 1.4 0 0 0 8.2 16.8h3.6a1.4 1.4 0 0 0 1.4-1.4L14 6"/></svg></button>';
+    li.querySelector('.preset-label').textContent = label;
+    li.querySelector('.preset-pattern').textContent = pattern;
+    li.querySelector('.preset-flags').textContent = flags;
+    presetList.appendChild(li);
+    presetForm.reset();
+    document.getElementById('preset-flags').value = 'i';
+    flashSaved(presetForm.closest('.pref-section'));
+  });
+
+  presetList.addEventListener('click', function(e){
+    var btn = e.target.closest('.delete-btn');
+    if (!btn) return;
+    var row = btn.closest('.preset-row');
+    row.remove();
+    flashSaved(presetList.closest('.pref-section'));
+  });
+})();
+</script>

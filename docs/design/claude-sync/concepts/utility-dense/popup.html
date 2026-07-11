@@ -1,0 +1,715 @@
+<!-- @dsCard group="Concept - Utility dense" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tab Sorter — Popup · Utility Dense</title>
+<style>
+  :root{
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+    --page-bg: #e7e9ee;
+    --bg: #eef0f3;
+    --surface: #ffffff;
+    --surface-2: #f5f6f8;
+    --surface-hover: #eceef2;
+    --border: #e1e4e9;
+    --border-strong: #cfd3da;
+    --text: #14161a;
+    --text-muted: #656b76;
+    --text-faint: #9aa1ac;
+
+    --accent: #5457e5;
+    --accent-hover: #4448cf;
+    --accent-ink: #4548d1;
+    --accent-subtle: #eceeff;
+    --accent-subtle-border: #d7d9fb;
+    --on-accent: #ffffff;
+
+    --danger: #d1293d;
+    --danger-hover: #b91f32;
+    --danger-ink: #b91f32;
+    --danger-subtle: #fcecee;
+    --danger-subtle-border: #f6d2d7;
+    --on-danger: #ffffff;
+
+    --success-ink: #147d52;
+    --success-subtle: #e8f6ee;
+    --success-subtle-border: #cdecdb;
+
+    --warning-ink: #8a5a12;
+    --warning-subtle: #fdf3e1;
+
+    --shadow-frame: 0 1px 2px rgba(20,22,26,.05), 0 14px 32px -12px rgba(20,22,26,.20);
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --ease: cubic-bezier(.2,.8,.2,1);
+    --dur: 140ms;
+
+    --grp-grey:#80868f; --grp-blue:#3b82c4; --grp-red:#d1293d; --grp-yellow:#c98a13;
+    --grp-green:#3a9152; --grp-pink:#c04a8a; --grp-purple:#8457d6; --grp-cyan:#2f97a3; --grp-orange:#d3702e;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --page-bg: #08090b;
+      --bg: #0c0d10;
+      --surface: #17181c;
+      --surface-2: #1c1e23;
+      --surface-hover: #24262c;
+      --border: #2a2c33;
+      --border-strong: #383b44;
+      --text: #e8e9ec;
+      --text-muted: #9aa3af;
+      --text-faint: #656b76;
+
+      --accent: #5457e5;
+      --accent-hover: #6669f2;
+      --accent-ink: #9092f7;
+      --accent-subtle: #23243a;
+      --accent-subtle-border: #34366a;
+
+      --danger: #d1293d;
+      --danger-hover: #e6465a;
+      --danger-ink: #ff7b86;
+      --danger-subtle: #3a2024;
+      --danger-subtle-border: #5c2b31;
+
+      --success-ink: #4ad995;
+      --success-subtle: #16302a;
+      --success-subtle-border: #204a3e;
+
+      --warning-ink: #e3a94a;
+      --warning-subtle: #322613;
+
+      --shadow-frame: 0 1px 2px rgba(0,0,0,.4), 0 20px 40px -14px rgba(0,0,0,.6);
+    }
+  }
+
+  /* forced-dark demo swatch, independent of OS setting */
+  .force-dark{
+    --page-bg: #08090b;
+    --bg: #0c0d10;
+    --surface: #17181c;
+    --surface-2: #1c1e23;
+    --surface-hover: #24262c;
+    --border: #2a2c33;
+    --border-strong: #383b44;
+    --text: #e8e9ec;
+    --text-muted: #9aa3af;
+    --text-faint: #656b76;
+    --accent: #5457e5;
+    --accent-hover: #6669f2;
+    --accent-ink: #9092f7;
+    --accent-subtle: #23243a;
+    --accent-subtle-border: #34366a;
+    --danger: #d1293d;
+    --danger-hover: #e6465a;
+    --danger-ink: #ff7b86;
+    --danger-subtle: #3a2024;
+    --danger-subtle-border: #5c2b31;
+    --success-ink: #4ad995;
+    --success-subtle: #16302a;
+    --success-subtle-border: #204a3e;
+    --shadow-frame: 0 1px 2px rgba(0,0,0,.4), 0 20px 40px -14px rgba(0,0,0,.6);
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:var(--font-ui);
+    font-size:13px;
+    line-height:1.45;
+    color:var(--text);
+    background:var(--page-bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,p,ul,ol{ margin:0; }
+  button,input{ font:inherit; color:inherit; }
+  button{ cursor:pointer; }
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+
+  :focus-visible{ outline:2px solid var(--accent-ink); outline-offset:2px; border-radius:var(--radius-sm); }
+
+  .icon{ width:14px; height:14px; flex:none; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .icon--sm{ width:12px; height:12px; }
+  .icon--lg{ width:28px; height:28px; }
+
+  .mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+
+  /* ---------- demo stage chrome (not part of the extension UI) ---------- */
+  .stage{ max-width:1180px; margin:0 auto; padding:48px 24px 96px; }
+  .stage-head{ max-width:640px; margin:0 auto 40px; text-align:center; }
+  .stage-head h1{ font-size:20px; font-weight:650; letter-spacing:-.01em; }
+  .stage-head p{ margin-top:6px; font-size:13px; color:var(--text-muted); }
+
+  .showcase{ margin:0 auto 56px; display:flex; flex-direction:column; align-items:center; }
+  .showcase-label{ font-size:11px; font-weight:650; text-transform:uppercase; letter-spacing:.08em; color:var(--text-faint); margin-bottom:14px; }
+
+  .states{ max-width:1180px; margin:0 auto; }
+  .states-grid{ display:flex; flex-wrap:wrap; gap:28px; justify-content:center; }
+  .state-item{ display:flex; flex-direction:column; align-items:center; }
+  .state-caption{ font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:10px; letter-spacing:.01em; }
+
+  /* ---------- popup frame ---------- */
+  .frame{
+    width:340px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-frame);
+    overflow:hidden;
+  }
+  .frame--sm{ width:300px; }
+  .frame-pad{ padding:12px 14px; }
+
+  /* header */
+  .pu-header{ display:flex; align-items:center; gap:8px; }
+  .pu-mark{ width:22px; height:22px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; flex:none; }
+  .pu-mark .icon{ width:13px; height:13px; stroke:var(--on-accent); }
+  .pu-title{ font-size:13px; font-weight:650; letter-spacing:-.005em; flex:1; }
+  .icon-btn{
+    width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+    border-radius:var(--radius-sm); border:1px solid transparent; background:transparent; color:var(--text-muted);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .icon-btn:hover{ background:var(--surface-hover); color:var(--text); }
+
+  .pu-facts{ margin-top:8px; font-size:12px; color:var(--text-muted); font-variant-numeric:tabular-nums; }
+  .pu-facts b{ color:var(--text); font-weight:600; }
+
+  /* status bar (replaces facts row after an action) */
+  .status-bar{
+    margin-top:8px; display:flex; align-items:center; gap:8px;
+    background:var(--success-subtle); border:1px solid var(--success-subtle-border);
+    border-radius:var(--radius-md); padding:6px 8px 6px 9px;
+  }
+  .status-bar .icon{ stroke:var(--success-ink); }
+  .status-bar-text{ flex:1; font-size:12px; color:var(--text); min-width:0; }
+  .status-bar-text .mono{ font-weight:600; }
+  .group-dots{ display:inline-flex; gap:3px; margin-left:6px; vertical-align:middle; }
+  .group-dots span{ width:6px; height:6px; border-radius:50%; display:inline-block; }
+  .undo-pill{
+    display:flex; align-items:center; gap:5px; flex:none;
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:999px;
+    padding:4px 8px 4px 7px; font-size:11px; font-weight:600; color:var(--text);
+    transition:border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .undo-pill:hover{ background:var(--surface-hover); border-color:var(--text-faint); }
+  .undo-pill .icon{ width:12px; height:12px; }
+  .undo-pill kbd{ margin-left:2px; }
+
+  /* error toast */
+  .toast-error{
+    margin-top:8px; display:flex; align-items:flex-start; gap:8px;
+    background:var(--danger-subtle); border:1px solid var(--danger-subtle-border);
+    border-radius:var(--radius-md); padding:8px 9px;
+  }
+  .toast-error .icon{ stroke:var(--danger-ink); margin-top:1px; }
+  .toast-error-text{ flex:1; font-size:12px; }
+  .toast-error-text strong{ display:block; font-weight:600; color:var(--text); }
+  .toast-error-text span{ color:var(--text-muted); }
+  .toast-error button.icon-btn{ color:var(--text-muted); }
+
+  /* hero */
+  .pu-hero{
+    margin-top:10px; width:100%; height:36px; display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--accent); color:var(--on-accent); border:1px solid var(--accent);
+    border-radius:var(--radius-md); font-size:13px; font-weight:650; letter-spacing:-.005em;
+    transition:background var(--dur) var(--ease), transform var(--dur) var(--ease);
+    position:relative;
+  }
+  .pu-hero:hover{ background:var(--accent-hover); }
+  .pu-hero:active{ transform:scale(.99); }
+  .pu-hero .icon{ stroke:var(--on-accent); }
+  .pu-hero .keys{ position:absolute; right:10px; opacity:.75; }
+  .pu-hero .keys kbd{ background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.28); color:var(--on-accent); }
+  .pu-hero[disabled]{ opacity:.6; cursor:default; }
+  .pu-hero .spin{ animation:spin .8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* segmented sort row */
+  .segmented{ margin-top:8px; display:flex; gap:6px; }
+  .segmented button{
+    flex:1; height:28px; display:flex; align-items:center; justify-content:center; gap:6px;
+    background:var(--surface); border:1px solid var(--border); color:var(--text);
+    border-radius:var(--radius-md); font-size:12px; font-weight:550;
+    transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .segmented button:hover{ background:var(--surface-hover); border-color:var(--border-strong); }
+  .segmented button.is-active{ background:var(--accent-subtle); border-color:var(--accent-subtle-border); color:var(--accent-ink); }
+  .segmented kbd{ opacity:.7; }
+
+  /* duplicates row */
+  .pu-dupe{
+    margin-top:8px; display:flex; align-items:center; gap:8px; min-height:32px;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+    padding:5px 6px 5px 9px;
+  }
+  .pu-dupe .icon{ stroke:var(--text-muted); }
+  .pu-dupe-label{ flex:1; font-size:12.5px; }
+  .btn-dupe{
+    height:24px; padding:0 10px; border-radius:var(--radius-sm); font-size:11.5px; font-weight:650;
+    background:transparent; border:1px solid var(--border-strong); color:var(--danger-ink);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+    display:flex; align-items:center; gap:5px; white-space:nowrap;
+  }
+  .btn-dupe:hover{ background:var(--danger-subtle); border-color:var(--danger-subtle-border); }
+  .btn-dupe.is-armed{ background:var(--danger); border-color:var(--danger); color:var(--on-danger); }
+  .btn-dupe.is-armed:hover{ background:var(--danger-hover); }
+  .armed-hint{ margin-top:5px; font-size:10.5px; color:var(--text-faint); text-align:right; }
+
+  /* section divider + label */
+  .divider{ height:1px; background:var(--border); margin:12px 0 8px; }
+  .section-label{ display:flex; align-items:baseline; justify-content:space-between; font-size:11px; font-weight:650; text-transform:uppercase; letter-spacing:.07em; color:var(--text-faint); margin-bottom:4px; }
+  .section-label .mono{ font-weight:600; letter-spacing:0; text-transform:none; }
+
+  /* domain list */
+  .domain-row{
+    display:flex; align-items:center; gap:8px; min-height:28px; padding:0 6px; border-radius:var(--radius-sm);
+    transition:background var(--dur) var(--ease);
+  }
+  .domain-row:hover{ background:var(--surface-hover); }
+  .domain-dot{ width:7px; height:7px; border-radius:50%; flex:none; }
+  .domain-name{ flex:1; font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .domain-count{
+    font-family:var(--font-mono); font-size:11px; font-weight:600; color:var(--text-muted);
+    background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:1px 7px;
+    font-variant-numeric:tabular-nums; flex:none;
+  }
+
+  /* disclosure */
+  .disclosure-head{
+    display:flex; align-items:center; gap:7px; min-height:32px; width:100%;
+    background:transparent; border-radius:var(--radius-sm); padding:0 6px;
+    transition:background var(--dur) var(--ease);
+  }
+  .disclosure-head:hover{ background:var(--surface-hover); }
+  .disclosure-head .icon{ stroke:var(--text-muted); transition:transform var(--dur) var(--ease); }
+  .disclosure-title{ flex:1; text-align:left; font-size:12.5px; font-weight:550; }
+  .disclosure-hint{ font-size:11px; color:var(--text-faint); }
+  .disclosure-hint.mono{ font-size:10.5px; }
+
+  .disclosure-body{ padding:10px 6px 2px; display:flex; flex-direction:column; gap:8px; }
+  .regex-row{
+    display:flex; align-items:center; gap:6px; height:30px;
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--radius-md);
+    padding:0 8px;
+  }
+  .regex-row .icon{ stroke:var(--text-faint); }
+  .regex-slash{ color:var(--text-faint); font-family:var(--font-mono); }
+  .regex-pattern{ flex:1; font-family:var(--font-mono); font-size:12px; background:transparent; border:0; outline:0; min-width:0; }
+  .regex-flags{ width:26px; font-family:var(--font-mono); font-size:12px; background:transparent; border:0; outline:0; text-align:center; color:var(--accent-ink); }
+  .regex-match{
+    flex:none; font-family:var(--font-mono); font-size:10.5px; font-weight:650; color:var(--accent-ink);
+    background:var(--accent-subtle); border:1px solid var(--accent-subtle-border); border-radius:999px; padding:2px 6px;
+    font-variant-numeric:tabular-nums;
+  }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chip{
+    height:22px; padding:0 9px; border-radius:999px; font-size:11px; font-weight:550;
+    background:var(--surface-2); border:1px solid var(--border); color:var(--text-muted);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .chip:hover{ background:var(--surface-hover); color:var(--text); }
+  .chip.is-active{ background:var(--accent-subtle); border-color:var(--accent-subtle-border); color:var(--accent-ink); }
+  .btn-move{
+    height:30px; width:100%; border-radius:var(--radius-md); font-size:12px; font-weight:650;
+    background:var(--accent-subtle); border:1px solid var(--accent-subtle-border); color:var(--accent-ink);
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    transition:background var(--dur) var(--ease);
+  }
+  .btn-move:hover{ background:var(--accent-subtle-border); }
+
+  /* copy row */
+  .copy-row{ display:flex; align-items:center; gap:8px; min-height:32px; padding:0 6px; }
+  .copy-label{ font-size:12.5px; color:var(--text-muted); flex:none; }
+  .copy-chips{ display:flex; gap:5px; flex:1; justify-content:flex-end; }
+  .copy-chip{
+    height:22px; padding:0 8px; border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:10.5px; font-weight:650;
+    background:var(--surface); border:1px solid var(--border-strong); color:var(--text-muted);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+    display:flex; align-items:center; gap:4px;
+  }
+  .copy-chip:hover{ background:var(--surface-hover); color:var(--text); }
+  .copy-chip.is-copied{ background:var(--success-subtle); border-color:var(--success-subtle-border); color:var(--success-ink); }
+
+  /* kbd */
+  .keys{ display:inline-flex; gap:2px; }
+  kbd{
+    font-family:var(--font-mono); font-size:10px; line-height:1; padding:3px 5px 2.5px;
+    background:var(--surface-2); border:1px solid var(--border-strong); border-radius:4px; color:var(--text-muted);
+    box-shadow: inset 0 -1px 0 var(--border-strong);
+  }
+
+  /* loading skeleton */
+  .skel{ background:linear-gradient(90deg, var(--surface-2) 0%, var(--surface-hover) 50%, var(--surface-2) 100%); background-size:200% 100%; border-radius:var(--radius-sm); animation:shimmer 1.4s ease-in-out infinite; }
+  @keyframes shimmer{ 0%{ background-position:200% 0; } 100%{ background-position:-200% 0; } }
+  @media (prefers-reduced-motion: reduce){ .skel{ animation:none; background:var(--surface-2); } }
+
+  /* empty state */
+  .empty-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:28px 12px 20px; gap:10px; }
+  .empty-wrap .icon--lg{ stroke:var(--text-faint); }
+  .empty-title{ font-size:12.5px; color:var(--text-muted); max-width:220px; }
+
+  .frame-note{ font-size:11px; color:var(--text-muted); margin-top:10px; text-align:center; max-width:300px; }
+</style>
+</head>
+<body>
+<main class="stage">
+  <header class="stage-head">
+    <h1>Utility Dense</h1>
+    <p>Tab Sorter — popup concept. A 340px action surface built like an instrument: dense rows, tabular numerals, keycap shortcuts, one restrained accent.</p>
+  </header>
+
+  <!-- ============ DEFAULT / CANONICAL POPUP ============ -->
+  <section class="showcase">
+    <p class="showcase-label">Popup — default</p>
+
+    <div class="frame">
+      <div class="frame-pad">
+
+        <div class="pu-header">
+          <div class="pu-mark">
+            <svg class="icon" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5" y1="4.9" x2="8" y2="4.9"/></svg>
+          </div>
+          <h2 class="pu-title">Tab Sorter</h2>
+          <button class="icon-btn" aria-label="Open settings" title="Settings">
+            <svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 2.2v1.6M8 12.2v1.6M2.2 8h1.6M12.2 8h1.6M4.2 4.2l1.1 1.1M10.7 10.7l1.1 1.1M11.8 4.2l-1.1 1.1M5.3 10.7l-1.1 1.1"/></svg>
+          </button>
+        </div>
+
+        <p class="pu-facts"><b>23</b> tabs · <b>9</b> sites · <b>3</b> duplicates</p>
+
+        <button class="pu-hero" id="hero-btn">
+          <svg class="icon" viewBox="0 0 16 16"><path d="M3 5h10M3 8h7M3 11h4"/></svg>
+          Tidy this window
+          <span class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>Space</kbd></span>
+        </button>
+
+        <div class="segmented">
+          <button class="seg-az">A → Z <span class="keys"><kbd>⌥⇧T</kbd></span></button>
+          <button class="seg-domain">By domain</button>
+        </div>
+
+        <div class="pu-dupe">
+          <svg class="icon" viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="7.5" height="7.5" rx="1.3"/><path d="M3.2 10.3V3.7a1 1 0 011-1h6.6"/></svg>
+          <span class="pu-dupe-label">3 duplicate tabs found</span>
+          <button class="btn-dupe" id="dupe-btn">Close 3 duplicates</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-label"><span>Extract a domain</span><span class="mono">6</span></div>
+        <div class="domain-list">
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-grey)"></span><span class="domain-name">github.com</span><span class="domain-count">7</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-blue)"></span><span class="domain-name">docs.google.com</span><span class="domain-count">4</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-purple)"></span><span class="domain-name">figma.com</span><span class="domain-count">3</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-orange)"></span><span class="domain-name">news.ycombinator.com</span><span class="domain-count">3</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-cyan)"></span><span class="domain-name">linear.app</span><span class="domain-count">2</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-grey)"></span><span class="domain-name">(chrome)</span><span class="domain-count">2</span></button>
+        </div>
+
+        <div class="divider"></div>
+
+        <button class="disclosure-head" id="disclosure-toggle" aria-expanded="false">
+          <svg class="icon" id="disclosure-chevron" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4"/></svg>
+          <span class="disclosure-title">Extract by pattern</span>
+          <span class="disclosure-hint mono">.*\.dev$</span>
+        </button>
+
+        <div class="divider"></div>
+
+        <div class="copy-row">
+          <span class="copy-label">Copy tabs</span>
+          <div class="copy-chips">
+            <button class="copy-chip">MD</button>
+            <button class="copy-chip">JSON</button>
+            <button class="copy-chip">URLs</button>
+            <button class="copy-chip">HTML</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <p class="frame-note">Interactive — try the pattern disclosure, sort toggles, copy chips, and the duplicates button.</p>
+  </section>
+
+  <!-- ============ STATES STRIP ============ -->
+  <section class="states">
+    <p class="showcase-label" style="text-align:center">States</p>
+    <div class="states-grid">
+
+      <!-- Loading -->
+      <div class="state-item">
+        <p class="state-caption">Loading</p>
+        <div class="frame frame--sm">
+          <div class="frame-pad">
+            <div class="pu-header">
+              <div class="pu-mark"><svg class="icon" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5" y1="4.9" x2="8" y2="4.9"/></svg></div>
+              <h2 class="pu-title">Tab Sorter</h2>
+              <button class="icon-btn"><svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 2.2v1.6M8 12.2v1.6M2.2 8h1.6M12.2 8h1.6M4.2 4.2l1.1 1.1M10.7 10.7l1.1 1.1M11.8 4.2l-1.1 1.1M5.3 10.7l-1.1 1.1"/></svg></button>
+            </div>
+            <div class="skel" style="width:120px;height:12px;margin-top:10px;"></div>
+            <button class="pu-hero" disabled>
+              <svg class="icon spin" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke-opacity=".3"/><path d="M14 8a6 6 0 00-6-6"/></svg>
+              Tidying window…
+            </button>
+            <div class="skel" style="width:100%;height:28px;margin-top:8px;"></div>
+            <div class="skel" style="width:100%;height:32px;margin-top:8px;"></div>
+            <div class="divider"></div>
+            <div class="skel" style="width:100%;height:28px;margin-top:2px;"></div>
+            <div class="skel" style="width:100%;height:28px;margin-top:6px;"></div>
+            <div class="skel" style="width:100%;height:28px;margin-top:6px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty -->
+      <div class="state-item">
+        <p class="state-caption">Empty</p>
+        <div class="frame frame--sm">
+          <div class="frame-pad">
+            <div class="pu-header">
+              <div class="pu-mark"><svg class="icon" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5" y1="4.9" x2="8" y2="4.9"/></svg></div>
+              <h2 class="pu-title">Tab Sorter</h2>
+              <button class="icon-btn"><svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 2.2v1.6M8 12.2v1.6M2.2 8h1.6M12.2 8h1.6M4.2 4.2l1.1 1.1M10.7 10.7l1.1 1.1M11.8 4.2l-1.1 1.1M5.3 10.7l-1.1 1.1"/></svg></button>
+            </div>
+            <p class="pu-facts"><b>1</b> tab · <b>1</b> site · <b>0</b> duplicates</p>
+            <div class="empty-wrap">
+              <svg class="icon--lg" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5" y1="4.9" x2="8" y2="4.9"/></svg>
+              <p class="empty-title">Nothing to tidy — this window has 1 tab</p>
+            </div>
+            <button class="pu-hero" disabled style="margin-top:0;">
+              <svg class="icon" viewBox="0 0 16 16"><path d="M3 5h10M3 8h7M3 11h4"/></svg>
+              Tidy this window
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Duplicates armed -->
+      <div class="state-item">
+        <p class="state-caption">Duplicates armed</p>
+        <div class="frame frame--sm">
+          <div class="frame-pad">
+            <div class="pu-header">
+              <div class="pu-mark"><svg class="icon" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5" y1="4.9" x2="8" y2="4.9"/></svg></div>
+              <h2 class="pu-title">Tab Sorter</h2>
+              <button class="icon-btn"><svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 2.2v1.6M8 12.2v1.6M2.2 8h1.6M12.2 8h1.6M4.2 4.2l1.1 1.1M10.7 10.7l1.1 1.1M11.8 4.2l-1.1 1.1M5.3 10.7l-1.1 1.1"/></svg></button>
+            </div>
+            <p class="pu-facts"><b>23</b> tabs · <b>9</b> sites · <b>3</b> duplicates</p>
+            <div class="pu-dupe">
+              <svg class="icon" viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="7.5" height="7.5" rx="1.3"/><path d="M3.2 10.3V3.7a1 1 0 011-1h6.6"/></svg>
+              <span class="pu-dupe-label">3 duplicate tabs found</span>
+              <button class="btn-dupe is-armed">Close 3 duplicates?</button>
+            </div>
+            <p class="armed-hint">Esc or 4s to cancel</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success + undo -->
+      <div class="state-item">
+        <p class="state-caption">Success + undo</p>
+        <div class="frame frame--sm">
+          <div class="frame-pad">
+            <div class="pu-header">
+              <div class="pu-mark"><svg class="icon" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5" y1="4.9" x2="8" y2="4.9"/></svg></div>
+              <h2 class="pu-title">Tab Sorter</h2>
+              <button class="icon-btn"><svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 2.2v1.6M8 12.2v1.6M2.2 8h1.6M12.2 8h1.6M4.2 4.2l1.1 1.1M10.7 10.7l1.1 1.1M11.8 4.2l-1.1 1.1M5.3 10.7l-1.1 1.1"/></svg></button>
+            </div>
+            <div class="status-bar">
+              <svg class="icon" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg>
+              <span class="status-bar-text">Grouped <span class="mono">18</span> tabs into <span class="mono">5</span> groups · <span class="mono">12</span> moved
+                <span class="group-dots">
+                  <span style="background:var(--grp-grey)"></span><span style="background:var(--grp-blue)"></span><span style="background:var(--grp-purple)"></span><span style="background:var(--grp-orange)"></span><span style="background:var(--grp-cyan)"></span>
+                </span>
+              </span>
+              <span class="undo-pill"><svg class="icon" viewBox="0 0 16 16"><path d="M5 4L2 7l3 3"/><path d="M2 7h7.5a4 4 0 010 8H7"/></svg>Undo<kbd>⌥⇧Z</kbd></span>
+            </div>
+            <button class="pu-hero" style="margin-top:8px;">
+              <svg class="icon" viewBox="0 0 16 16"><path d="M3 5h10M3 8h7M3 11h4"/></svg>
+              Tidy this window
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="state-item">
+        <p class="state-caption">Error</p>
+        <div class="frame frame--sm">
+          <div class="frame-pad">
+            <div class="pu-header">
+              <div class="pu-mark"><svg class="icon" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5" y1="4.9" x2="8" y2="4.9"/></svg></div>
+              <h2 class="pu-title">Tab Sorter</h2>
+              <button class="icon-btn"><svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 2.2v1.6M8 12.2v1.6M2.2 8h1.6M12.2 8h1.6M4.2 4.2l1.1 1.1M10.7 10.7l1.1 1.1M11.8 4.2l-1.1 1.1M5.3 10.7l-1.1 1.1"/></svg></button>
+            </div>
+            <p class="pu-facts"><b>23</b> tabs · <b>9</b> sites · <b>3</b> duplicates</p>
+            <div class="toast-error">
+              <svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2"/><path d="M8 5v4"/><circle cx="8" cy="11.3" r=".25" fill="currentColor" stroke="none"/></svg>
+              <span class="toast-error-text"><strong>Couldn't move 4 tabs</strong><span>Window may have closed. Nothing changed.</span></span>
+              <button class="icon-btn" aria-label="Dismiss"><svg class="icon" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+            </div>
+            <button class="pu-hero" style="margin-top:8px;">
+              <svg class="icon" viewBox="0 0 16 16"><path d="M3 5h10M3 8h7M3 11h4"/></svg>
+              Tidy this window
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pattern expanded -->
+      <div class="state-item">
+        <p class="state-caption">Pattern disclosure — expanded</p>
+        <div class="frame frame--sm">
+          <div class="frame-pad">
+            <button class="disclosure-head" aria-expanded="true">
+              <svg class="icon" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4"/></svg>
+              <span class="disclosure-title">Extract by pattern</span>
+            </button>
+            <div class="disclosure-body">
+              <div class="regex-row">
+                <svg class="icon" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2L14 14"/></svg>
+                <span class="regex-slash">/</span>
+                <input class="regex-pattern" value="\.dev$|localhost" />
+                <span class="regex-slash">/</span>
+                <input class="regex-flags" value="gi" />
+                <span class="regex-match">4 tabs</span>
+              </div>
+              <div class="chip-row">
+                <button class="chip is-active">*.dev domains</button>
+                <button class="chip">PRs &amp; issues</button>
+                <button class="chip">Localhost</button>
+              </div>
+              <button class="btn-move">
+                <svg class="icon" viewBox="0 0 16 16"><path d="M3 8h8M8 4l4 4-4 4"/><rect x="2" y="2.5" width="12" height="11" rx="1.5"/></svg>
+                Move 4 tabs to new window
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dark mode -->
+      <div class="state-item">
+        <p class="state-caption">Dark mode (forced)</p>
+        <div class="frame frame--sm force-dark">
+          <div class="frame-pad">
+            <div class="pu-header">
+              <div class="pu-mark"><svg class="icon" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5" y1="4.9" x2="8" y2="4.9"/></svg></div>
+              <h2 class="pu-title">Tab Sorter</h2>
+              <button class="icon-btn"><svg class="icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2"/><path d="M8 2.2v1.6M8 12.2v1.6M2.2 8h1.6M12.2 8h1.6M4.2 4.2l1.1 1.1M10.7 10.7l1.1 1.1M11.8 4.2l-1.1 1.1M5.3 10.7l-1.1 1.1"/></svg></button>
+            </div>
+            <p class="pu-facts"><b>23</b> tabs · <b>9</b> sites · <b>3</b> duplicates</p>
+            <button class="pu-hero">
+              <svg class="icon" viewBox="0 0 16 16"><path d="M3 5h10M3 8h7M3 11h4"/></svg>
+              Tidy this window
+              <span class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>Space</kbd></span>
+            </button>
+            <div class="segmented">
+              <button>A → Z</button>
+              <button>By domain</button>
+            </div>
+            <div class="pu-dupe">
+              <svg class="icon" viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="7.5" height="7.5" rx="1.3"/><path d="M3.2 10.3V3.7a1 1 0 011-1h6.6"/></svg>
+              <span class="pu-dupe-label">3 duplicate tabs found</span>
+              <button class="btn-dupe">Close 3 duplicates</button>
+            </div>
+            <div class="divider"></div>
+            <div class="section-label"><span>Extract a domain</span><span class="mono">6</span></div>
+            <div class="domain-list">
+              <div class="domain-row"><span class="domain-dot" style="background:var(--grp-grey)"></span><span class="domain-name">github.com</span><span class="domain-count">7</span></div>
+              <div class="domain-row"><span class="domain-dot" style="background:var(--grp-blue)"></span><span class="domain-name">docs.google.com</span><span class="domain-count">4</span></div>
+              <div class="domain-row"><span class="domain-dot" style="background:var(--grp-purple)"></span><span class="domain-name">figma.com</span><span class="domain-count">3</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="frame-note">Real dark mode is automatic via <span class="mono">prefers-color-scheme</span> — this swatch forces it for side-by-side review regardless of your OS setting.</p>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<script>
+  // Sort segmented toggle
+  document.querySelectorAll('.segmented').forEach(function(seg){
+    var buttons = seg.querySelectorAll('button');
+    if (!buttons.length) return;
+    buttons[0].classList.add('is-active');
+    buttons.forEach(function(b){
+      b.addEventListener('click', function(){
+        buttons.forEach(function(x){ x.classList.remove('is-active'); });
+        b.classList.add('is-active');
+      });
+    });
+  });
+
+  // Duplicates arm / execute
+  var dupeBtn = document.getElementById('dupe-btn');
+  if (dupeBtn){
+    var armed = false, timer;
+    dupeBtn.addEventListener('click', function(){
+      if (!armed){
+        armed = true;
+        dupeBtn.textContent = 'Close 3 duplicates?';
+        dupeBtn.classList.add('is-armed');
+        clearTimeout(timer);
+        timer = setTimeout(disarm, 4000);
+      } else {
+        dupeBtn.textContent = 'Closed';
+        clearTimeout(timer);
+        setTimeout(function(){ disarm(); dupeBtn.textContent = 'Close 3 duplicates'; }, 900);
+      }
+    });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') disarm(); });
+    function disarm(){
+      armed = false;
+      dupeBtn.classList.remove('is-armed');
+      if (dupeBtn.textContent !== 'Closed') dupeBtn.textContent = 'Close 3 duplicates';
+    }
+  }
+
+  // Pattern disclosure toggle
+  var discToggle = document.getElementById('disclosure-toggle');
+  if (discToggle){
+    discToggle.addEventListener('click', function(){
+      var expanded = discToggle.getAttribute('aria-expanded') === 'true';
+      discToggle.setAttribute('aria-expanded', String(!expanded));
+      var chev = document.getElementById('disclosure-chevron');
+      var existingBody = discToggle.nextElementSibling && discToggle.nextElementSibling.classList.contains('disclosure-body') ? discToggle.nextElementSibling : null;
+      if (!expanded){
+        chev.innerHTML = '<path d="M4 6l4 4 4-4"/>';
+        if (!existingBody){
+          var body = document.createElement('div');
+          body.className = 'disclosure-body';
+          body.innerHTML = '<div class="regex-row"><svg class="icon" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2L14 14"/></svg><span class="regex-slash">/</span><input class="regex-pattern" value="\\.dev$"/><span class="regex-slash">/</span><input class="regex-flags" value="i"/><span class="regex-match">4 tabs</span></div><div class="chip-row"><button class="chip is-active">*.dev domains</button><button class="chip">PRs &amp; issues</button><button class="chip">Localhost</button></div><button class="btn-move"><svg class="icon" viewBox="0 0 16 16"><path d="M3 8h8M8 4l4 4-4 4"/><rect x="2" y="2.5" width="12" height="11" rx="1.5"/></svg>Move 4 tabs to new window</button>';
+          discToggle.insertAdjacentElement('afterend', body);
+        }
+      } else {
+        chev.innerHTML = '<path d="M6 4l4 4-4 4"/>';
+        if (existingBody) existingBody.remove();
+      }
+    });
+  }
+
+  // Copy chips: momentary "copied" feedback
+  document.querySelectorAll('.copy-chip').forEach(function(chip){
+    var original = chip.textContent;
+    chip.addEventListener('click', function(){
+      chip.textContent = 'Copied';
+      chip.classList.add('is-copied');
+      setTimeout(function(){ chip.textContent = original; chip.classList.remove('is-copied'); }, 1100);
+    });
+  });
+</script>
+</body>
+</html>
