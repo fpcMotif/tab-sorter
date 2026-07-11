@@ -2,9 +2,10 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "rea
 
 import "./App.css";
 
+import { buildUrlExport } from "@/lib/export";
 import { InvalidPatternError, matchByRegex } from "@/lib/match";
 import { getPopupData, runExtract, runSort, type PopupData } from "@/lib/orchestration";
-import type { DomainGroup, SortMode } from "@/lib/types";
+import type { DomainGroup, ExportFormat, SortMode } from "@/lib/types";
 
 type StatusTone = "idle" | "success" | "error";
 
@@ -136,6 +137,25 @@ function App() {
     setRegexFlags(flags);
   }
 
+  function handleExport(format: ExportFormat) {
+    if (data === null) return;
+
+    try {
+      const { content, extension, mimeType } = buildUrlExport(data.tabs, format);
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `tabs-export.${extension}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatus({ message: "Export successful.", tone: "success" });
+    } catch (error) {
+      console.error(error);
+      setStatus({ message: "Export failed.", tone: "error" });
+    }
+  }
+
   return (
     <main className="popup-shell">
       <header>
@@ -231,6 +251,26 @@ function App() {
         >
           Move matches to new window
         </button>
+      </section>
+
+      <section className="panel">
+        <h2>Export tabs</h2>
+        <div className="button-row">
+          <button
+            disabled={pending || data === null}
+            onClick={() => handleExport("markdown")}
+            type="button"
+          >
+            As Markdown
+          </button>
+          <button
+            disabled={pending || data === null}
+            onClick={() => handleExport("text")}
+            type="button"
+          >
+            As Plain Text
+          </button>
+        </div>
       </section>
 
       <p
