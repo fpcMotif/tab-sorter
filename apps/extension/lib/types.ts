@@ -32,8 +32,6 @@ export interface DomainGroup {
   tabIds: number[];
 }
 
-// Preserved from master's tab-export feature. The logic lives in lib/export.ts
-// but is not yet wired into PR #1's popup UI — see the integration TODOs.
 export type ExportFormat = "markdown" | "text";
 
 export interface ExportEntry {
