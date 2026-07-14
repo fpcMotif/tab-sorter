@@ -75,7 +75,9 @@ function App() {
 
     browser.storage.onChanged.addListener(onChanged);
 
-    return () => browser.storage.onChanged.removeListener(onChanged);
+    return () => {
+      browser.storage.onChanged.removeListener(onChanged);
+    };
   }, []);
 
   async function persistPrefs(patch: Partial<Prefs>) {

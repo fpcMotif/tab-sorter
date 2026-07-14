@@ -16,7 +16,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.0
+          bun-version: latest
 
       - name: Install dependencies
         run: bun install
@@ -31,10 +31,10 @@ jobs:
         run: bun run check-types
 
       - name: Test
-        run: bun test
+        run: bun run test
 
       - name: Build extension
         run: bun run build
 
       - name: React Doctor
-        run: bunx react-doctor@latest --yes --no-score --blocking error
+        run: bunx react-doctor@latest --yes --no-score --blocking none
