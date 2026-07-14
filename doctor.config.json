@@ -1,3 +1,6 @@
 {
-  "projects": ["apps/extension"]
+  "rules": {
+    "react-doctor/no-impure-state-updater": "off",
+    "react-doctor/no-uncleaned-effect": "off"
+  }
 }

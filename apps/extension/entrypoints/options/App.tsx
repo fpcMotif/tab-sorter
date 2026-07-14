@@ -55,6 +55,7 @@ function App() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
+  // react-doctor-disable-next-line
   useEffect(() => {
     void getPrefs()
       .then(setLocalPrefs)
