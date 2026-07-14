@@ -40,6 +40,28 @@ function formatPlainText(entries: ExportEntry[]): string {
   return lines.join("\n").trimEnd() + "\n";
 }
 
+const ALLOWED_PROTOCOLS = new Set([
+  "http:",
+  "https:",
+  "ftp:",
+  "file:",
+  "mailto:",
+  "chrome:",
+  "chrome-extension:",
+  "edge:",
+  "moz-extension:",
+  "about:",
+]);
+
+function isSafeUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return ALLOWED_PROTOCOLS.has(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
 function formatMarkdown(entries: ExportEntry[]): string {
   if (entries.length === 0) {
     return "# Exported tabs\n\nNo tabs to export.\n";
@@ -56,7 +78,8 @@ function formatMarkdown(entries: ExportEntry[]): string {
     lines.push("");
     for (const entry of list) {
       const safeTitle = entry.title.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
-      lines.push(`- [${safeTitle}](${entry.url})`);
+      const safeUrl = isSafeUrl(entry.url) ? entry.url : "#";
+      lines.push(`- [${safeTitle}](${safeUrl})`);
     }
     lines.push("");
   }
