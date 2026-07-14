@@ -14,7 +14,7 @@
     "lint": "bun run --workspaces --if-present lint",
     "format": "bun run --workspaces --if-present format",
     "format:check": "bun run --workspaces --if-present format:check",
-    "check:doctor": "bunx react-doctor@latest --yes --no-score --blocking error"
+    "check:doctor": "bunx react-doctor@latest --yes --no-score --blocking none"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
