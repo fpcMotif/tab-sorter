@@ -66,12 +66,13 @@ function App() {
     }
   }, [data, regexFlags, deferredSource]);
 
-  async function runWithStatus(action: () => Promise<void>) {
+  async function runWithStatus(action: () => Promise<Status>) {
     setPending(true);
     setStatus({ message: "", tone: "idle" });
 
     try {
-      await action();
+      const nextStatus = await action();
+      setStatus(nextStatus);
     } catch (error) {
       console.error(error);
       setStatus({
@@ -87,12 +88,11 @@ function App() {
   function handleSort(mode: SortMode) {
     void runWithStatus(async () => {
       const result = await runSort(mode);
-
-      setStatus({
+      await loadData();
+      return {
         message: result.moved === 0 ? "Tabs already look sorted." : `Sorted ${result.moved} tabs.`,
         tone: "success",
-      });
-      await loadData();
+      };
     });
   }
 
@@ -100,14 +100,13 @@ function App() {
     void runWithStatus(async () => {
       const result = await runExtract({ type: "domain", domain: group.domain });
 
-      setStatus({
-        message: result.moved === 0 ? "No tabs match that domain." : `Moved ${result.moved} tabs.`,
-        tone: "success",
-      });
-
       if (result.moved > 0) {
         window.setTimeout(() => window.close(), 300);
       }
+      return {
+        message: result.moved === 0 ? "No tabs match that domain." : `Moved ${result.moved} tabs.`,
+        tone: "success",
+      };
     });
   }
 
@@ -120,14 +119,13 @@ function App() {
     void runWithStatus(async () => {
       const result = await runExtract({ type: "regex", source: regexSource, flags: regexFlags });
 
-      setStatus({
-        message: result.moved === 0 ? "No tabs match that pattern." : `Moved ${result.moved} tabs.`,
-        tone: "success",
-      });
-
       if (result.moved > 0) {
         window.setTimeout(() => window.close(), 300);
       }
+      return {
+        message: result.moved === 0 ? "No tabs match that pattern." : `Moved ${result.moved} tabs.`,
+        tone: "success",
+      };
     });
   }
 
