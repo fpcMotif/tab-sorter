@@ -52,6 +52,13 @@ describe("buildUrlExport (markdown)", () => {
     expect(content).toContain("- [Example](https://example.com/)");
   });
 
+  it("sanitizes unsafe markdown links", () => {
+    const tabs = makeTabs([{ id: 1, title: "XSS", url: "javascript:alert(1)" }]);
+    const { content } = buildUrlExport(tabs, "markdown");
+    expect(content).not.toContain("javascript:alert(1)");
+    expect(content).toContain("- [XSS](#)");
+  });
+
   it("escapes brackets in titles", () => {
     const tabs = makeTabs([{ id: 1, title: "[Bug] Issue", url: "https://github.com/bug" }]);
     const { content } = buildUrlExport(tabs, "markdown");
