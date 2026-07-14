@@ -17,6 +17,7 @@ interface PresetDraft {
 const MAX_PRESETS = 50;
 const MAX_PRESET_SOURCE_LENGTH = 500;
 const MAX_PRESET_LABEL_LENGTH = 60;
+const MAX_PRESET_FLAGS_LENGTH = 10;
 
 function validatePreset(draft: PresetDraft, existingCount: number): string {
   if (draft.label.trim().length === 0) {
@@ -33,6 +34,10 @@ function validatePreset(draft: PresetDraft, existingCount: number): string {
 
   if (draft.source.length > MAX_PRESET_SOURCE_LENGTH) {
     return `Pattern is too long (max ${MAX_PRESET_SOURCE_LENGTH} characters).`;
+  }
+
+  if (draft.flags.length > MAX_PRESET_FLAGS_LENGTH) {
+    return `Flags are too long (max ${MAX_PRESET_FLAGS_LENGTH} characters).`;
   }
 
   if (existingCount >= MAX_PRESETS) {
