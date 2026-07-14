@@ -1,0 +1,790 @@
+<!-- @dsCard group="As built" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tab Sorter — Inputs (As built)</title>
+<style>
+/* Chrome Native+ — approved design-token foundation shared by popup/App.css and
+   options/App.css. Values are the token table in docs/design/final/DESIGN-SPEC.md
+   §1, ground-truthed against the <style> blocks of docs/design/final/popup.html
+   and settings.html. Replaces the prior Warm Editorial set. */
+
+/* ---- Tokens: light (default) ---- */
+:root {
+  --font-sans:
+    "Google Sans Text", "Google Sans", Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
+    sans-serif;
+  --font-display: "Google Sans", Roboto, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --page-bg: #e9edf3;
+  --surface: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f8fafd;
+  --surface-container: #f0f4f9;
+  --surface-container-high: #e9eef6;
+  --surface-container-highest: #e3e8f0;
+  --on-surface: #1f1f1f;
+  --on-surface-variant: #444746;
+  --outline: #747775;
+  --outline-variant: #c4c7c5;
+  --primary: #0b57d0;
+  --on-primary: #ffffff;
+  --primary-container: #d3e3fd;
+  --on-primary-container: #041e49;
+  --error: #b3261e;
+  --on-error: #ffffff;
+  --error-container: #f9dedc;
+  --on-error-container: #410e0b;
+  --warning-container: #fef7e0;
+  --on-warning-container: #7b5900;
+  --success-container: #e6f4ea;
+  --on-success-container: #0d652d;
+  /* the 9 chrome.tabGroups colors — GroupColor in lib/types.ts */
+  --g-grey-dot: #5f6368;
+  --g-grey-bg: #e8eaed;
+  --g-grey-fg: #3c4043;
+  --g-blue-dot: #1a73e8;
+  --g-blue-bg: #d2e3fc;
+  --g-blue-fg: #0842a0;
+  --g-red-dot: #d93025;
+  --g-red-bg: #fce8e6;
+  --g-red-fg: #a50e0e;
+  --g-yellow-dot: #f29900;
+  --g-yellow-bg: #fef7e0;
+  --g-yellow-fg: #7b5900;
+  --g-green-dot: #1e8e3e;
+  --g-green-bg: #e6f4ea;
+  --g-green-fg: #0d652d;
+  --g-pink-dot: #d01884;
+  --g-pink-bg: #fce4ec;
+  --g-pink-fg: #7a0d4b;
+  --g-purple-dot: #a142f4;
+  --g-purple-bg: #f3e8fd;
+  --g-purple-fg: #5e2b97;
+  --g-cyan-dot: #12b5cb;
+  --g-cyan-bg: #e0f7fa;
+  --g-cyan-fg: #05707d;
+  --g-orange-dot: #fa903e;
+  --g-orange-bg: #fef0e6;
+  --g-orange-fg: #8c3900;
+  --shadow-color: 220 20% 20%;
+  --elevation-1:
+    0 1px 2px hsl(var(--shadow-color) / 0.3), 0 1px 3px 1px hsl(var(--shadow-color) / 0.15);
+  --elevation-3:
+    0 4px 8px 3px hsl(var(--shadow-color) / 0.15), 0 1px 3px hsl(var(--shadow-color) / 0.3);
+  /* generic buckets over the per-component radii named in DESIGN-SPEC §1.5: s =
+     domain row / inputs / small chips, m = dedupe row / toast, l = pills / cards */
+  --radius-s: 10px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur: 140ms;
+  /* On-primary chip inside the popup's hero-tidy button (DESIGN-SPEC §1.2/§4.1). */
+  --hero-kbd-bg: hsl(0 0% 100% / 0.18);
+  --hero-kbd-border: hsl(0 0% 100% / 0.32);
+}
+
+/* ---- Tokens: dark ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #101114;
+    --surface: #131314;
+    --surface-container-lowest: #0e0e0e;
+    --surface-container-low: #1b1b1b;
+    --surface-container: #1e1f20;
+    --surface-container-high: #282a2c;
+    --surface-container-highest: #333537;
+    --on-surface: #e3e3e3;
+    --on-surface-variant: #c4c7c5;
+    --outline: #8e918f;
+    --outline-variant: #444746;
+    --primary: #a8c7fa;
+    --on-primary: #062e6f;
+    --primary-container: #0842a0;
+    --on-primary-container: #d3e3fd;
+    --error: #f2b8b5;
+    --on-error: #601410;
+    --error-container: #8c1d18;
+    --on-error-container: #f9dedc;
+    --warning-container: #7b5900;
+    --on-warning-container: #feefc3;
+    --success-container: #0d652d;
+    --on-success-container: #ceead6;
+    --g-grey-dot: #9aa0a6;
+    --g-grey-bg: #3c4043;
+    --g-grey-fg: #dadce0;
+    --g-blue-dot: #8ab4f8;
+    --g-blue-bg: #0842a0;
+    --g-blue-fg: #d2e3fc;
+    --g-red-dot: #f28b82;
+    --g-red-bg: #8c1d18;
+    --g-red-fg: #fadad7;
+    --g-yellow-dot: #fdd663;
+    --g-yellow-bg: #7b5900;
+    --g-yellow-fg: #feefc3;
+    --g-green-dot: #81c995;
+    --g-green-bg: #0d652d;
+    --g-green-fg: #ceead6;
+    --g-pink-dot: #ff8bcb;
+    --g-pink-bg: #7a0d4b;
+    --g-pink-fg: #ffd7ec;
+    --g-purple-dot: #c58af9;
+    --g-purple-bg: #5e2b97;
+    --g-purple-fg: #ead9fc;
+    --g-cyan-dot: #78d9ec;
+    --g-cyan-bg: #05707d;
+    --g-cyan-fg: #cbf0f8;
+    --g-orange-dot: #fcad70;
+    --g-orange-bg: #8c3900;
+    --g-orange-fg: #fddbbd;
+    --shadow-color: 220 40% 2%;
+    --hero-kbd-bg: hsl(220 60% 10% / 0.16);
+    --hero-kbd-border: hsl(220 60% 10% / 0.26);
+  }
+}
+
+/* ---- Base elements ---- */
+* {
+  box-sizing: border-box;
+}
+body {
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-sans);
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+a {
+  color: var(--primary);
+}
+
+/* ---- Buttons ---- */
+button {
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-l);
+  box-shadow: var(--elevation-1);
+  color: var(--on-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    filter var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.btn-secondary {
+  background: transparent;
+  border-color: var(--outline);
+  box-shadow: none;
+  color: var(--on-surface);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  filter: none;
+}
+.btn-danger {
+  background: var(--error);
+  border-color: transparent;
+  color: var(--on-error);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--on-surface-variant);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  filter: none;
+}
+
+/* ---- Form controls ---- */
+input,
+select,
+textarea {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-s);
+  color: var(--on-surface);
+  font: inherit;
+  transition: border-color var(--dur) var(--ease);
+}
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--outline);
+}
+
+/* ---- Focus ---- */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---- Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---- Utilities ---- */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+/* Visually hidden but still reachable by assistive tech — for aria-live
+   announcements (e.g. the popup's copy confirmation) that must never touch
+   visible layout. */
+.sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+/* Kbd chip — DESIGN-SPEC §4.10, used by shortcut lists, chip shortcut hints,
+   and the undo pill. */
+kbd {
+  background: var(--surface-container-high);
+  border: 1px solid var(--outline-variant);
+  border-radius: 5px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  padding: 2px 5px;
+}
+/* Group-color dot — one of the 9 GroupColor values (lib/types.ts), for the
+   domain row and anywhere a group's color needs a plain identity mark. */
+.dot {
+  border-radius: 50%;
+  flex: none;
+  height: 10px;
+  width: 10px;
+}
+.dot-grey {
+  background: var(--g-grey-dot);
+}
+.dot-blue {
+  background: var(--g-blue-dot);
+}
+.dot-red {
+  background: var(--g-red-dot);
+}
+.dot-yellow {
+  background: var(--g-yellow-dot);
+}
+.dot-green {
+  background: var(--g-green-dot);
+}
+.dot-pink {
+  background: var(--g-pink-dot);
+}
+.dot-purple {
+  background: var(--g-purple-dot);
+}
+.dot-cyan {
+  background: var(--g-cyan-dot);
+}
+.dot-orange {
+  background: var(--g-orange-dot);
+}
+
+/* ---- Scrollbars ---- */
+* {
+  scrollbar-color: var(--outline-variant) transparent;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: var(--radius-s);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--outline);
+}
+
+/* ---- As-built component card furniture (page chrome only) ---- */
+body {
+  margin: 0;
+  padding: 32px 28px 64px;
+  background: var(--page-bg);
+}
+.page-head {
+  margin: 0 auto 28px;
+  max-width: 860px;
+}
+.page-head h1 {
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0 0 6px;
+}
+.page-head p {
+  color: var(--on-surface-variant);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 640px;
+}
+.stage {
+  margin: 0 auto;
+  max-width: 1080px;
+}
+.demo-row {
+  align-items: center;
+  border-top: 1px solid var(--outline-variant);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 18px 0;
+}
+.demo-row:first-of-type {
+  border-top: none;
+}
+.demo-label {
+  color: var(--on-surface-variant);
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  width: 100px;
+}
+.demo-sample {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.demo-col-heads {
+  color: var(--on-surface-variant);
+  display: flex;
+  font-size: 10.5px;
+  gap: 16px;
+  letter-spacing: 0.04em;
+  padding: 0 0 8px 124px;
+  text-transform: uppercase;
+}
+.demo-col-heads span {
+  flex: none;
+}
+
+/* ---- Static state previews: same declarations as the real pseudo-class
+   rules in tokens.css / popup/App.css / options/App.css, triggered by a
+   class instead of a live :hover/:active/:focus-visible, since this page
+   has no pointer or keyboard interaction driving it. ---- */
+button.force-hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+button.force-active:not(:disabled) {
+  transform: scale(0.98);
+}
+button.force-focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.btn-secondary.force-hover {
+  background: var(--surface-container-high);
+  filter: none;
+}
+.btn-ghost.force-hover {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  filter: none;
+}
+.btn-outline.force-hover {
+  background: var(--surface-container-high);
+  filter: none;
+}
+.hero-tidy.force-hover {
+  filter: brightness(1.06);
+}
+.hero-tidy.force-focus {
+  outline: 2px solid var(--on-primary-container);
+  outline-offset: 2px;
+}
+.btn-danger-armed.force-focus {
+  outline: 2px solid var(--error);
+  outline-offset: 2px;
+}
+.chip-btn.force-hover {
+  background: var(--surface-container-high);
+  filter: none;
+}
+.domain-row.force-hover {
+  background: var(--surface-container-low);
+  filter: none;
+}
+.domain-row.force-focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+}
+input.force-hover,
+select.force-hover {
+  border-color: var(--outline);
+}
+input.force-focus,
+select.force-focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.switch input:checked + .track {
+  background: var(--primary);
+}
+.stepper button.force-hover {
+  background: var(--surface-container-high);
+  filter: none;
+}
+
+/* ---- Component rules below copied verbatim.
+   input/select/textarea base rule + :focus-visible already arrived with
+   tokens.css above. These are the per-component layers on top of it:
+   popup/App.css (.field, .regex-input) and options/App.css
+   (.switch, .stepper, .form-field input). ---- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.field label {
+  color: var(--on-surface-variant);
+  font-size: 11px;
+  font-weight: 500;
+}
+.regex-input {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  padding: 8px 10px;
+  width: 100%;
+}
+.regex-input.is-invalid {
+  border-color: var(--error);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.form-field label {
+  color: var(--on-surface-variant);
+  font-size: 11px;
+  font-weight: 500;
+}
+.form-field input {
+  font-size: 13px;
+  min-width: 0;
+  padding: 8px 10px;
+}
+.form-field input.mono {
+  font-family: var(--font-mono);
+}
+
+.switch {
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  height: 22px;
+  position: relative;
+  width: 38px;
+}
+.switch input {
+  cursor: pointer;
+  height: 100%;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+}
+.switch .track {
+  background: var(--outline-variant);
+  border-radius: 11px;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: background-color var(--dur) var(--ease);
+}
+.switch .track::after {
+  background: var(--surface-container-lowest);
+  border-radius: 50%;
+  box-shadow: 0 1px 2px hsl(var(--shadow-color) / 35%);
+  content: "";
+  height: 18px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition:
+    background-color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+  width: 18px;
+}
+.switch input:checked + .track {
+  background: var(--primary);
+}
+.switch input:checked + .track::after {
+  background: var(--on-primary);
+  transform: translateX(16px);
+}
+.switch input:focus-visible + .track {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.switch input:disabled ~ .track {
+  opacity: 0.55;
+}
+
+.stepper {
+  align-items: center;
+  border: 1px solid var(--outline-variant);
+  border-radius: 18px;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  transition: border-color var(--dur) var(--ease);
+}
+.stepper.has-error {
+  border-color: var(--error);
+}
+.stepper button {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  box-shadow: none;
+  color: var(--on-surface);
+  display: flex;
+  font-size: 16px;
+  height: 28px;
+  justify-content: center;
+  line-height: 1;
+  width: 28px;
+}
+.stepper button:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  filter: none;
+}
+.stepper button:disabled {
+  opacity: 0.4;
+}
+.stepper button:focus-visible {
+  outline-offset: 1px;
+}
+.stepper-input {
+  background: transparent;
+  border: none;
+  color: var(--on-surface);
+  font: inherit;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-align: center;
+  width: 34px;
+}
+.stepper-input.is-invalid {
+  color: var(--error);
+}
+.stepper-input:focus-visible {
+  outline-offset: 1px;
+}
+.field-error {
+  color: var(--error);
+  font-size: 11.5px;
+  margin: -8px 0 12px;
+}
+
+/* ---- Static state previews (see components/buttons.html comment) ---- */
+.stepper-input.force-focus {
+  outline-offset: 1px;
+}
+.switch input.force-focus + .track {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---- This page's own furniture ---- */
+.pair {
+  align-items: flex-start;
+  display: flex;
+  gap: 20px;
+}
+.pair-cap {
+  color: var(--on-surface-variant);
+  font-size: 10.5px;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>Inputs — as shipped</h1>
+    <p>The base input/select/textarea rule from tokens.css, plus the regex field (popup), the checkbox-as-switch and stepper (options). Focus rings are the real :focus-visible declarations, replayed via a class since this page has no live keyboard focus.</p>
+  </div>
+  <div class="stage">
+
+    <div class="demo-row">
+      <span class="demo-label">Input</span>
+      <div class="demo-sample">
+        <div class="pair">
+          <div>
+            <p class="pair-cap">Rest</p>
+            <div class="field" style="width:200px;">
+              <label for="rx1">Pattern</label>
+              <input class="regex-input" id="rx1" type="text" value="github|docs" autocomplete="off" spellcheck="false"/>
+            </div>
+          </div>
+          <div>
+            <p class="pair-cap">Focus</p>
+            <div class="field" style="width:200px;">
+              <label for="rx2">Pattern</label>
+              <input class="regex-input force-focus" id="rx2" type="text" value="github|docs" autocomplete="off" spellcheck="false"/>
+            </div>
+          </div>
+          <div>
+            <p class="pair-cap">Invalid</p>
+            <div class="field" style="width:200px;">
+              <label for="rx3">Pattern</label>
+              <input class="regex-input is-invalid" id="rx3" type="text" value="(unterminated" autocomplete="off" spellcheck="false"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-row">
+      <span class="demo-label">Select</span>
+      <div class="demo-sample">
+        <div class="pair">
+          <div>
+            <p class="pair-cap">Rest</p>
+            <select style="width:160px; padding:8px 10px;">
+              <option>A to Z</option>
+              <option>By domain</option>
+            </select>
+          </div>
+          <div>
+            <p class="pair-cap">Focus</p>
+            <select class="force-focus" style="width:160px; padding:8px 10px;">
+              <option>A to Z</option>
+              <option>By domain</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-row">
+      <span class="demo-label">Checkbox</span>
+      <div class="demo-sample">
+        <div class="pair">
+          <div>
+            <p class="pair-cap">Off</p>
+            <label class="switch">
+              <input type="checkbox"/>
+              <span class="track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <div>
+            <p class="pair-cap">On</p>
+            <label class="switch">
+              <input checked type="checkbox"/>
+              <span class="track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <div>
+            <p class="pair-cap">Focus</p>
+            <label class="switch">
+              <input checked class="force-focus" type="checkbox"/>
+              <span class="track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <div>
+            <p class="pair-cap">Disabled</p>
+            <label class="switch">
+              <input checked disabled type="checkbox"/>
+              <span class="track" aria-hidden="true"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-row">
+      <span class="demo-label">Stepper</span>
+      <div class="demo-sample">
+        <div class="pair">
+          <div>
+            <p class="pair-cap">Rest</p>
+            <div class="stepper">
+              <button aria-label="Decrease" type="button">−</button>
+              <input class="stepper-input" inputMode="numeric" type="text" value="2"/>
+              <button aria-label="Increase" type="button">+</button>
+            </div>
+          </div>
+          <div>
+            <p class="pair-cap">Focus</p>
+            <div class="stepper">
+              <button aria-label="Decrease" type="button">−</button>
+              <input class="stepper-input force-focus" inputMode="numeric" type="text" value="2"/>
+              <button aria-label="Increase" type="button">+</button>
+            </div>
+          </div>
+          <div>
+            <p class="pair-cap">Invalid</p>
+            <div class="stepper has-error">
+              <button aria-label="Decrease" type="button">−</button>
+              <input class="stepper-input is-invalid" inputMode="numeric" type="text" value="0"/>
+              <button aria-label="Increase" type="button">+</button>
+            </div>
+            <div style="height:8px;"></div>
+            <p class="field-error">Enter a whole number from 2 to 99.</p>
+          </div>
+          <div>
+            <p class="pair-cap">Bound reached</p>
+            <div class="stepper">
+              <button aria-label="Decrease" disabled type="button">−</button>
+              <input class="stepper-input" inputMode="numeric" type="text" value="99"/>
+              <button aria-label="Increase" disabled type="button">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

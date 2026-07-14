@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { groupByDomain, InvalidPatternError, matchByDomain, matchByRegex } from "./match";
+import {
+  groupByDomain,
+  MATCH_SAFETY_CAP,
+  matchByDomain,
+  matchPattern,
+  reasonToString,
+  validatePattern,
+} from "./match";
 import type { TabLite } from "./types";
 
 const tabs: TabLite[] = [
@@ -33,22 +40,72 @@ describe("matchByDomain", () => {
   });
 });
 
-describe("matchByRegex", () => {
+describe("matchPattern", () => {
   it("matches against title and url", () => {
-    expect(matchByRegex(tabs, "pull/2")).toEqual([2]);
-    expect(matchByRegex(tabs, "docs")).toEqual([3]);
+    expect(matchPattern(tabs, "pull/2")).toEqual({ ok: true, ids: [2] });
+    expect(matchPattern(tabs, "docs")).toEqual({ ok: true, ids: [3] });
   });
 
-  it("returns an empty list when nothing matches", () => {
-    expect(matchByRegex(tabs, "definitely-missing")).toEqual([]);
+  it("returns an empty id list when nothing matches", () => {
+    expect(matchPattern(tabs, "definitely-missing")).toEqual({ ok: true, ids: [] });
   });
 
+  // The g/y-strip rule, asserted through the public interface: a reused matcher
+  // would advance lastIndex and skip tabs — every hit must still be returned.
   it("ignores stateful g/y flags so every match is returned", () => {
-    expect(matchByRegex(tabs, "github", "gi")).toEqual([1, 2]);
-    expect(matchByRegex(tabs, "github", "g")).toEqual([1, 2]);
+    expect(matchPattern(tabs, "github", "gi")).toEqual({ ok: true, ids: [1, 2] });
+    expect(matchPattern(tabs, "github", "g")).toEqual({ ok: true, ids: [1, 2] });
   });
 
-  it("throws a distinct invalid-pattern error", () => {
-    expect(() => matchByRegex(tabs, "[")).toThrow(InvalidPatternError);
+  it("returns an invalid-pattern verdict instead of throwing", () => {
+    expect(matchPattern(tabs, "[")).toEqual({ ok: false, reason: "pattern" });
+  });
+
+  it("refuses a source over the match safety cap", () => {
+    expect(matchPattern(tabs, "a".repeat(MATCH_SAFETY_CAP + 1))).toEqual({
+      ok: false,
+      reason: "tooLong",
+    });
+  });
+});
+
+describe("validatePattern", () => {
+  it("accepts a valid pattern and returns a compiled regex", () => {
+    const verdict = validatePattern("git.*hub", "i");
+
+    expect(verdict.ok).toBe(true);
+    expect(verdict.ok && verdict.regex.test("GitHub")).toBe(true);
+  });
+
+  it("strips stateful g/y flags from the compiled regex", () => {
+    const gi = validatePattern("x", "gi");
+    const y = validatePattern("x", "y");
+
+    expect(gi.ok && gi.regex.flags).toBe("i");
+    expect(y.ok && y.regex.flags).toBe("");
+  });
+
+  it("blames the pattern when the source is malformed", () => {
+    expect(validatePattern("[")).toEqual({ ok: false, reason: "pattern" });
+  });
+
+  it("blames the flags when only the flags string is invalid", () => {
+    expect(validatePattern("ok", "z")).toEqual({ ok: false, reason: "flags" });
+  });
+
+  it("refuses a source at one past the safety cap but accepts the cap itself", () => {
+    expect(validatePattern("a".repeat(MATCH_SAFETY_CAP + 1))).toEqual({
+      ok: false,
+      reason: "tooLong",
+    });
+    expect(validatePattern("a".repeat(MATCH_SAFETY_CAP)).ok).toBe(true);
+  });
+});
+
+describe("reasonToString", () => {
+  it("maps each reason to a distinct message", () => {
+    expect(reasonToString("pattern")).toBe("Invalid regular expression.");
+    expect(reasonToString("flags")).toBe("Invalid regex flags.");
+    expect(reasonToString("tooLong")).toBe("Pattern is too long.");
   });
 });

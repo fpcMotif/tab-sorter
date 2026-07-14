@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tab Sorter — Settings (Final)</title>
+<style>
+  :root{
+    --font-sans: "Google Sans Text","Google Sans",Roboto,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    --font-display: "Google Sans",Roboto,-apple-system,"Segoe UI",Arial,sans-serif;
+    --font-mono: ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+
+    --page-bg: #E9EDF3;
+    --surface: #FFFFFF;
+    --surface-container-lowest: #FFFFFF;
+    --surface-container-low: #F8FAFD;
+    --surface-container: #F0F4F9;
+    --surface-container-high: #E9EEF6;
+    --surface-container-highest: #E3E8F0;
+    --on-surface: #1F1F1F;
+    --on-surface-variant: #444746;
+    --outline: #747775;
+    --outline-variant: #C4C7C5;
+
+    --primary: #0B57D0;
+    --on-primary: #FFFFFF;
+    --primary-container: #D3E3FD;
+    --on-primary-container: #041E49;
+
+    --error: #B3261E;
+    --on-error: #FFFFFF;
+    --error-container: #F9DEDC;
+    --on-error-container: #410E0B;
+
+    --warning-container: #FEF7E0;
+    --on-warning-container: #7B5900;
+
+    --success-container: #E6F4EA;
+    --on-success-container: #0D652D;
+
+    --shadow-color: 220 20% 20%;
+    --elevation-1: 0 1px 2px hsl(var(--shadow-color) / .30), 0 1px 3px 1px hsl(var(--shadow-color) / .15);
+
+    --g-grey-dot:#5F6368;   --g-grey-bg:#E8EAED;   --g-grey-fg:#3C4043;
+    --g-blue-dot:#1A73E8;   --g-blue-bg:#D2E3FC;   --g-blue-fg:#0842A0;
+    --g-purple-dot:#A142F4; --g-purple-bg:#F3E8FD; --g-purple-fg:#5E2B97;
+    --g-orange-dot:#FA903E; --g-orange-bg:#FEF0E6; --g-orange-fg:#8C3900;
+    --g-cyan-dot:#12B5CB;   --g-cyan-bg:#E0F7FA;   --g-cyan-fg:#05707D;
+
+    --ease: cubic-bezier(.2,0,0,1);
+    --dur: 140ms;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --page-bg: #101114;
+      --surface: #131314;
+      --surface-container-lowest: #0E0E0E;
+      --surface-container-low: #1B1B1B;
+      --surface-container: #1E1F20;
+      --surface-container-high: #282A2C;
+      --surface-container-highest: #333537;
+      --on-surface: #E3E3E3;
+      --on-surface-variant: #C4C7C5;
+      --outline: #8E918F;
+      --outline-variant: #444746;
+
+      --primary: #A8C7FA;
+      --on-primary: #062E6F;
+      --primary-container: #0842A0;
+      --on-primary-container: #D3E3FD;
+
+      --error: #F2B8B5;
+      --on-error: #601410;
+      --error-container: #8C1D18;
+      --on-error-container: #F9DEDC;
+
+      --warning-container: #7B5900;
+      --on-warning-container: #FEEFC3;
+
+      --success-container: #0D652D;
+      --on-success-container: #CEEAD6;
+
+      --shadow-color: 220 40% 2%;
+
+      --g-grey-dot:#9AA0A6;   --g-grey-bg:#3C4043;   --g-grey-fg:#DADCE0;
+      --g-blue-dot:#8AB4F8;   --g-blue-bg:#0842A0;   --g-blue-fg:#D2E3FC;
+      --g-purple-dot:#C58AF9; --g-purple-bg:#5E2B97; --g-purple-fg:#EAD9FC;
+      --g-orange-dot:#FCAD70; --g-orange-bg:#8C3900; --g-orange-fg:#FDDBBD;
+      --g-cyan-dot:#78D9EC;   --g-cyan-bg:#05707D;   --g-cyan-fg:#CBF0F8;
+    }
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  h1,h2,h3,p,ul,ol{margin:0;}
+  body{
+    font-family:var(--font-sans);
+    background:
+      radial-gradient(1100px 560px at 50% -12%, hsl(220 60% 92% / .55), transparent),
+      var(--page-bg);
+    color:var(--on-surface);
+    padding:48px 20px 96px;
+  }
+  @media (prefers-color-scheme: dark){
+    body{background:
+      radial-gradient(1100px 560px at 50% -12%, hsl(220 45% 18% / .5), transparent),
+      var(--page-bg);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+  }
+
+  .page{max-width:640px;margin:0 auto;}
+
+  .page-header{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+    margin-bottom:28px;
+  }
+  .header-left{display:flex;align-items:flex-start;gap:14px;}
+  .app-icon{
+    width:40px;height:40px;border-radius:12px;flex:none;
+    background:var(--primary-container);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .app-icon svg{width:22px;height:22px;color:var(--on-primary-container);}
+  .page-header h1{
+    font-family:var(--font-display);font-size:22px;font-weight:500;
+    margin:2px 0 4px;color:var(--on-surface);
+  }
+  .header-sub{font-size:13.5px;color:var(--on-surface-variant);margin:0;max-width:440px;line-height:1.45;}
+  .save-indicator{
+    display:flex;align-items:center;gap:6px;flex:none;
+    font-size:12.5px;font-weight:500;color:var(--on-success-container);
+    background:var(--success-container);
+    padding:6px 12px 6px 10px;border-radius:16px;margin-top:2px;
+    transition:opacity var(--dur) var(--ease);
+    opacity:0;
+  }
+  .save-indicator.is-visible{opacity:1;}
+  .save-indicator svg{width:15px;height:15px;}
+
+  .settings-section{
+    background:var(--surface-container-lowest);
+    border:1px solid var(--outline-variant);
+    border-radius:20px;
+    padding:6px 22px 10px;
+    margin-bottom:20px;
+  }
+  .settings-section h2{
+    font-family:var(--font-display);font-size:15.5px;font-weight:500;
+    padding:16px 0 2px;margin:0;color:var(--on-surface);
+  }
+  .section-sub{font-size:12.5px;color:var(--on-surface-variant);margin:0 0 8px;line-height:1.45;}
+
+  .pref-row{
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+    padding:14px 0;border-top:1px solid var(--outline-variant);
+  }
+  .pref-row.no-border{border-top:none;}
+  .settings-section h2 + .pref-row{border-top:none;}
+  .pref-text{flex:1;min-width:0;}
+  .pref-text label{display:block;font-size:14px;font-weight:500;color:var(--on-surface);margin-bottom:2px;}
+  .consequence{font-size:12.5px;color:var(--on-surface-variant);margin:0;line-height:1.4;}
+  .pref-control{flex:none;display:flex;align-items:center;}
+
+  /* segmented control */
+  .segmented{
+    display:flex;border:1px solid var(--outline-variant);border-radius:18px;overflow:hidden;
+  }
+  .segmented button{
+    font-family:var(--font-sans);font-size:12.5px;font-weight:500;
+    padding:7px 14px;border:none;background:transparent;color:var(--on-surface-variant);
+    cursor:pointer;border-right:1px solid var(--outline-variant);white-space:nowrap;
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .segmented button:last-child{border-right:none;}
+  .segmented button.is-selected{background:var(--primary-container);color:var(--on-primary-container);}
+  .segmented button:hover:not(.is-selected){background:var(--surface-container-high);}
+  .segmented button:focus-visible{outline:2px solid var(--primary);outline-offset:-2px;}
+
+  /* toggle switch — a real, native <input type="checkbox"> wearing a track,
+     not a <button role="switch"> that has to hand-roll keyboard behavior */
+  .switch{
+    position:relative;display:inline-flex;width:38px;height:22px;flex:none;cursor:pointer;
+  }
+  .switch input{
+    position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;
+  }
+  .switch .track{
+    position:absolute;inset:0;border-radius:11px;background:var(--outline-variant);
+    transition:background var(--dur) var(--ease);
+    pointer-events:none;
+  }
+  .switch .track::after{
+    content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:var(--surface-container-lowest);
+    box-shadow:0 1px 2px hsl(var(--shadow-color) / .35);
+    transition:transform var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .switch input:checked + .track{background:var(--primary);}
+  .switch input:checked + .track::after{transform:translateX(16px);background:var(--on-primary);}
+  .switch input:focus-visible + .track{outline:2px solid var(--primary);outline-offset:2px;}
+
+  /* stepper */
+  .stepper{
+    display:flex;align-items:center;gap:2px;
+    border:1px solid var(--outline-variant);border-radius:18px;padding:2px;
+  }
+  .stepper button{
+    width:28px;height:28px;border-radius:50%;border:none;background:transparent;
+    color:var(--on-surface);cursor:pointer;display:flex;align-items:center;justify-content:center;
+    font-size:16px;line-height:1;
+  }
+  .stepper button:hover:not(:disabled){background:var(--surface-container-high);}
+  .stepper button:disabled{opacity:.4;cursor:default;}
+  .stepper button:focus-visible{outline:2px solid var(--primary);outline-offset:1px;}
+  .stepper .stepper-value{
+    min-width:28px;text-align:center;font-size:13.5px;font-weight:500;color:var(--on-surface);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .warning-note{
+    display:flex;align-items:flex-start;gap:8px;
+    background:var(--warning-container);color:var(--on-warning-container);
+    border-radius:12px;padding:9px 12px;margin:0 0 12px;font-size:12.5px;line-height:1.4;
+  }
+  .warning-note svg{width:16px;height:16px;flex:none;margin-top:1px;}
+
+  hr.rule{border:none;border-top:1px solid var(--outline-variant);margin:2px 0;}
+
+  /* preset form */
+  .preset-form{
+    display:grid;grid-template-columns:1fr 1fr 64px auto;gap:10px;align-items:end;
+    padding:14px 0 16px;
+  }
+  .form-field{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .form-field label{font-size:11px;font-weight:500;color:var(--on-surface-variant);}
+  .form-field input{
+    font-family:var(--font-sans);font-size:13px;padding:8px 10px;border-radius:10px;
+    border:1px solid var(--outline-variant);background:var(--surface-container-low);color:var(--on-surface);
+    min-width:0;
+  }
+  .form-field input.mono{font-family:var(--font-mono);}
+  .form-field input:focus-visible{outline:2px solid var(--primary);outline-offset:1px;}
+  .form-error{font-size:11.5px;color:var(--error);grid-column:1 / -1;margin-top:-4px;}
+  .btn-filled{
+    font-family:var(--font-sans);font-size:13px;font-weight:500;white-space:nowrap;
+    padding:9px 16px;border-radius:18px;border:none;cursor:pointer;
+    background:var(--primary);color:var(--on-primary);
+  }
+  .btn-filled:hover{filter:brightness(1.06);}
+  .btn-filled:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+
+  .preset-list{list-style:none;margin:0;padding:2px 0 14px;display:flex;flex-direction:column;gap:1px;}
+  .preset-row{
+    display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:12px;
+    transition:background var(--dur) var(--ease);
+  }
+  .preset-row:hover{background:var(--surface-container-low);}
+  .preset-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .preset-label{font-size:13px;font-weight:500;color:var(--on-surface);flex:none;width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .preset-pattern{
+    font-family:var(--font-mono);font-size:12px;
+    color:var(--on-surface-variant);background:var(--surface-container-low);
+    padding:3px 8px;border-radius:8px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .preset-flags{
+    font-size:11px;font-weight:500;color:var(--on-surface-variant);
+    background:var(--surface-container-high);padding:2px 7px;border-radius:8px;flex:none;
+    font-variant-numeric:tabular-nums;
+  }
+  .icon-btn{
+    width:30px;height:30px;border-radius:50%;border:none;background:transparent;
+    display:flex;align-items:center;justify-content:center;color:var(--on-surface-variant);cursor:pointer;flex:none;
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .icon-btn:hover{background:var(--error-container);color:var(--on-error-container);}
+  .icon-btn:focus-visible{outline:2px solid var(--primary);outline-offset:1px;}
+  .icon-btn svg{width:16px;height:16px;}
+  .empty-presets{font-size:12.5px;color:var(--on-surface-variant);padding:10px 8px;}
+
+  /* shortcuts */
+  .shortcut-list{list-style:none;margin:0;padding:2px 0 16px;display:flex;flex-direction:column;gap:1px;}
+  .shortcut-row{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:10px 8px;border-radius:12px;
+  }
+  .shortcut-row span.shortcut-name{font-size:13.5px;color:var(--on-surface);}
+  .kbd-group{display:flex;align-items:center;gap:4px;flex:none;}
+  kbd{
+    font-family:var(--font-sans);font-size:12px;font-weight:500;color:var(--on-surface);
+    background:var(--surface-container-high);border:1px solid var(--outline-variant);
+    border-radius:7px;padding:3px 8px;
+  }
+  .kbd-plus{color:var(--on-surface-variant);font-size:11px;}
+  .shortcuts-note{
+    font-size:12px;color:var(--on-surface-variant);padding:0 8px 16px;margin:0;line-height:1.5;
+  }
+  .shortcuts-note code{
+    font-family:var(--font-mono);font-size:11.5px;
+    background:var(--surface-container-high);padding:1px 6px;border-radius:6px;
+  }
+
+  .footer-mark{
+    text-align:center;font-size:11.5px;color:var(--on-surface-variant);opacity:.75;padding-top:8px;
+  }
+
+  .icon-defs{position:absolute;width:0;height:0;overflow:hidden;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+</style>
+</head>
+<body>
+
+<svg class="icon-defs" aria-hidden="true">
+  <defs>
+    <symbol id="i-sparkle" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11 3.2l1.9 5.3 5.3 1.9-5.3 1.9L11 17.6l-1.9-5.3L3.8 10.4l5.3-1.9L11 3.2z"/>
+      <path d="M18.3 2.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="5 12.5 9.5 17 19 7"/>
+    </symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M12 3.3 22 20H2z"/><line x1="12" y1="9.5" x2="12" y2="14.5"/><circle cx="12" cy="17.3" r=".9" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="page">
+
+  <div class="page-header">
+    <div class="header-left">
+      <span class="app-icon"><svg><use href="#i-sparkle"/></svg></span>
+      <div>
+        <h1>Tab Sorter settings</h1>
+        <p class="header-sub">Defaults that shape every tidy, sort, and duplicate check across all your windows.</p>
+      </div>
+    </div>
+    <span class="save-indicator" id="saveIndicator" role="status" aria-live="polite"><svg><use href="#i-check"/></svg>Saved</span>
+  </div>
+
+  <section class="settings-section" aria-labelledby="sorting-h">
+    <h2 id="sorting-h">Sorting</h2>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label id="lbl-default-sort">Default sort</label>
+        <p class="consequence">Used when you click Sort without choosing A to Z or By domain.</p>
+      </div>
+      <div class="pref-control">
+        <div class="segmented" role="group" aria-labelledby="lbl-default-sort" data-pref="defaultSort">
+          <button class="is-selected" data-value="title">A to Z</button>
+          <button data-value="domain">By domain</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label id="lbl-pinned" for="toggle-pinned">Keep pinned tabs fixed</label>
+        <p class="consequence">Pinned tabs stay in place and are never moved or grouped.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-pinned" checked data-pref="ignorePinned">
+          <span class="track" aria-hidden="true"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="settings-section" aria-labelledby="tidy-h">
+    <h2 id="tidy-h">Tidy</h2>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label id="lbl-collapse" for="toggle-collapse">Collapse groups after tidy</label>
+        <p class="consequence">New groups start collapsed so the tab strip stays short.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-collapse" data-pref="collapseAfterTidy">
+          <span class="track" aria-hidden="true"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label id="lbl-min-size">Minimum tabs to form a group</label>
+        <p class="consequence">Sites with fewer tabs than this stay loose instead of becoming a group.</p>
+      </div>
+      <div class="pref-control">
+        <div class="stepper" role="group" aria-labelledby="lbl-min-size" data-pref="minGroupSize" data-min="2" data-max="9">
+          <button type="button" data-step="-1" aria-label="Decrease">−</button>
+          <span class="stepper-value">2</span>
+          <button type="button" data-step="1" aria-label="Increase">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label id="lbl-group-order">Group order</label>
+        <p class="consequence">Controls left-to-right placement of new groups in the tab strip.</p>
+      </div>
+      <div class="pref-control">
+        <div class="segmented" role="group" aria-labelledby="lbl-group-order" data-pref="groupOrder">
+          <button class="is-selected" data-value="alpha">Alphabetical</button>
+          <button data-value="sizeDesc">Largest first</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pref-row no-border">
+      <div class="pref-text">
+        <label id="lbl-regroup" for="toggle-regroup">Also regroup tabs already in groups</label>
+        <p class="consequence">Off by default so hand-made groups are left alone.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-regroup" data-pref="regroupExisting">
+          <span class="track" aria-hidden="true"></span>
+        </label>
+      </div>
+    </div>
+    <div class="warning-note">
+      <svg><use href="#i-warning"/></svg>
+      <span>Turning this on reshuffles groups you made by hand — Tab Sorter can't tell them apart from its own.</span>
+    </div>
+  </section>
+
+  <section class="settings-section" aria-labelledby="dupes-h">
+    <h2 id="dupes-h">Duplicates</h2>
+
+    <div class="pref-row">
+      <div class="pref-text">
+        <label id="lbl-frag" for="toggle-fragment">Ignore URL fragment (#…)</label>
+        <p class="consequence">example.com/page#top and example.com/page count as duplicates.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-fragment" checked data-pref="dedupeIgnoreHash">
+          <span class="track" aria-hidden="true"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="pref-row no-border">
+      <div class="pref-text">
+        <label id="lbl-query" for="toggle-query">Ignore query string (?…)</label>
+        <p class="consequence">example.com/search?q=a and ?q=b count as duplicates of the same page.</p>
+      </div>
+      <div class="pref-control">
+        <label class="switch">
+          <input type="checkbox" id="toggle-query" data-pref="dedupeIgnoreQuery">
+          <span class="track" aria-hidden="true"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="settings-section" aria-labelledby="presets-h">
+    <h2 id="presets-h">Regex presets</h2>
+    <p class="section-sub">Saved patterns appear as preset chips in the popup's pattern extractor.</p>
+
+    <form class="preset-form" id="presetForm">
+      <div class="form-field">
+        <label for="pf-label">Label</label>
+        <input id="pf-label" type="text" placeholder="Social media" maxlength="60">
+      </div>
+      <div class="form-field">
+        <label for="pf-pattern">Pattern</label>
+        <input id="pf-pattern" class="mono" type="text" placeholder="facebook|twitter|tiktok" maxlength="500">
+      </div>
+      <div class="form-field">
+        <label for="pf-flags">Flags</label>
+        <input id="pf-flags" class="mono" type="text" placeholder="i" maxlength="4">
+      </div>
+      <button class="btn-filled" type="submit">Add preset</button>
+      <p class="form-error" id="presetError" hidden></p>
+    </form>
+
+    <ul class="preset-list" id="presetList">
+      <li class="preset-row">
+        <span class="preset-dot" style="background:var(--g-blue-dot);"></span>
+        <span class="preset-label">Google properties</span>
+        <code class="preset-pattern">\.google\.com$</code>
+        <span class="preset-flags">i</span>
+        <button class="icon-btn" aria-label="Delete Google properties preset"><svg><use href="#i-trash"/></svg></button>
+      </li>
+      <li class="preset-row">
+        <span class="preset-dot" style="background:var(--g-cyan-dot);"></span>
+        <span class="preset-label">Localhost</span>
+        <code class="preset-pattern">^https?://localhost</code>
+        <span class="preset-flags">i</span>
+        <button class="icon-btn" aria-label="Delete Localhost preset"><svg><use href="#i-trash"/></svg></button>
+      </li>
+      <li class="preset-row">
+        <span class="preset-dot" style="background:var(--g-orange-dot);"></span>
+        <span class="preset-label">PDFs</span>
+        <code class="preset-pattern">\.pdf$</code>
+        <span class="preset-flags">—</span>
+        <button class="icon-btn" aria-label="Delete PDFs preset"><svg><use href="#i-trash"/></svg></button>
+      </li>
+      <li class="preset-row">
+        <span class="preset-dot" style="background:var(--g-purple-dot);"></span>
+        <span class="preset-label">Social media</span>
+        <code class="preset-pattern">facebook|twitter|instagram|tiktok</code>
+        <span class="preset-flags">i</span>
+        <button class="icon-btn" aria-label="Delete Social media preset"><svg><use href="#i-trash"/></svg></button>
+      </li>
+    </ul>
+  </section>
+
+  <section class="settings-section" aria-labelledby="shortcuts-h">
+    <h2 id="shortcuts-h">Keyboard shortcuts</h2>
+    <p class="section-sub">Read-only reference. Change these in chrome://extensions/shortcuts.</p>
+
+    <ul class="shortcut-list">
+      <li class="shortcut-row">
+        <span class="shortcut-name">Tidy this window</span>
+        <span class="kbd-group"><kbd>Alt</kbd><span class="kbd-plus">+</span><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>Space</kbd></span>
+      </li>
+      <li class="shortcut-row">
+        <span class="shortcut-name">Undo</span>
+        <span class="kbd-group"><kbd>Alt</kbd><span class="kbd-plus">+</span><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>Z</kbd></span>
+      </li>
+      <li class="shortcut-row">
+        <span class="shortcut-name">Sort A to Z</span>
+        <span class="kbd-group"><kbd>Alt</kbd><span class="kbd-plus">+</span><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>T</kbd></span>
+      </li>
+      <li class="shortcut-row">
+        <span class="shortcut-name">Default sort</span>
+        <span class="kbd-group"><kbd>Alt</kbd><span class="kbd-plus">+</span><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>S</kbd></span>
+      </li>
+    </ul>
+    <p class="shortcuts-note">Shortcuts are global to Chrome and may be reassigned by other extensions. Manage all of them at <code>chrome://extensions/shortcuts</code>.</p>
+  </section>
+
+  <p class="footer-mark">Tab Sorter</p>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Quiet "Saved." indicator: live-save on every pref change ---------- */
+  var saveIndicator = document.getElementById("saveIndicator");
+  var saveTimer = null;
+  function flashSaved(){
+    if (!saveIndicator) return;
+    saveIndicator.classList.add("is-visible");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      saveIndicator.classList.remove("is-visible");
+    }, 1600);
+  }
+
+  /* ---------- Segmented controls (Default sort, Group order) ---------- */
+  document.querySelectorAll(".segmented").forEach(function(seg){
+    seg.querySelectorAll("button").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        seg.querySelectorAll("button").forEach(function(b){ b.classList.remove("is-selected"); });
+        btn.classList.add("is-selected");
+        flashSaved();
+      });
+    });
+  });
+
+  /* ---------- Real checkbox switches ---------- */
+  document.querySelectorAll(".switch input").forEach(function(input){
+    input.addEventListener("change", flashSaved);
+  });
+
+  /* ---------- Stepper (Minimum tabs to form a group) ---------- */
+  document.querySelectorAll(".stepper").forEach(function(stepper){
+    var valueEl = stepper.querySelector(".stepper-value");
+    var min = Number(stepper.dataset.min || 1);
+    var max = Number(stepper.dataset.max || 20);
+    stepper.querySelectorAll("button[data-step]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var next = Number(valueEl.textContent) + Number(btn.dataset.step);
+        next = Math.max(min, Math.min(max, next));
+        valueEl.textContent = String(next);
+        stepper.querySelectorAll("button[data-step]").forEach(function(b){
+          var edge = Number(b.dataset.step) < 0 ? next <= min : next >= max;
+          b.disabled = edge;
+        });
+        flashSaved();
+      });
+    });
+  });
+
+  /* ---------- Regex presets: add + delete ---------- */
+  var presetList = document.getElementById("presetList");
+  var presetForm = document.getElementById("presetForm");
+  var presetError = document.getElementById("presetError");
+  var dotColors = ["var(--g-blue-dot)", "var(--g-cyan-dot)", "var(--g-orange-dot)", "var(--g-purple-dot)", "var(--g-grey-dot)"];
+  var dotIndex = 0;
+
+  function isValidRegex(source, flags){
+    try { new RegExp(source, flags); return true; } catch (e) { return false; }
+  }
+
+  presetList.addEventListener("click", function(e){
+    var btn = e.target.closest(".icon-btn");
+    if (!btn) return;
+    btn.closest(".preset-row").remove();
+    flashSaved();
+    if (presetList.children.length === 0){
+      var empty = document.createElement("p");
+      empty.className = "empty-presets";
+      empty.textContent = "No presets yet.";
+      presetList.replaceWith(empty);
+    }
+  });
+
+  if (presetForm){
+    presetForm.addEventListener("submit", function(e){
+      e.preventDefault();
+      var label = document.getElementById("pf-label").value.trim();
+      var pattern = document.getElementById("pf-pattern").value;
+      var flags = document.getElementById("pf-flags").value.trim();
+
+      presetError.hidden = true;
+      if (label.length === 0){
+        presetError.textContent = "Preset label is required.";
+        presetError.hidden = false;
+        return;
+      }
+      if (pattern.trim().length === 0){
+        presetError.textContent = "Pattern is required.";
+        presetError.hidden = false;
+        return;
+      }
+      if (!isValidRegex(pattern, flags)){
+        presetError.textContent = "That pattern or flag combination isn't a valid regular expression.";
+        presetError.hidden = false;
+        return;
+      }
+
+      var row = document.createElement("li");
+      row.className = "preset-row";
+      row.innerHTML =
+        '<span class="preset-dot" style="background:' + dotColors[dotIndex % dotColors.length] + ';"></span>' +
+        '<span class="preset-label"></span>' +
+        '<code class="preset-pattern"></code>' +
+        '<span class="preset-flags"></span>' +
+        '<button class="icon-btn" aria-label="Delete ' + label + ' preset"><svg><use href="#i-trash"/></svg></button>';
+      row.querySelector(".preset-label").textContent = label;
+      row.querySelector(".preset-pattern").textContent = pattern;
+      row.querySelector(".preset-flags").textContent = flags.length > 0 ? flags : "—";
+      dotIndex++;
+
+      presetList.appendChild(row);
+      presetForm.reset();
+      document.getElementById("pf-flags").value = "i";
+      flashSaved();
+    });
+  }
+})();
+</script>
+</body>
+</html>

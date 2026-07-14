@@ -1,0 +1,1156 @@
+<!-- @dsCard group="As built" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tab Sorter — Options (As built)</title>
+<style>
+/* Chrome Native+ — approved design-token foundation shared by popup/App.css and
+   options/App.css. Values are the token table in docs/design/final/DESIGN-SPEC.md
+   §1, ground-truthed against the <style> blocks of docs/design/final/popup.html
+   and settings.html. Replaces the prior Warm Editorial set. */
+
+/* ---- Tokens: light (default) ---- */
+:root {
+  --font-sans:
+    "Google Sans Text", "Google Sans", Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
+    sans-serif;
+  --font-display: "Google Sans", Roboto, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --page-bg: #e9edf3;
+  --surface: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f8fafd;
+  --surface-container: #f0f4f9;
+  --surface-container-high: #e9eef6;
+  --surface-container-highest: #e3e8f0;
+  --on-surface: #1f1f1f;
+  --on-surface-variant: #444746;
+  --outline: #747775;
+  --outline-variant: #c4c7c5;
+  --primary: #0b57d0;
+  --on-primary: #ffffff;
+  --primary-container: #d3e3fd;
+  --on-primary-container: #041e49;
+  --error: #b3261e;
+  --on-error: #ffffff;
+  --error-container: #f9dedc;
+  --on-error-container: #410e0b;
+  --warning-container: #fef7e0;
+  --on-warning-container: #7b5900;
+  --success-container: #e6f4ea;
+  --on-success-container: #0d652d;
+  /* the 9 chrome.tabGroups colors — GroupColor in lib/types.ts */
+  --g-grey-dot: #5f6368;
+  --g-grey-bg: #e8eaed;
+  --g-grey-fg: #3c4043;
+  --g-blue-dot: #1a73e8;
+  --g-blue-bg: #d2e3fc;
+  --g-blue-fg: #0842a0;
+  --g-red-dot: #d93025;
+  --g-red-bg: #fce8e6;
+  --g-red-fg: #a50e0e;
+  --g-yellow-dot: #f29900;
+  --g-yellow-bg: #fef7e0;
+  --g-yellow-fg: #7b5900;
+  --g-green-dot: #1e8e3e;
+  --g-green-bg: #e6f4ea;
+  --g-green-fg: #0d652d;
+  --g-pink-dot: #d01884;
+  --g-pink-bg: #fce4ec;
+  --g-pink-fg: #7a0d4b;
+  --g-purple-dot: #a142f4;
+  --g-purple-bg: #f3e8fd;
+  --g-purple-fg: #5e2b97;
+  --g-cyan-dot: #12b5cb;
+  --g-cyan-bg: #e0f7fa;
+  --g-cyan-fg: #05707d;
+  --g-orange-dot: #fa903e;
+  --g-orange-bg: #fef0e6;
+  --g-orange-fg: #8c3900;
+  --shadow-color: 220 20% 20%;
+  --elevation-1:
+    0 1px 2px hsl(var(--shadow-color) / 0.3), 0 1px 3px 1px hsl(var(--shadow-color) / 0.15);
+  --elevation-3:
+    0 4px 8px 3px hsl(var(--shadow-color) / 0.15), 0 1px 3px hsl(var(--shadow-color) / 0.3);
+  /* generic buckets over the per-component radii named in DESIGN-SPEC §1.5: s =
+     domain row / inputs / small chips, m = dedupe row / toast, l = pills / cards */
+  --radius-s: 10px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur: 140ms;
+  /* On-primary chip inside the popup's hero-tidy button (DESIGN-SPEC §1.2/§4.1). */
+  --hero-kbd-bg: hsl(0 0% 100% / 0.18);
+  --hero-kbd-border: hsl(0 0% 100% / 0.32);
+}
+
+/* ---- Tokens: dark ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #101114;
+    --surface: #131314;
+    --surface-container-lowest: #0e0e0e;
+    --surface-container-low: #1b1b1b;
+    --surface-container: #1e1f20;
+    --surface-container-high: #282a2c;
+    --surface-container-highest: #333537;
+    --on-surface: #e3e3e3;
+    --on-surface-variant: #c4c7c5;
+    --outline: #8e918f;
+    --outline-variant: #444746;
+    --primary: #a8c7fa;
+    --on-primary: #062e6f;
+    --primary-container: #0842a0;
+    --on-primary-container: #d3e3fd;
+    --error: #f2b8b5;
+    --on-error: #601410;
+    --error-container: #8c1d18;
+    --on-error-container: #f9dedc;
+    --warning-container: #7b5900;
+    --on-warning-container: #feefc3;
+    --success-container: #0d652d;
+    --on-success-container: #ceead6;
+    --g-grey-dot: #9aa0a6;
+    --g-grey-bg: #3c4043;
+    --g-grey-fg: #dadce0;
+    --g-blue-dot: #8ab4f8;
+    --g-blue-bg: #0842a0;
+    --g-blue-fg: #d2e3fc;
+    --g-red-dot: #f28b82;
+    --g-red-bg: #8c1d18;
+    --g-red-fg: #fadad7;
+    --g-yellow-dot: #fdd663;
+    --g-yellow-bg: #7b5900;
+    --g-yellow-fg: #feefc3;
+    --g-green-dot: #81c995;
+    --g-green-bg: #0d652d;
+    --g-green-fg: #ceead6;
+    --g-pink-dot: #ff8bcb;
+    --g-pink-bg: #7a0d4b;
+    --g-pink-fg: #ffd7ec;
+    --g-purple-dot: #c58af9;
+    --g-purple-bg: #5e2b97;
+    --g-purple-fg: #ead9fc;
+    --g-cyan-dot: #78d9ec;
+    --g-cyan-bg: #05707d;
+    --g-cyan-fg: #cbf0f8;
+    --g-orange-dot: #fcad70;
+    --g-orange-bg: #8c3900;
+    --g-orange-fg: #fddbbd;
+    --shadow-color: 220 40% 2%;
+    --hero-kbd-bg: hsl(220 60% 10% / 0.16);
+    --hero-kbd-border: hsl(220 60% 10% / 0.26);
+  }
+}
+
+/* ---- Base elements ---- */
+* {
+  box-sizing: border-box;
+}
+body {
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-sans);
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+a {
+  color: var(--primary);
+}
+
+/* ---- Buttons ---- */
+button {
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-l);
+  box-shadow: var(--elevation-1);
+  color: var(--on-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    filter var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.btn-secondary {
+  background: transparent;
+  border-color: var(--outline);
+  box-shadow: none;
+  color: var(--on-surface);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  filter: none;
+}
+.btn-danger {
+  background: var(--error);
+  border-color: transparent;
+  color: var(--on-error);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--on-surface-variant);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  filter: none;
+}
+
+/* ---- Form controls ---- */
+input,
+select,
+textarea {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-s);
+  color: var(--on-surface);
+  font: inherit;
+  transition: border-color var(--dur) var(--ease);
+}
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--outline);
+}
+
+/* ---- Focus ---- */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---- Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---- Utilities ---- */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+/* Visually hidden but still reachable by assistive tech — for aria-live
+   announcements (e.g. the popup's copy confirmation) that must never touch
+   visible layout. */
+.sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+/* Kbd chip — DESIGN-SPEC §4.10, used by shortcut lists, chip shortcut hints,
+   and the undo pill. */
+kbd {
+  background: var(--surface-container-high);
+  border: 1px solid var(--outline-variant);
+  border-radius: 5px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  padding: 2px 5px;
+}
+/* Group-color dot — one of the 9 GroupColor values (lib/types.ts), for the
+   domain row and anywhere a group's color needs a plain identity mark. */
+.dot {
+  border-radius: 50%;
+  flex: none;
+  height: 10px;
+  width: 10px;
+}
+.dot-grey {
+  background: var(--g-grey-dot);
+}
+.dot-blue {
+  background: var(--g-blue-dot);
+}
+.dot-red {
+  background: var(--g-red-dot);
+}
+.dot-yellow {
+  background: var(--g-yellow-dot);
+}
+.dot-green {
+  background: var(--g-green-dot);
+}
+.dot-pink {
+  background: var(--g-pink-dot);
+}
+.dot-purple {
+  background: var(--g-purple-dot);
+}
+.dot-cyan {
+  background: var(--g-cyan-dot);
+}
+.dot-orange {
+  background: var(--g-orange-dot);
+}
+
+/* ---- Scrollbars ---- */
+* {
+  scrollbar-color: var(--outline-variant) transparent;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: var(--radius-s);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--outline);
+}
+
+/* Chrome Native+ settings page — DESIGN-SPEC.md §7.3's mapping onto
+   entrypoints/options, mirroring docs/design/final/settings.html
+   section-for-section. Colors/shape/motion route through tokens.css'
+   custom properties and base `button`/`input` rules; only sizing,
+   typography, and layout are literal px here (never a hex color). */
+
+body {
+  background:
+    radial-gradient(1100px 560px at 50% -12%, hsl(220 60% 92% / 55%), transparent), var(--page-bg);
+  padding: 48px 20px 96px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background:
+      radial-gradient(1100px 560px at 50% -12%, hsl(220 45% 18% / 50%), transparent), var(--page-bg);
+  }
+}
+
+.page {
+  margin: 0 auto;
+  max-width: 640px;
+}
+
+.page-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.header-left {
+  align-items: flex-start;
+  display: flex;
+  gap: 14px;
+}
+
+.app-icon {
+  align-items: center;
+  background: var(--primary-container);
+  border-radius: 12px;
+  display: flex;
+  flex: none;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.app-icon svg {
+  color: var(--on-primary-container);
+  height: 22px;
+  width: 22px;
+}
+
+.page-header h1 {
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  margin: 2px 0 4px;
+}
+
+.header-sub {
+  color: var(--on-surface-variant);
+  font-size: 13.5px;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 440px;
+}
+
+/* Quiet "Saved." chip — fades in on every live-save, fades back out on its
+   own timer (see the status-clearing effect in App.tsx). */
+.save-indicator {
+  align-items: center;
+  background: var(--success-container);
+  border-radius: 16px;
+  color: var(--on-success-container);
+  display: flex;
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  gap: 6px;
+  margin-top: 2px;
+  opacity: 0;
+  padding: 6px 12px 6px 10px;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.save-indicator.is-visible {
+  opacity: 1;
+}
+
+.save-indicator svg {
+  height: 15px;
+  width: 15px;
+}
+
+.settings-section {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-l);
+  margin-bottom: 20px;
+  padding: 6px 22px 10px;
+}
+
+.settings-section h2 {
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  font-weight: 500;
+  margin: 0;
+  padding: 16px 0 2px;
+}
+
+.section-sub {
+  color: var(--on-surface-variant);
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 0 0 8px;
+}
+
+.pref-row {
+  align-items: center;
+  border-top: 1px solid var(--outline-variant);
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+
+.pref-row.no-border {
+  border-top: none;
+}
+
+.settings-section h2 + .pref-row {
+  border-top: none;
+}
+
+.pref-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pref-text label {
+  color: var(--on-surface);
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.consequence {
+  color: var(--on-surface-variant);
+  font-size: 12.5px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.pref-control {
+  align-items: center;
+  display: flex;
+  flex: none;
+}
+
+/* Segmented control (Default sort, Group order) — a persisted choice, not a
+   momentary action; one button always carries .is-selected. Resets the
+   inherited primary-button chrome (radius/shadow) from tokens.css' bare
+   `button` rule since this is a neutral, non-filled control. */
+.segmented {
+  border: 1px solid var(--outline-variant);
+  border-radius: 18px;
+  display: flex;
+  overflow: hidden;
+}
+
+.segmented button {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--outline-variant);
+  box-shadow: none;
+  color: var(--on-surface-variant);
+  font-size: 12.5px;
+  padding: 7px 14px;
+  transition:
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+  white-space: nowrap;
+}
+
+.segmented button:last-child {
+  border-right: none;
+}
+
+.segmented button.is-selected {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.segmented button:hover:not(.is-selected):not(:disabled) {
+  background: var(--surface-container-high);
+  filter: none;
+}
+
+.segmented button:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Toggle switch — a real <input type="checkbox"> wearing a track, so Space
+   toggles it for free and its accessible name comes from <label for>, not a
+   hand-rolled <button role="switch">. */
+.switch {
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  height: 22px;
+  position: relative;
+  width: 38px;
+}
+
+.switch input {
+  cursor: pointer;
+  height: 100%;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.switch .track {
+  background: var(--outline-variant);
+  border-radius: 11px;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: background-color var(--dur) var(--ease);
+}
+
+.switch .track::after {
+  background: var(--surface-container-lowest);
+  border-radius: 50%;
+  box-shadow: 0 1px 2px hsl(var(--shadow-color) / 35%);
+  content: "";
+  height: 18px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition:
+    background-color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+  width: 18px;
+}
+
+.switch input:checked + .track {
+  background: var(--primary);
+}
+
+.switch input:checked + .track::after {
+  background: var(--on-primary);
+  transform: translateX(16px);
+}
+
+.switch input:focus-visible + .track {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.switch input:disabled ~ .track {
+  opacity: 0.55;
+}
+
+/* Stepper (Minimum tabs to form a group) — circular −/+ buttons around a
+   typed, tabular-nums value; buttons disable at the min/max bound instead of
+   wrapping or no-op'ing silently (§4.4). The center is a real text input
+   (task requires typing a value directly), styled to disappear into the
+   pill rather than look like a boxed field. */
+.stepper {
+  align-items: center;
+  border: 1px solid var(--outline-variant);
+  border-radius: 18px;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.stepper.has-error {
+  border-color: var(--error);
+}
+
+.stepper button {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  box-shadow: none;
+  color: var(--on-surface);
+  display: flex;
+  font-size: 16px;
+  height: 28px;
+  justify-content: center;
+  line-height: 1;
+  width: 28px;
+}
+
+.stepper button:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  filter: none;
+}
+
+.stepper button:disabled {
+  opacity: 0.4;
+}
+
+.stepper button:focus-visible {
+  outline-offset: 1px;
+}
+
+.stepper-input {
+  background: transparent;
+  border: none;
+  color: var(--on-surface);
+  font: inherit;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-align: center;
+  width: 34px;
+}
+
+.stepper-input.is-invalid {
+  color: var(--error);
+}
+
+.stepper-input:focus-visible {
+  outline-offset: 1px;
+}
+
+.field-error {
+  color: var(--error);
+  font-size: 11.5px;
+  margin: -8px 0 12px;
+}
+
+.warning-note {
+  align-items: flex-start;
+  background: var(--warning-container);
+  border-radius: 12px;
+  color: var(--on-warning-container);
+  display: flex;
+  font-size: 12.5px;
+  gap: 8px;
+  line-height: 1.4;
+  margin: 0 0 12px;
+  padding: 9px 12px;
+}
+
+.warning-note svg {
+  flex: none;
+  height: 16px;
+  margin-top: 1px;
+  width: 16px;
+}
+
+/* Regex preset form */
+.preset-form {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr 64px auto;
+  padding: 14px 0 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.form-field label {
+  color: var(--on-surface-variant);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Background/border/radius/color are inherited from tokens.css' global
+   input rule — only the sizing that rule doesn't own lives here. */
+.form-field input {
+  font-size: 13px;
+  min-width: 0;
+  padding: 8px 10px;
+}
+
+.form-field input.mono {
+  font-family: var(--font-mono);
+}
+
+.form-field input:focus-visible {
+  outline-offset: 1px;
+}
+
+.form-error {
+  color: var(--error);
+  font-size: 11.5px;
+  grid-column: 1 / -1;
+  margin-top: -4px;
+}
+
+.btn-filled {
+  border-radius: 18px;
+  font-size: 13px;
+  padding: 9px 16px;
+  white-space: nowrap;
+}
+
+.preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  list-style: none;
+  margin: 0;
+  padding: 2px 0 14px;
+}
+
+.preset-row {
+  align-items: center;
+  border-radius: 12px;
+  display: flex;
+  gap: 10px;
+  padding: 9px 8px;
+  transition: background-color var(--dur) var(--ease);
+}
+
+.preset-row:hover {
+  background: var(--surface-container-low);
+}
+
+.preset-dot {
+  border-radius: 50%;
+  flex: none;
+  height: 9px;
+  width: 9px;
+}
+
+.preset-label {
+  color: var(--on-surface);
+  flex: none;
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 140px;
+}
+
+.preset-pattern {
+  background: var(--surface-container-low);
+  border-radius: 8px;
+  color: var(--on-surface-variant);
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 3px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset-flags {
+  background: var(--surface-container-high);
+  border-radius: 8px;
+  color: var(--on-surface-variant);
+  flex: none;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  padding: 2px 7px;
+}
+
+.icon-btn {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  box-shadow: none;
+  color: var(--on-surface-variant);
+  display: flex;
+  flex: none;
+  height: 30px;
+  justify-content: center;
+  transition:
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+  width: 30px;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--error-container);
+  color: var(--on-error-container);
+  filter: none;
+}
+
+.icon-btn:focus-visible {
+  outline-offset: 1px;
+}
+
+.icon-btn svg {
+  height: 16px;
+  width: 16px;
+}
+
+.empty-presets {
+  color: var(--on-surface-variant);
+  font-size: 12.5px;
+  padding: 10px 8px;
+}
+
+/* Keyboard shortcuts (read-only reference) */
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  list-style: none;
+  margin: 0;
+  padding: 2px 0 16px;
+}
+
+.shortcut-row {
+  align-items: center;
+  border-radius: 12px;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 10px 8px;
+}
+
+.shortcut-name {
+  color: var(--on-surface);
+  font-size: 13.5px;
+}
+
+.kbd-group {
+  align-items: center;
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+.kbd-plus {
+  color: var(--on-surface-variant);
+  font-size: 11px;
+}
+
+.shortcuts-note {
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 8px 16px;
+}
+
+.shortcuts-note code {
+  background: var(--surface-container-high);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  padding: 1px 6px;
+}
+
+.footer-mark {
+  color: var(--on-surface-variant);
+  font-size: 11.5px;
+  opacity: 0.75;
+  padding-top: 8px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .preset-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- This page's own furniture: a small gallery caption above the real
+   options/App.tsx composite (the composite itself needs no wrapping frame —
+   options is a full browser tab, not a floating popup). ---- */
+.ds-note {
+  color: var(--on-surface-variant);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 auto 28px;
+  max-width: 640px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+  <p class="ds-note">A static composite of options/App.tsx's real render tree: every settings section, control, and copy string is copied from the shipped component (sample preset/prefs values only).</p>
+  <main class="page">
+    <div class="page-header">
+      <div class="header-left">
+        <span class="app-icon">
+          <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24"><path d="M11 3.2l1.9 5.3 5.3 1.9-5.3 1.9L11 17.6l-1.9-5.3L3.8 10.4l5.3-1.9L11 3.2z"/><path d="M18.3 2.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z"/></svg>
+        </span>
+        <div>
+          <h1>Tab Sorter settings</h1>
+          <p class="header-sub">Defaults that shape every tidy, sort, and duplicate check across all your windows.</p>
+        </div>
+      </div>
+      <span aria-live="polite" class="save-indicator is-visible" role="status">
+        <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewBox="0 0 24 24"><polyline points="5 12.5 9.5 17 19 7"/></svg>
+        Saved
+      </span>
+    </div>
+
+    <section aria-labelledby="sorting-h" class="settings-section">
+      <h2 id="sorting-h">Sorting</h2>
+
+      <div class="pref-row">
+        <div class="pref-text">
+          <label id="lbl-default-sort">Default sort</label>
+          <p class="consequence">Used when you click Sort without choosing A to Z or By domain.</p>
+        </div>
+        <div class="pref-control">
+          <div aria-labelledby="lbl-default-sort" class="segmented" role="group">
+            <button class="is-selected" type="button">A to Z</button>
+            <button type="button">By domain</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pref-row">
+        <div class="pref-text">
+          <label for="toggle-pinned" id="lbl-pinned">Keep pinned tabs fixed</label>
+          <p class="consequence">Pinned tabs stay in place and are never moved or grouped.</p>
+        </div>
+        <div class="pref-control">
+          <label class="switch">
+            <input checked id="toggle-pinned" type="checkbox"/>
+            <span aria-hidden="true" class="track"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="tidy-h" class="settings-section">
+      <h2 id="tidy-h">Tidy</h2>
+
+      <div class="pref-row">
+        <div class="pref-text">
+          <label for="toggle-collapse" id="lbl-collapse">Collapse groups after tidying</label>
+          <p class="consequence">New groups start collapsed so the tab strip stays short.</p>
+        </div>
+        <div class="pref-control">
+          <label class="switch">
+            <input id="toggle-collapse" type="checkbox"/>
+            <span aria-hidden="true" class="track"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="pref-row">
+        <div class="pref-text">
+          <label id="lbl-min-size">Minimum tabs to form a group</label>
+          <p class="consequence">Sites with fewer tabs than this stay loose instead of becoming a group.</p>
+        </div>
+        <div class="pref-control">
+          <div aria-labelledby="lbl-min-size" class="stepper" role="group">
+            <button aria-label="Decrease" type="button">−</button>
+            <input aria-label="Minimum tabs to form a group" class="stepper-input" inputmode="numeric" type="text" value="2"/>
+            <button aria-label="Increase" type="button">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pref-row">
+        <div class="pref-text">
+          <label id="lbl-group-order">Group order</label>
+          <p class="consequence">Controls left-to-right placement of new groups in the tab strip.</p>
+        </div>
+        <div class="pref-control">
+          <div aria-labelledby="lbl-group-order" class="segmented" role="group">
+            <button class="is-selected" type="button">Alphabetical</button>
+            <button type="button">Largest first</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pref-row no-border">
+        <div class="pref-text">
+          <label for="toggle-regroup" id="lbl-regroup">Also regroup tabs already in groups</label>
+          <p class="consequence">Off by default so hand-made groups are left alone.</p>
+        </div>
+        <div class="pref-control">
+          <label class="switch">
+            <input id="toggle-regroup" type="checkbox"/>
+            <span aria-hidden="true" class="track"></span>
+          </label>
+        </div>
+      </div>
+      <div class="warning-note">
+        <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3.3 22 20H2z"/><line x1="12" x2="12" y1="9.5" y2="14.5"/><circle cx="12" cy="17.3" fill="currentColor" r=".9" stroke="none"/></svg>
+        <span>Turning this on reshuffles groups you made by hand — Tab Sorter can&rsquo;t tell them apart from its own.</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="dupes-h" class="settings-section">
+      <h2 id="dupes-h">Duplicates</h2>
+
+      <div class="pref-row">
+        <div class="pref-text">
+          <label for="toggle-fragment" id="lbl-frag">Ignore #fragment when comparing</label>
+          <p class="consequence">example.com/page#top and example.com/page count as duplicates.</p>
+        </div>
+        <div class="pref-control">
+          <label class="switch">
+            <input checked id="toggle-fragment" type="checkbox"/>
+            <span aria-hidden="true" class="track"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="pref-row no-border">
+        <div class="pref-text">
+          <label for="toggle-query" id="lbl-query">Ignore ?query when comparing</label>
+          <p class="consequence">example.com/search?q=a and ?q=b count as duplicates of the same page.</p>
+        </div>
+        <div class="pref-control">
+          <label class="switch">
+            <input id="toggle-query" type="checkbox"/>
+            <span aria-hidden="true" class="track"></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="presets-h" class="settings-section">
+      <h2 id="presets-h">Regex presets</h2>
+      <p class="section-sub">Saved patterns appear as preset chips in the popup's pattern extractor.</p>
+
+      <div class="preset-form">
+        <div class="form-field">
+          <label for="pf-label">Label</label>
+          <input id="pf-label" placeholder="Social media" type="text" value=""/>
+        </div>
+        <div class="form-field">
+          <label for="pf-pattern">Pattern</label>
+          <input class="mono" id="pf-pattern" placeholder="facebook|twitter|tiktok" type="text" value=""/>
+        </div>
+        <div class="form-field">
+          <label for="pf-flags">Flags</label>
+          <input class="mono" id="pf-flags" placeholder="i" type="text" value="i"/>
+        </div>
+        <button class="btn-filled" type="button">Add preset</button>
+      </div>
+
+      <ul class="preset-list">
+        <li class="preset-row">
+          <span class="preset-dot dot-blue"></span>
+          <span class="preset-label">Google properties</span>
+          <code class="preset-pattern">\.google\.com$</code>
+          <span class="preset-flags">i</span>
+          <button aria-label="Delete Google properties preset" class="icon-btn" type="button">
+            <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>
+          </button>
+        </li>
+        <li class="preset-row">
+          <span class="preset-dot dot-cyan"></span>
+          <span class="preset-label">Localhost</span>
+          <code class="preset-pattern">^https?://localhost</code>
+          <span class="preset-flags">i</span>
+          <button aria-label="Delete Localhost preset" class="icon-btn" type="button">
+            <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>
+          </button>
+        </li>
+        <li class="preset-row">
+          <span class="preset-dot dot-orange"></span>
+          <span class="preset-label">PDFs</span>
+          <code class="preset-pattern">\.pdf$</code>
+          <span class="preset-flags">—</span>
+          <button aria-label="Delete PDFs preset" class="icon-btn" type="button">
+            <svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>
+          </button>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="shortcuts-h" class="settings-section">
+      <h2 id="shortcuts-h">Keyboard shortcuts</h2>
+      <p class="section-sub">Read-only reference. Change these in chrome://extensions/shortcuts.</p>
+
+      <ul class="shortcut-list">
+        <li class="shortcut-row">
+          <span class="shortcut-name">Tidy this window</span>
+          <span class="kbd-group"><kbd>Alt</kbd><span class="kbd-plus">+</span><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>Space</kbd></span>
+        </li>
+        <li class="shortcut-row">
+          <span class="shortcut-name">Undo</span>
+          <span class="kbd-group"><kbd>Alt</kbd><span class="kbd-plus">+</span><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>Z</kbd></span>
+        </li>
+        <li class="shortcut-row">
+          <span class="shortcut-name">Sort A to Z</span>
+          <span class="kbd-group"><kbd>Alt</kbd><span class="kbd-plus">+</span><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>T</kbd></span>
+        </li>
+        <li class="shortcut-row">
+          <span class="shortcut-name">Default sort</span>
+          <span class="kbd-group"><kbd>Alt</kbd><span class="kbd-plus">+</span><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>S</kbd></span>
+        </li>
+      </ul>
+      <p class="shortcuts-note">Shortcuts are global to Chrome and may be reassigned by other extensions. Manage all of them at <code>chrome://extensions/shortcuts</code>.</p>
+    </section>
+
+    <p class="footer-mark">Tab Sorter</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,1117 @@
+<!-- @dsCard group="As built" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tab Sorter — Colors (As built)</title>
+<style>
+/* Chrome Native+ — approved design-token foundation shared by popup/App.css and
+   options/App.css. Values are the token table in docs/design/final/DESIGN-SPEC.md
+   §1, ground-truthed against the <style> blocks of docs/design/final/popup.html
+   and settings.html. Replaces the prior Warm Editorial set. */
+
+/* ---- Tokens: light (default) ---- */
+:root {
+  --font-sans:
+    "Google Sans Text", "Google Sans", Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
+    sans-serif;
+  --font-display: "Google Sans", Roboto, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --page-bg: #e9edf3;
+  --surface: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f8fafd;
+  --surface-container: #f0f4f9;
+  --surface-container-high: #e9eef6;
+  --surface-container-highest: #e3e8f0;
+  --on-surface: #1f1f1f;
+  --on-surface-variant: #444746;
+  --outline: #747775;
+  --outline-variant: #c4c7c5;
+  --primary: #0b57d0;
+  --on-primary: #ffffff;
+  --primary-container: #d3e3fd;
+  --on-primary-container: #041e49;
+  --error: #b3261e;
+  --on-error: #ffffff;
+  --error-container: #f9dedc;
+  --on-error-container: #410e0b;
+  --warning-container: #fef7e0;
+  --on-warning-container: #7b5900;
+  --success-container: #e6f4ea;
+  --on-success-container: #0d652d;
+  /* the 9 chrome.tabGroups colors — GroupColor in lib/types.ts */
+  --g-grey-dot: #5f6368;
+  --g-grey-bg: #e8eaed;
+  --g-grey-fg: #3c4043;
+  --g-blue-dot: #1a73e8;
+  --g-blue-bg: #d2e3fc;
+  --g-blue-fg: #0842a0;
+  --g-red-dot: #d93025;
+  --g-red-bg: #fce8e6;
+  --g-red-fg: #a50e0e;
+  --g-yellow-dot: #f29900;
+  --g-yellow-bg: #fef7e0;
+  --g-yellow-fg: #7b5900;
+  --g-green-dot: #1e8e3e;
+  --g-green-bg: #e6f4ea;
+  --g-green-fg: #0d652d;
+  --g-pink-dot: #d01884;
+  --g-pink-bg: #fce4ec;
+  --g-pink-fg: #7a0d4b;
+  --g-purple-dot: #a142f4;
+  --g-purple-bg: #f3e8fd;
+  --g-purple-fg: #5e2b97;
+  --g-cyan-dot: #12b5cb;
+  --g-cyan-bg: #e0f7fa;
+  --g-cyan-fg: #05707d;
+  --g-orange-dot: #fa903e;
+  --g-orange-bg: #fef0e6;
+  --g-orange-fg: #8c3900;
+  --shadow-color: 220 20% 20%;
+  --elevation-1:
+    0 1px 2px hsl(var(--shadow-color) / 0.3), 0 1px 3px 1px hsl(var(--shadow-color) / 0.15);
+  --elevation-3:
+    0 4px 8px 3px hsl(var(--shadow-color) / 0.15), 0 1px 3px hsl(var(--shadow-color) / 0.3);
+  /* generic buckets over the per-component radii named in DESIGN-SPEC §1.5: s =
+     domain row / inputs / small chips, m = dedupe row / toast, l = pills / cards */
+  --radius-s: 10px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur: 140ms;
+  /* On-primary chip inside the popup's hero-tidy button (DESIGN-SPEC §1.2/§4.1). */
+  --hero-kbd-bg: hsl(0 0% 100% / 0.18);
+  --hero-kbd-border: hsl(0 0% 100% / 0.32);
+}
+
+/* ---- Tokens: dark ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #101114;
+    --surface: #131314;
+    --surface-container-lowest: #0e0e0e;
+    --surface-container-low: #1b1b1b;
+    --surface-container: #1e1f20;
+    --surface-container-high: #282a2c;
+    --surface-container-highest: #333537;
+    --on-surface: #e3e3e3;
+    --on-surface-variant: #c4c7c5;
+    --outline: #8e918f;
+    --outline-variant: #444746;
+    --primary: #a8c7fa;
+    --on-primary: #062e6f;
+    --primary-container: #0842a0;
+    --on-primary-container: #d3e3fd;
+    --error: #f2b8b5;
+    --on-error: #601410;
+    --error-container: #8c1d18;
+    --on-error-container: #f9dedc;
+    --warning-container: #7b5900;
+    --on-warning-container: #feefc3;
+    --success-container: #0d652d;
+    --on-success-container: #ceead6;
+    --g-grey-dot: #9aa0a6;
+    --g-grey-bg: #3c4043;
+    --g-grey-fg: #dadce0;
+    --g-blue-dot: #8ab4f8;
+    --g-blue-bg: #0842a0;
+    --g-blue-fg: #d2e3fc;
+    --g-red-dot: #f28b82;
+    --g-red-bg: #8c1d18;
+    --g-red-fg: #fadad7;
+    --g-yellow-dot: #fdd663;
+    --g-yellow-bg: #7b5900;
+    --g-yellow-fg: #feefc3;
+    --g-green-dot: #81c995;
+    --g-green-bg: #0d652d;
+    --g-green-fg: #ceead6;
+    --g-pink-dot: #ff8bcb;
+    --g-pink-bg: #7a0d4b;
+    --g-pink-fg: #ffd7ec;
+    --g-purple-dot: #c58af9;
+    --g-purple-bg: #5e2b97;
+    --g-purple-fg: #ead9fc;
+    --g-cyan-dot: #78d9ec;
+    --g-cyan-bg: #05707d;
+    --g-cyan-fg: #cbf0f8;
+    --g-orange-dot: #fcad70;
+    --g-orange-bg: #8c3900;
+    --g-orange-fg: #fddbbd;
+    --shadow-color: 220 40% 2%;
+    --hero-kbd-bg: hsl(220 60% 10% / 0.16);
+    --hero-kbd-border: hsl(220 60% 10% / 0.26);
+  }
+}
+
+/* ---- Base elements ---- */
+* {
+  box-sizing: border-box;
+}
+body {
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-sans);
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+a {
+  color: var(--primary);
+}
+
+/* ---- Buttons ---- */
+button {
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-l);
+  box-shadow: var(--elevation-1);
+  color: var(--on-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    filter var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.btn-secondary {
+  background: transparent;
+  border-color: var(--outline);
+  box-shadow: none;
+  color: var(--on-surface);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  filter: none;
+}
+.btn-danger {
+  background: var(--error);
+  border-color: transparent;
+  color: var(--on-error);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--on-surface-variant);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  filter: none;
+}
+
+/* ---- Form controls ---- */
+input,
+select,
+textarea {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-s);
+  color: var(--on-surface);
+  font: inherit;
+  transition: border-color var(--dur) var(--ease);
+}
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--outline);
+}
+
+/* ---- Focus ---- */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---- Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---- Utilities ---- */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+/* Visually hidden but still reachable by assistive tech — for aria-live
+   announcements (e.g. the popup's copy confirmation) that must never touch
+   visible layout. */
+.sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+/* Kbd chip — DESIGN-SPEC §4.10, used by shortcut lists, chip shortcut hints,
+   and the undo pill. */
+kbd {
+  background: var(--surface-container-high);
+  border: 1px solid var(--outline-variant);
+  border-radius: 5px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  padding: 2px 5px;
+}
+/* Group-color dot — one of the 9 GroupColor values (lib/types.ts), for the
+   domain row and anywhere a group's color needs a plain identity mark. */
+.dot {
+  border-radius: 50%;
+  flex: none;
+  height: 10px;
+  width: 10px;
+}
+.dot-grey {
+  background: var(--g-grey-dot);
+}
+.dot-blue {
+  background: var(--g-blue-dot);
+}
+.dot-red {
+  background: var(--g-red-dot);
+}
+.dot-yellow {
+  background: var(--g-yellow-dot);
+}
+.dot-green {
+  background: var(--g-green-dot);
+}
+.dot-pink {
+  background: var(--g-pink-dot);
+}
+.dot-purple {
+  background: var(--g-purple-dot);
+}
+.dot-cyan {
+  background: var(--g-cyan-dot);
+}
+.dot-orange {
+  background: var(--g-orange-dot);
+}
+
+/* ---- Scrollbars ---- */
+* {
+  scrollbar-color: var(--outline-variant) transparent;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: var(--radius-s);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--outline);
+}
+
+
+/* ---- As-built colors card furniture (page chrome only — every swatch value
+   above is copied verbatim from apps/extension/assets/tokens.css) ---- */
+body {
+  margin: 0;
+  padding: 32px 28px 64px;
+  background: var(--page-bg);
+}
+.page-head {
+  margin: 0 auto 28px;
+  max-width: 1040px;
+}
+.page-head h1 {
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0 0 6px;
+}
+.page-head p {
+  color: var(--on-surface-variant);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 640px;
+}
+.stage {
+  margin: 0 auto;
+  max-width: 1040px;
+}
+.swatch-section {
+  margin-bottom: 30px;
+}
+.swatch-section h2 {
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin: 0 0 6px;
+}
+.swatch-legend {
+  display: grid;
+  grid-template-columns: repeat(2, 56px);
+  color: var(--on-surface-variant);
+  font-size: 10.5px;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.swatch-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.swatch-card {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-s);
+  padding: 8px;
+  width: 148px;
+}
+.swatch-name {
+  color: var(--on-surface-variant);
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.swatch-boxes {
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 40px;
+  overflow: hidden;
+}
+.swatch-box {
+  border-right: 1px solid hsl(var(--shadow-color) / 0.15);
+}
+.swatch-box:last-child {
+  border-right: none;
+}
+.swatch-hexes {
+  color: var(--on-surface-variant);
+  display: grid;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 5px;
+}
+
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>Colors — as shipped</h1>
+    <p>Every color custom property in apps/extension/assets/tokens.css, light and dark values side by side. Hex/HSL strings are copied verbatim from the shipped file.</p>
+  </div>
+  <div class="stage">
+    <section class="swatch-section">
+      <h2>Surfaces</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--page-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#e9edf3"></span>
+          <span class="swatch-box" style="background:#101114"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#e9edf3</span>
+          <span>#101114</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--surface</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#ffffff"></span>
+          <span class="swatch-box" style="background:#131314"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#ffffff</span>
+          <span>#131314</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--surface-container-lowest</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#ffffff"></span>
+          <span class="swatch-box" style="background:#0e0e0e"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#ffffff</span>
+          <span>#0e0e0e</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--surface-container-low</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#f8fafd"></span>
+          <span class="swatch-box" style="background:#1b1b1b"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#f8fafd</span>
+          <span>#1b1b1b</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--surface-container</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#f0f4f9"></span>
+          <span class="swatch-box" style="background:#1e1f20"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#f0f4f9</span>
+          <span>#1e1f20</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--surface-container-high</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#e9eef6"></span>
+          <span class="swatch-box" style="background:#282a2c"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#e9eef6</span>
+          <span>#282a2c</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--surface-container-highest</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#e3e8f0"></span>
+          <span class="swatch-box" style="background:#333537"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#e3e8f0</span>
+          <span>#333537</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Text & outline</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--on-surface</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#1f1f1f"></span>
+          <span class="swatch-box" style="background:#e3e3e3"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#1f1f1f</span>
+          <span>#e3e3e3</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--on-surface-variant</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#444746"></span>
+          <span class="swatch-box" style="background:#c4c7c5"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#444746</span>
+          <span>#c4c7c5</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--outline</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#747775"></span>
+          <span class="swatch-box" style="background:#8e918f"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#747775</span>
+          <span>#8e918f</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--outline-variant</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#c4c7c5"></span>
+          <span class="swatch-box" style="background:#444746"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#c4c7c5</span>
+          <span>#444746</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Primary</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--primary</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#0b57d0"></span>
+          <span class="swatch-box" style="background:#a8c7fa"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#0b57d0</span>
+          <span>#a8c7fa</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--on-primary</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#ffffff"></span>
+          <span class="swatch-box" style="background:#062e6f"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#ffffff</span>
+          <span>#062e6f</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--primary-container</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#d3e3fd"></span>
+          <span class="swatch-box" style="background:#0842a0"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#d3e3fd</span>
+          <span>#0842a0</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--on-primary-container</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#041e49"></span>
+          <span class="swatch-box" style="background:#d3e3fd"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#041e49</span>
+          <span>#d3e3fd</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Error</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--error</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#b3261e"></span>
+          <span class="swatch-box" style="background:#f2b8b5"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#b3261e</span>
+          <span>#f2b8b5</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--on-error</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#ffffff"></span>
+          <span class="swatch-box" style="background:#601410"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#ffffff</span>
+          <span>#601410</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--error-container</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#f9dedc"></span>
+          <span class="swatch-box" style="background:#8c1d18"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#f9dedc</span>
+          <span>#8c1d18</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--on-error-container</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#410e0b"></span>
+          <span class="swatch-box" style="background:#f9dedc"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#410e0b</span>
+          <span>#f9dedc</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Warning / success containers</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--warning-container</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#fef7e0"></span>
+          <span class="swatch-box" style="background:#7b5900"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#fef7e0</span>
+          <span>#7b5900</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--on-warning-container</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#7b5900"></span>
+          <span class="swatch-box" style="background:#feefc3"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#7b5900</span>
+          <span>#feefc3</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--success-container</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#e6f4ea"></span>
+          <span class="swatch-box" style="background:#0d652d"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#e6f4ea</span>
+          <span>#0d652d</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--on-success-container</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#0d652d"></span>
+          <span class="swatch-box" style="background:#ceead6"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#0d652d</span>
+          <span>#ceead6</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Group colors — grey</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--g-grey-dot</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#5f6368"></span>
+          <span class="swatch-box" style="background:#9aa0a6"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#5f6368</span>
+          <span>#9aa0a6</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-grey-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#e8eaed"></span>
+          <span class="swatch-box" style="background:#3c4043"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#e8eaed</span>
+          <span>#3c4043</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-grey-fg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#3c4043"></span>
+          <span class="swatch-box" style="background:#dadce0"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#3c4043</span>
+          <span>#dadce0</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Group colors — blue</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--g-blue-dot</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#1a73e8"></span>
+          <span class="swatch-box" style="background:#8ab4f8"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#1a73e8</span>
+          <span>#8ab4f8</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-blue-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#d2e3fc"></span>
+          <span class="swatch-box" style="background:#0842a0"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#d2e3fc</span>
+          <span>#0842a0</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-blue-fg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#0842a0"></span>
+          <span class="swatch-box" style="background:#d2e3fc"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#0842a0</span>
+          <span>#d2e3fc</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Group colors — red</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--g-red-dot</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#d93025"></span>
+          <span class="swatch-box" style="background:#f28b82"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#d93025</span>
+          <span>#f28b82</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-red-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#fce8e6"></span>
+          <span class="swatch-box" style="background:#8c1d18"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#fce8e6</span>
+          <span>#8c1d18</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-red-fg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#a50e0e"></span>
+          <span class="swatch-box" style="background:#fadad7"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#a50e0e</span>
+          <span>#fadad7</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Group colors — yellow</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--g-yellow-dot</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#f29900"></span>
+          <span class="swatch-box" style="background:#fdd663"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#f29900</span>
+          <span>#fdd663</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-yellow-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#fef7e0"></span>
+          <span class="swatch-box" style="background:#7b5900"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#fef7e0</span>
+          <span>#7b5900</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-yellow-fg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#7b5900"></span>
+          <span class="swatch-box" style="background:#feefc3"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#7b5900</span>
+          <span>#feefc3</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Group colors — green</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--g-green-dot</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#1e8e3e"></span>
+          <span class="swatch-box" style="background:#81c995"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#1e8e3e</span>
+          <span>#81c995</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-green-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#e6f4ea"></span>
+          <span class="swatch-box" style="background:#0d652d"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#e6f4ea</span>
+          <span>#0d652d</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-green-fg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#0d652d"></span>
+          <span class="swatch-box" style="background:#ceead6"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#0d652d</span>
+          <span>#ceead6</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Group colors — pink</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--g-pink-dot</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#d01884"></span>
+          <span class="swatch-box" style="background:#ff8bcb"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#d01884</span>
+          <span>#ff8bcb</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-pink-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#fce4ec"></span>
+          <span class="swatch-box" style="background:#7a0d4b"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#fce4ec</span>
+          <span>#7a0d4b</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-pink-fg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#7a0d4b"></span>
+          <span class="swatch-box" style="background:#ffd7ec"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#7a0d4b</span>
+          <span>#ffd7ec</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Group colors — purple</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--g-purple-dot</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#a142f4"></span>
+          <span class="swatch-box" style="background:#c58af9"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#a142f4</span>
+          <span>#c58af9</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-purple-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#f3e8fd"></span>
+          <span class="swatch-box" style="background:#5e2b97"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#f3e8fd</span>
+          <span>#5e2b97</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-purple-fg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#5e2b97"></span>
+          <span class="swatch-box" style="background:#ead9fc"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#5e2b97</span>
+          <span>#ead9fc</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Group colors — cyan</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--g-cyan-dot</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#12b5cb"></span>
+          <span class="swatch-box" style="background:#78d9ec"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#12b5cb</span>
+          <span>#78d9ec</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-cyan-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#e0f7fa"></span>
+          <span class="swatch-box" style="background:#05707d"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#e0f7fa</span>
+          <span>#05707d</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-cyan-fg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#05707d"></span>
+          <span class="swatch-box" style="background:#cbf0f8"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#05707d</span>
+          <span>#cbf0f8</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Group colors — orange</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--g-orange-dot</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#fa903e"></span>
+          <span class="swatch-box" style="background:#fcad70"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#fa903e</span>
+          <span>#fcad70</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-orange-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#fef0e6"></span>
+          <span class="swatch-box" style="background:#8c3900"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#fef0e6</span>
+          <span>#8c3900</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--g-orange-fg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:#8c3900"></span>
+          <span class="swatch-box" style="background:#fddbbd"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>#8c3900</span>
+          <span>#fddbbd</span>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section class="swatch-section">
+      <h2>Overlay (hero kbd chip on primary fill)</h2>
+      <div class="swatch-legend"><span>Light</span><span>Dark</span></div>
+      <div class="swatch-grid">
+      <div class="swatch-card">
+        <code class="swatch-name">--hero-kbd-bg</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:hsl(0 0% 100% / 0.18)"></span>
+          <span class="swatch-box" style="background:hsl(220 60% 10% / 0.16)"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>hsl(0 0% 100% / 0.18)</span>
+          <span>hsl(220 60% 10% / 0.16)</span>
+        </div>
+      </div>
+      <div class="swatch-card">
+        <code class="swatch-name">--hero-kbd-border</code>
+        <div class="swatch-boxes">
+          <span class="swatch-box" style="background:hsl(0 0% 100% / 0.32)"></span>
+          <span class="swatch-box" style="background:hsl(220 60% 10% / 0.26)"></span>
+        </div>
+        <div class="swatch-hexes">
+          <span>hsl(0 0% 100% / 0.32)</span>
+          <span>hsl(220 60% 10% / 0.26)</span>
+        </div>
+      </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

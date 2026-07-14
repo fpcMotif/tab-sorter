@@ -7,14 +7,15 @@
   ],
   "type": "module",
   "scripts": {
-    "dev": "bun run --workspaces --if-present dev",
-    "build": "bun run --workspaces --if-present build",
-    "check-types": "bun run --workspaces --if-present check-types",
-    "test": "bun run --workspaces --if-present test",
-    "lint": "bun run --workspaces --if-present lint",
-    "format": "bun run --workspaces --if-present format",
-    "format:check": "bun run --workspaces --if-present format:check",
-    "check:doctor": "bunx react-doctor@latest --yes --no-score --blocking error"
+    "dev": "bun run --filter='*' dev",
+    "build": "bun run --filter='*' build",
+    "check-types": "bun run --filter='*' check-types",
+    "test": "bun run --filter='*' test",
+    "test:coverage": "bun run --filter='*' test:coverage",
+    "lint": "bun run --filter='*' lint",
+    "format": "bun run --filter='*' format",
+    "format:check": "bun run --filter='*' format:check",
+    "check:doctor": "react-doctor --yes --blocking warning"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
@@ -25,6 +26,7 @@
     "@tab-sorter/config": "*",
     "oxfmt": "^0.55.0",
     "oxlint": "^1.70.0",
+    "react-doctor": "0.5.6",
     "typescript": "^5.9.3"
   },
   "packageManager": "bun@1.4.0"

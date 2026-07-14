@@ -1,0 +1,581 @@
+<!-- @dsCard group="As built" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tab Sorter — Type (As built)</title>
+<style>
+/* Chrome Native+ — approved design-token foundation shared by popup/App.css and
+   options/App.css. Values are the token table in docs/design/final/DESIGN-SPEC.md
+   §1, ground-truthed against the <style> blocks of docs/design/final/popup.html
+   and settings.html. Replaces the prior Warm Editorial set. */
+
+/* ---- Tokens: light (default) ---- */
+:root {
+  --font-sans:
+    "Google Sans Text", "Google Sans", Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
+    sans-serif;
+  --font-display: "Google Sans", Roboto, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --page-bg: #e9edf3;
+  --surface: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f8fafd;
+  --surface-container: #f0f4f9;
+  --surface-container-high: #e9eef6;
+  --surface-container-highest: #e3e8f0;
+  --on-surface: #1f1f1f;
+  --on-surface-variant: #444746;
+  --outline: #747775;
+  --outline-variant: #c4c7c5;
+  --primary: #0b57d0;
+  --on-primary: #ffffff;
+  --primary-container: #d3e3fd;
+  --on-primary-container: #041e49;
+  --error: #b3261e;
+  --on-error: #ffffff;
+  --error-container: #f9dedc;
+  --on-error-container: #410e0b;
+  --warning-container: #fef7e0;
+  --on-warning-container: #7b5900;
+  --success-container: #e6f4ea;
+  --on-success-container: #0d652d;
+  /* the 9 chrome.tabGroups colors — GroupColor in lib/types.ts */
+  --g-grey-dot: #5f6368;
+  --g-grey-bg: #e8eaed;
+  --g-grey-fg: #3c4043;
+  --g-blue-dot: #1a73e8;
+  --g-blue-bg: #d2e3fc;
+  --g-blue-fg: #0842a0;
+  --g-red-dot: #d93025;
+  --g-red-bg: #fce8e6;
+  --g-red-fg: #a50e0e;
+  --g-yellow-dot: #f29900;
+  --g-yellow-bg: #fef7e0;
+  --g-yellow-fg: #7b5900;
+  --g-green-dot: #1e8e3e;
+  --g-green-bg: #e6f4ea;
+  --g-green-fg: #0d652d;
+  --g-pink-dot: #d01884;
+  --g-pink-bg: #fce4ec;
+  --g-pink-fg: #7a0d4b;
+  --g-purple-dot: #a142f4;
+  --g-purple-bg: #f3e8fd;
+  --g-purple-fg: #5e2b97;
+  --g-cyan-dot: #12b5cb;
+  --g-cyan-bg: #e0f7fa;
+  --g-cyan-fg: #05707d;
+  --g-orange-dot: #fa903e;
+  --g-orange-bg: #fef0e6;
+  --g-orange-fg: #8c3900;
+  --shadow-color: 220 20% 20%;
+  --elevation-1:
+    0 1px 2px hsl(var(--shadow-color) / 0.3), 0 1px 3px 1px hsl(var(--shadow-color) / 0.15);
+  --elevation-3:
+    0 4px 8px 3px hsl(var(--shadow-color) / 0.15), 0 1px 3px hsl(var(--shadow-color) / 0.3);
+  /* generic buckets over the per-component radii named in DESIGN-SPEC §1.5: s =
+     domain row / inputs / small chips, m = dedupe row / toast, l = pills / cards */
+  --radius-s: 10px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur: 140ms;
+  /* On-primary chip inside the popup's hero-tidy button (DESIGN-SPEC §1.2/§4.1). */
+  --hero-kbd-bg: hsl(0 0% 100% / 0.18);
+  --hero-kbd-border: hsl(0 0% 100% / 0.32);
+}
+
+/* ---- Tokens: dark ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #101114;
+    --surface: #131314;
+    --surface-container-lowest: #0e0e0e;
+    --surface-container-low: #1b1b1b;
+    --surface-container: #1e1f20;
+    --surface-container-high: #282a2c;
+    --surface-container-highest: #333537;
+    --on-surface: #e3e3e3;
+    --on-surface-variant: #c4c7c5;
+    --outline: #8e918f;
+    --outline-variant: #444746;
+    --primary: #a8c7fa;
+    --on-primary: #062e6f;
+    --primary-container: #0842a0;
+    --on-primary-container: #d3e3fd;
+    --error: #f2b8b5;
+    --on-error: #601410;
+    --error-container: #8c1d18;
+    --on-error-container: #f9dedc;
+    --warning-container: #7b5900;
+    --on-warning-container: #feefc3;
+    --success-container: #0d652d;
+    --on-success-container: #ceead6;
+    --g-grey-dot: #9aa0a6;
+    --g-grey-bg: #3c4043;
+    --g-grey-fg: #dadce0;
+    --g-blue-dot: #8ab4f8;
+    --g-blue-bg: #0842a0;
+    --g-blue-fg: #d2e3fc;
+    --g-red-dot: #f28b82;
+    --g-red-bg: #8c1d18;
+    --g-red-fg: #fadad7;
+    --g-yellow-dot: #fdd663;
+    --g-yellow-bg: #7b5900;
+    --g-yellow-fg: #feefc3;
+    --g-green-dot: #81c995;
+    --g-green-bg: #0d652d;
+    --g-green-fg: #ceead6;
+    --g-pink-dot: #ff8bcb;
+    --g-pink-bg: #7a0d4b;
+    --g-pink-fg: #ffd7ec;
+    --g-purple-dot: #c58af9;
+    --g-purple-bg: #5e2b97;
+    --g-purple-fg: #ead9fc;
+    --g-cyan-dot: #78d9ec;
+    --g-cyan-bg: #05707d;
+    --g-cyan-fg: #cbf0f8;
+    --g-orange-dot: #fcad70;
+    --g-orange-bg: #8c3900;
+    --g-orange-fg: #fddbbd;
+    --shadow-color: 220 40% 2%;
+    --hero-kbd-bg: hsl(220 60% 10% / 0.16);
+    --hero-kbd-border: hsl(220 60% 10% / 0.26);
+  }
+}
+
+/* ---- Base elements ---- */
+* {
+  box-sizing: border-box;
+}
+body {
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-sans);
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+a {
+  color: var(--primary);
+}
+
+/* ---- Buttons ---- */
+button {
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-l);
+  box-shadow: var(--elevation-1);
+  color: var(--on-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    filter var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.btn-secondary {
+  background: transparent;
+  border-color: var(--outline);
+  box-shadow: none;
+  color: var(--on-surface);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  filter: none;
+}
+.btn-danger {
+  background: var(--error);
+  border-color: transparent;
+  color: var(--on-error);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--on-surface-variant);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  filter: none;
+}
+
+/* ---- Form controls ---- */
+input,
+select,
+textarea {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-s);
+  color: var(--on-surface);
+  font: inherit;
+  transition: border-color var(--dur) var(--ease);
+}
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--outline);
+}
+
+/* ---- Focus ---- */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---- Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---- Utilities ---- */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+/* Visually hidden but still reachable by assistive tech — for aria-live
+   announcements (e.g. the popup's copy confirmation) that must never touch
+   visible layout. */
+.sr-only {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+/* Kbd chip — DESIGN-SPEC §4.10, used by shortcut lists, chip shortcut hints,
+   and the undo pill. */
+kbd {
+  background: var(--surface-container-high);
+  border: 1px solid var(--outline-variant);
+  border-radius: 5px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  padding: 2px 5px;
+}
+/* Group-color dot — one of the 9 GroupColor values (lib/types.ts), for the
+   domain row and anywhere a group's color needs a plain identity mark. */
+.dot {
+  border-radius: 50%;
+  flex: none;
+  height: 10px;
+  width: 10px;
+}
+.dot-grey {
+  background: var(--g-grey-dot);
+}
+.dot-blue {
+  background: var(--g-blue-dot);
+}
+.dot-red {
+  background: var(--g-red-dot);
+}
+.dot-yellow {
+  background: var(--g-yellow-dot);
+}
+.dot-green {
+  background: var(--g-green-dot);
+}
+.dot-pink {
+  background: var(--g-pink-dot);
+}
+.dot-purple {
+  background: var(--g-purple-dot);
+}
+.dot-cyan {
+  background: var(--g-cyan-dot);
+}
+.dot-orange {
+  background: var(--g-orange-dot);
+}
+
+/* ---- Scrollbars ---- */
+* {
+  scrollbar-color: var(--outline-variant) transparent;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: var(--radius-s);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--outline);
+}
+
+/* ---- As-built type card furniture + isolated type-scale samples ----
+   Declarations below are copied verbatim from the shipped selectors named in
+   each comment; only the selector is renamed to isolate one sample per row. */
+body {
+  margin: 0;
+  padding: 32px 28px 64px;
+  background: var(--page-bg);
+}
+.page-head {
+  margin: 0 auto 32px;
+  max-width: 720px;
+}
+.page-head h1 {
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0 0 6px;
+}
+.page-head p {
+  color: var(--on-surface-variant);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 640px;
+}
+.stage {
+  margin: 0 auto;
+  max-width: 720px;
+}
+.type-row {
+  align-items: baseline;
+  border-top: 1px solid var(--outline-variant);
+  display: flex;
+  gap: 24px;
+  padding: 18px 0;
+}
+.type-row:first-of-type {
+  border-top: none;
+}
+.type-label {
+  color: var(--on-surface-variant);
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding-top: 4px;
+  width: 130px;
+}
+.type-sample {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Display h1 — options/App.css .page-header h1 (options/App.tsx <h1>) */
+.sample-h1 {
+  color: var(--on-surface);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  margin: 2px 0 4px;
+}
+
+/* Eyebrow — popup/App.css .section-label (popup/App.tsx <h3 className="section-label">) */
+.sample-eyebrow {
+  color: var(--on-surface-variant);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* Body — options/App.css .pref-text label (options/App.tsx pref-row labels) */
+.sample-body {
+  color: var(--on-surface);
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+/* Body copy — options/App.css .header-sub */
+.sample-body-copy {
+  color: var(--on-surface-variant);
+  font-size: 13.5px;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 440px;
+}
+
+/* Muted — options/App.css .consequence + popup/App.css .armed-hint/.dedupe-text */
+.sample-muted {
+  color: var(--on-surface-variant);
+  font-size: 12.5px;
+  line-height: 1.4;
+  margin: 0;
+}
+.sample-muted-small {
+  color: var(--on-surface-variant);
+  font-size: 11px;
+  margin: 6px 0 0;
+}
+
+/* .num — tokens.css utility, shown against plain digits for comparison */
+.num-demo {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-s);
+  display: inline-flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  gap: 4px;
+  padding: 10px 14px;
+}
+.num-demo span {
+  display: block;
+}
+.num-demo .caption {
+  color: var(--on-surface-variant);
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Kbd chip on a plain surface — tokens.css base kbd rule (no override needed) */
+.kbd-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+/* Kbd chip on the hero fill — popup/App.css .hero-keys / .hero-keys kbd */
+.hero-swatch {
+  align-items: center;
+  background: var(--primary);
+  border-radius: 20px;
+  display: inline-flex;
+  gap: 12px;
+  padding: 10px 16px;
+}
+.hero-swatch .hero-title {
+  color: var(--on-primary);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+}
+.hero-keys {
+  display: flex;
+  flex: none;
+  gap: 3px;
+}
+.hero-keys kbd {
+  background: var(--hero-kbd-bg);
+  border-color: var(--hero-kbd-border);
+  color: var(--on-primary);
+}
+
+/* Shortcut combo — options/App.css .kbd-group / .kbd-plus */
+.kbd-group {
+  align-items: center;
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+.kbd-plus {
+  color: var(--on-surface-variant);
+  font-size: 11px;
+}
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>Type — as shipped</h1>
+    <p>Type samples pulled from the exact selectors in popup/App.css and options/App.css. Each row's declarations are copied verbatim; only the class name is renamed to isolate the sample.</p>
+  </div>
+  <div class="stage">
+
+    <div class="type-row">
+      <span class="type-label">Display h1</span>
+      <div class="type-sample">
+        <h1 class="sample-h1">Tab Sorter settings</h1>
+      </div>
+    </div>
+
+    <div class="type-row">
+      <span class="type-label">Eyebrow</span>
+      <div class="type-sample">
+        <h3 class="sample-eyebrow">Extract a domain</h3>
+      </div>
+    </div>
+
+    <div class="type-row">
+      <span class="type-label">Body</span>
+      <div class="type-sample">
+        <label class="sample-body">Keep pinned tabs fixed</label>
+        <p class="sample-body-copy">Defaults that shape every tidy, sort, and duplicate check across all your windows.</p>
+      </div>
+    </div>
+
+    <div class="type-row">
+      <span class="type-label">Muted</span>
+      <div class="type-sample">
+        <p class="sample-muted">Pinned tabs stay in place and are never moved or grouped.</p>
+        <p class="sample-muted-small">Press again to confirm — closes the newer copy of each</p>
+      </div>
+    </div>
+
+    <div class="type-row">
+      <span class="type-label">.num</span>
+      <div class="type-sample" style="display:flex; gap:14px;">
+        <div class="num-demo">
+          <span class="caption">Without .num</span>
+          <span>7 tabs</span>
+          <span>23 tabs</span>
+        </div>
+        <div class="num-demo">
+          <span class="caption">With .num</span>
+          <span class="num">7 tabs</span>
+          <span class="num">23 tabs</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="type-row">
+      <span class="type-label">kbd chip</span>
+      <div class="type-sample" style="display:flex; flex-direction:column; gap:14px;">
+        <div class="kbd-row">
+          <kbd>⌥</kbd><kbd>⇧</kbd><kbd>Z</kbd>
+        </div>
+        <div class="hero-swatch">
+          <span class="hero-title">Tidy this window</span>
+          <span class="hero-keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>Space</kbd></span>
+        </div>
+        <div class="kbd-group">
+          <kbd>Alt</kbd><span class="kbd-plus">+</span><kbd>Shift</kbd><span class="kbd-plus">+</span><kbd>Space</kbd>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

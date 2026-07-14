@@ -1,0 +1,328 @@
+<!-- @dsCard group="Foundations" -->
+<!doctype html><html><head><meta charset="utf-8"><title>Tokens — Chrome Native+ (as shipped)</title><style>
+/* Chrome Native+ — approved design-token foundation shared by popup/App.css and
+   options/App.css. Values are the token table in docs/design/final/DESIGN-SPEC.md
+   §1, ground-truthed against the <style> blocks of docs/design/final/popup.html
+   and settings.html. Replaces the prior Warm Editorial set. */
+
+/* ---- Tokens: light (default) ---- */
+:root {
+  --font-sans:
+    "Google Sans Text", "Google Sans", Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
+    sans-serif;
+  --font-display: "Google Sans", Roboto, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --page-bg: #e9edf3;
+  --surface: #ffffff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f8fafd;
+  --surface-container: #f0f4f9;
+  --surface-container-high: #e9eef6;
+  --surface-container-highest: #e3e8f0;
+  --on-surface: #1f1f1f;
+  --on-surface-variant: #444746;
+  --outline: #747775;
+  --outline-variant: #c4c7c5;
+  --primary: #0b57d0;
+  --on-primary: #ffffff;
+  --primary-container: #d3e3fd;
+  --on-primary-container: #041e49;
+  --error: #b3261e;
+  --on-error: #ffffff;
+  --error-container: #f9dedc;
+  --on-error-container: #410e0b;
+  --warning-container: #fef7e0;
+  --on-warning-container: #7b5900;
+  --success-container: #e6f4ea;
+  --on-success-container: #0d652d;
+  /* the 9 chrome.tabGroups colors — GroupColor in lib/types.ts */
+  --g-grey-dot: #5f6368;
+  --g-grey-bg: #e8eaed;
+  --g-grey-fg: #3c4043;
+  --g-blue-dot: #1a73e8;
+  --g-blue-bg: #d2e3fc;
+  --g-blue-fg: #0842a0;
+  --g-red-dot: #d93025;
+  --g-red-bg: #fce8e6;
+  --g-red-fg: #a50e0e;
+  --g-yellow-dot: #f29900;
+  --g-yellow-bg: #fef7e0;
+  --g-yellow-fg: #7b5900;
+  --g-green-dot: #1e8e3e;
+  --g-green-bg: #e6f4ea;
+  --g-green-fg: #0d652d;
+  --g-pink-dot: #d01884;
+  --g-pink-bg: #fce4ec;
+  --g-pink-fg: #7a0d4b;
+  --g-purple-dot: #a142f4;
+  --g-purple-bg: #f3e8fd;
+  --g-purple-fg: #5e2b97;
+  --g-cyan-dot: #12b5cb;
+  --g-cyan-bg: #e0f7fa;
+  --g-cyan-fg: #05707d;
+  --g-orange-dot: #fa903e;
+  --g-orange-bg: #fef0e6;
+  --g-orange-fg: #8c3900;
+  --shadow-color: 220 20% 20%;
+  --elevation-1:
+    0 1px 2px hsl(var(--shadow-color) / 0.3), 0 1px 3px 1px hsl(var(--shadow-color) / 0.15);
+  --elevation-3:
+    0 4px 8px 3px hsl(var(--shadow-color) / 0.15), 0 1px 3px hsl(var(--shadow-color) / 0.3);
+  /* generic buckets over the per-component radii named in DESIGN-SPEC §1.5: s =
+     domain row / inputs / small chips, m = dedupe row / toast, l = pills / cards */
+  --radius-s: 10px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur: 140ms;
+}
+
+/* ---- Tokens: dark ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #101114;
+    --surface: #131314;
+    --surface-container-lowest: #0e0e0e;
+    --surface-container-low: #1b1b1b;
+    --surface-container: #1e1f20;
+    --surface-container-high: #282a2c;
+    --surface-container-highest: #333537;
+    --on-surface: #e3e3e3;
+    --on-surface-variant: #c4c7c5;
+    --outline: #8e918f;
+    --outline-variant: #444746;
+    --primary: #a8c7fa;
+    --on-primary: #062e6f;
+    --primary-container: #0842a0;
+    --on-primary-container: #d3e3fd;
+    --error: #f2b8b5;
+    --on-error: #601410;
+    --error-container: #8c1d18;
+    --on-error-container: #f9dedc;
+    --warning-container: #7b5900;
+    --on-warning-container: #feefc3;
+    --success-container: #0d652d;
+    --on-success-container: #ceead6;
+    --g-grey-dot: #9aa0a6;
+    --g-grey-bg: #3c4043;
+    --g-grey-fg: #dadce0;
+    --g-blue-dot: #8ab4f8;
+    --g-blue-bg: #0842a0;
+    --g-blue-fg: #d2e3fc;
+    --g-red-dot: #f28b82;
+    --g-red-bg: #8c1d18;
+    --g-red-fg: #fadad7;
+    --g-yellow-dot: #fdd663;
+    --g-yellow-bg: #7b5900;
+    --g-yellow-fg: #feefc3;
+    --g-green-dot: #81c995;
+    --g-green-bg: #0d652d;
+    --g-green-fg: #ceead6;
+    --g-pink-dot: #ff8bcb;
+    --g-pink-bg: #7a0d4b;
+    --g-pink-fg: #ffd7ec;
+    --g-purple-dot: #c58af9;
+    --g-purple-bg: #5e2b97;
+    --g-purple-fg: #ead9fc;
+    --g-cyan-dot: #78d9ec;
+    --g-cyan-bg: #05707d;
+    --g-cyan-fg: #cbf0f8;
+    --g-orange-dot: #fcad70;
+    --g-orange-bg: #8c3900;
+    --g-orange-fg: #fddbbd;
+    --shadow-color: 220 40% 2%;
+  }
+}
+
+/* ---- Base elements ---- */
+* {
+  box-sizing: border-box;
+}
+body {
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-sans);
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+a {
+  color: var(--primary);
+}
+
+/* ---- Buttons ---- */
+button {
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-l);
+  box-shadow: var(--elevation-1);
+  color: var(--on-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    filter var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.btn-secondary {
+  background: transparent;
+  border-color: var(--outline);
+  box-shadow: none;
+  color: var(--on-surface);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  filter: none;
+}
+.btn-danger {
+  background: var(--error);
+  border-color: transparent;
+  color: var(--on-error);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--on-surface-variant);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  filter: none;
+}
+
+/* ---- Form controls ---- */
+input,
+select,
+textarea {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-s);
+  color: var(--on-surface);
+  font: inherit;
+  transition: border-color var(--dur) var(--ease);
+}
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--outline);
+}
+
+/* ---- Focus ---- */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---- Motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---- Utilities ---- */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+/* Kbd chip — DESIGN-SPEC §4.10, used by shortcut lists, chip shortcut hints,
+   and the undo pill. */
+kbd {
+  background: var(--surface-container-high);
+  border: 1px solid var(--outline-variant);
+  border-radius: 5px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  padding: 2px 5px;
+}
+/* Group-color dot — one of the 9 GroupColor values (lib/types.ts), for the
+   domain row and anywhere a group's color needs a plain identity mark. */
+.dot {
+  border-radius: 50%;
+  flex: none;
+  height: 10px;
+  width: 10px;
+}
+.dot-grey {
+  background: var(--g-grey-dot);
+}
+.dot-blue {
+  background: var(--g-blue-dot);
+}
+.dot-red {
+  background: var(--g-red-dot);
+}
+.dot-yellow {
+  background: var(--g-yellow-dot);
+}
+.dot-green {
+  background: var(--g-green-dot);
+}
+.dot-pink {
+  background: var(--g-pink-dot);
+}
+.dot-purple {
+  background: var(--g-purple-dot);
+}
+.dot-cyan {
+  background: var(--g-cyan-dot);
+}
+.dot-orange {
+  background: var(--g-orange-dot);
+}
+
+/* ---- Scrollbars ---- */
+* {
+  scrollbar-color: var(--outline-variant) transparent;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: var(--radius-s);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--outline);
+}
+
+body{margin:0;padding:32px;background:var(--page-bg,#fff);color:var(--on-surface,#111);font-family:var(--font-sans,sans-serif)}
+h1{font-family:var(--font-display);font-size:26px;margin:0 0 4px}
+p.sub{color:var(--on-surface-variant,#666);margin:0 0 20px;font-size:13.5px}
+table{border-collapse:collapse;width:100%;max-width:880px;font-size:12.5px}
+th{text-align:left;padding:6px 10px;color:var(--on-surface-variant,#666);font-weight:600;border-bottom:1px solid var(--outline-variant,#ddd)}
+td{padding:5px 10px;border-bottom:1px solid var(--outline-variant,#eee);vertical-align:middle}
+.chip{display:inline-block;width:22px;height:22px;border-radius:6px;border:1px solid var(--outline-variant,#ccc);vertical-align:middle;margin-right:8px}
+.darkcell{background:#26282b;color:#e8eaed} .darkcell code{color:#e8eaed}
+code{font-family:var(--font-mono,monospace);font-size:11.5px} code.v{opacity:.75}
+h2{font-size:14px;margin:28px 0 8px}
+</style></head><body>
+<h1>Chrome Native+ — tokens as shipped</h1>
+<p class="sub">Generated from the live apps/extension/assets/tokens.css (50 color tokens, 11 structural tokens). Light and dark values shown side by side.</p>
+<table><tr><th>Token</th><th>Light</th><th style="background:#26282b;color:#e8eaed">Dark</th></tr><tr><td><code>--page-bg</code></td><td><span class="chip" style="background:#e9edf3"></span><code class="v">#e9edf3</code></td><td class="darkcell"><span class="chip" style="background:#101114"></span><code class="v">#101114</code></td></tr><tr><td><code>--surface</code></td><td><span class="chip" style="background:#ffffff"></span><code class="v">#ffffff</code></td><td class="darkcell"><span class="chip" style="background:#131314"></span><code class="v">#131314</code></td></tr><tr><td><code>--surface-container-lowest</code></td><td><span class="chip" style="background:#ffffff"></span><code class="v">#ffffff</code></td><td class="darkcell"><span class="chip" style="background:#0e0e0e"></span><code class="v">#0e0e0e</code></td></tr><tr><td><code>--surface-container-low</code></td><td><span class="chip" style="background:#f8fafd"></span><code class="v">#f8fafd</code></td><td class="darkcell"><span class="chip" style="background:#1b1b1b"></span><code class="v">#1b1b1b</code></td></tr><tr><td><code>--surface-container</code></td><td><span class="chip" style="background:#f0f4f9"></span><code class="v">#f0f4f9</code></td><td class="darkcell"><span class="chip" style="background:#1e1f20"></span><code class="v">#1e1f20</code></td></tr><tr><td><code>--surface-container-high</code></td><td><span class="chip" style="background:#e9eef6"></span><code class="v">#e9eef6</code></td><td class="darkcell"><span class="chip" style="background:#282a2c"></span><code class="v">#282a2c</code></td></tr><tr><td><code>--surface-container-highest</code></td><td><span class="chip" style="background:#e3e8f0"></span><code class="v">#e3e8f0</code></td><td class="darkcell"><span class="chip" style="background:#333537"></span><code class="v">#333537</code></td></tr><tr><td><code>--on-surface</code></td><td><span class="chip" style="background:#1f1f1f"></span><code class="v">#1f1f1f</code></td><td class="darkcell"><span class="chip" style="background:#e3e3e3"></span><code class="v">#e3e3e3</code></td></tr><tr><td><code>--on-surface-variant</code></td><td><span class="chip" style="background:#444746"></span><code class="v">#444746</code></td><td class="darkcell"><span class="chip" style="background:#c4c7c5"></span><code class="v">#c4c7c5</code></td></tr><tr><td><code>--outline</code></td><td><span class="chip" style="background:#747775"></span><code class="v">#747775</code></td><td class="darkcell"><span class="chip" style="background:#8e918f"></span><code class="v">#8e918f</code></td></tr><tr><td><code>--outline-variant</code></td><td><span class="chip" style="background:#c4c7c5"></span><code class="v">#c4c7c5</code></td><td class="darkcell"><span class="chip" style="background:#444746"></span><code class="v">#444746</code></td></tr><tr><td><code>--primary</code></td><td><span class="chip" style="background:#0b57d0"></span><code class="v">#0b57d0</code></td><td class="darkcell"><span class="chip" style="background:#a8c7fa"></span><code class="v">#a8c7fa</code></td></tr><tr><td><code>--on-primary</code></td><td><span class="chip" style="background:#ffffff"></span><code class="v">#ffffff</code></td><td class="darkcell"><span class="chip" style="background:#062e6f"></span><code class="v">#062e6f</code></td></tr><tr><td><code>--primary-container</code></td><td><span class="chip" style="background:#d3e3fd"></span><code class="v">#d3e3fd</code></td><td class="darkcell"><span class="chip" style="background:#0842a0"></span><code class="v">#0842a0</code></td></tr><tr><td><code>--on-primary-container</code></td><td><span class="chip" style="background:#041e49"></span><code class="v">#041e49</code></td><td class="darkcell"><span class="chip" style="background:#d3e3fd"></span><code class="v">#d3e3fd</code></td></tr><tr><td><code>--error</code></td><td><span class="chip" style="background:#b3261e"></span><code class="v">#b3261e</code></td><td class="darkcell"><span class="chip" style="background:#f2b8b5"></span><code class="v">#f2b8b5</code></td></tr><tr><td><code>--on-error</code></td><td><span class="chip" style="background:#ffffff"></span><code class="v">#ffffff</code></td><td class="darkcell"><span class="chip" style="background:#601410"></span><code class="v">#601410</code></td></tr><tr><td><code>--error-container</code></td><td><span class="chip" style="background:#f9dedc"></span><code class="v">#f9dedc</code></td><td class="darkcell"><span class="chip" style="background:#8c1d18"></span><code class="v">#8c1d18</code></td></tr><tr><td><code>--on-error-container</code></td><td><span class="chip" style="background:#410e0b"></span><code class="v">#410e0b</code></td><td class="darkcell"><span class="chip" style="background:#f9dedc"></span><code class="v">#f9dedc</code></td></tr><tr><td><code>--warning-container</code></td><td><span class="chip" style="background:#fef7e0"></span><code class="v">#fef7e0</code></td><td class="darkcell"><span class="chip" style="background:#7b5900"></span><code class="v">#7b5900</code></td></tr><tr><td><code>--on-warning-container</code></td><td><span class="chip" style="background:#7b5900"></span><code class="v">#7b5900</code></td><td class="darkcell"><span class="chip" style="background:#feefc3"></span><code class="v">#feefc3</code></td></tr><tr><td><code>--success-container</code></td><td><span class="chip" style="background:#e6f4ea"></span><code class="v">#e6f4ea</code></td><td class="darkcell"><span class="chip" style="background:#0d652d"></span><code class="v">#0d652d</code></td></tr><tr><td><code>--on-success-container</code></td><td><span class="chip" style="background:#0d652d"></span><code class="v">#0d652d</code></td><td class="darkcell"><span class="chip" style="background:#ceead6"></span><code class="v">#ceead6</code></td></tr><tr><td><code>--g-grey-dot</code></td><td><span class="chip" style="background:#5f6368"></span><code class="v">#5f6368</code></td><td class="darkcell"><span class="chip" style="background:#9aa0a6"></span><code class="v">#9aa0a6</code></td></tr><tr><td><code>--g-grey-bg</code></td><td><span class="chip" style="background:#e8eaed"></span><code class="v">#e8eaed</code></td><td class="darkcell"><span class="chip" style="background:#3c4043"></span><code class="v">#3c4043</code></td></tr><tr><td><code>--g-grey-fg</code></td><td><span class="chip" style="background:#3c4043"></span><code class="v">#3c4043</code></td><td class="darkcell"><span class="chip" style="background:#dadce0"></span><code class="v">#dadce0</code></td></tr><tr><td><code>--g-blue-dot</code></td><td><span class="chip" style="background:#1a73e8"></span><code class="v">#1a73e8</code></td><td class="darkcell"><span class="chip" style="background:#8ab4f8"></span><code class="v">#8ab4f8</code></td></tr><tr><td><code>--g-blue-bg</code></td><td><span class="chip" style="background:#d2e3fc"></span><code class="v">#d2e3fc</code></td><td class="darkcell"><span class="chip" style="background:#0842a0"></span><code class="v">#0842a0</code></td></tr><tr><td><code>--g-blue-fg</code></td><td><span class="chip" style="background:#0842a0"></span><code class="v">#0842a0</code></td><td class="darkcell"><span class="chip" style="background:#d2e3fc"></span><code class="v">#d2e3fc</code></td></tr><tr><td><code>--g-red-dot</code></td><td><span class="chip" style="background:#d93025"></span><code class="v">#d93025</code></td><td class="darkcell"><span class="chip" style="background:#f28b82"></span><code class="v">#f28b82</code></td></tr><tr><td><code>--g-red-bg</code></td><td><span class="chip" style="background:#fce8e6"></span><code class="v">#fce8e6</code></td><td class="darkcell"><span class="chip" style="background:#8c1d18"></span><code class="v">#8c1d18</code></td></tr><tr><td><code>--g-red-fg</code></td><td><span class="chip" style="background:#a50e0e"></span><code class="v">#a50e0e</code></td><td class="darkcell"><span class="chip" style="background:#fadad7"></span><code class="v">#fadad7</code></td></tr><tr><td><code>--g-yellow-dot</code></td><td><span class="chip" style="background:#f29900"></span><code class="v">#f29900</code></td><td class="darkcell"><span class="chip" style="background:#fdd663"></span><code class="v">#fdd663</code></td></tr><tr><td><code>--g-yellow-bg</code></td><td><span class="chip" style="background:#fef7e0"></span><code class="v">#fef7e0</code></td><td class="darkcell"><span class="chip" style="background:#7b5900"></span><code class="v">#7b5900</code></td></tr><tr><td><code>--g-yellow-fg</code></td><td><span class="chip" style="background:#7b5900"></span><code class="v">#7b5900</code></td><td class="darkcell"><span class="chip" style="background:#feefc3"></span><code class="v">#feefc3</code></td></tr><tr><td><code>--g-green-dot</code></td><td><span class="chip" style="background:#1e8e3e"></span><code class="v">#1e8e3e</code></td><td class="darkcell"><span class="chip" style="background:#81c995"></span><code class="v">#81c995</code></td></tr><tr><td><code>--g-green-bg</code></td><td><span class="chip" style="background:#e6f4ea"></span><code class="v">#e6f4ea</code></td><td class="darkcell"><span class="chip" style="background:#0d652d"></span><code class="v">#0d652d</code></td></tr><tr><td><code>--g-green-fg</code></td><td><span class="chip" style="background:#0d652d"></span><code class="v">#0d652d</code></td><td class="darkcell"><span class="chip" style="background:#ceead6"></span><code class="v">#ceead6</code></td></tr><tr><td><code>--g-pink-dot</code></td><td><span class="chip" style="background:#d01884"></span><code class="v">#d01884</code></td><td class="darkcell"><span class="chip" style="background:#ff8bcb"></span><code class="v">#ff8bcb</code></td></tr><tr><td><code>--g-pink-bg</code></td><td><span class="chip" style="background:#fce4ec"></span><code class="v">#fce4ec</code></td><td class="darkcell"><span class="chip" style="background:#7a0d4b"></span><code class="v">#7a0d4b</code></td></tr><tr><td><code>--g-pink-fg</code></td><td><span class="chip" style="background:#7a0d4b"></span><code class="v">#7a0d4b</code></td><td class="darkcell"><span class="chip" style="background:#ffd7ec"></span><code class="v">#ffd7ec</code></td></tr><tr><td><code>--g-purple-dot</code></td><td><span class="chip" style="background:#a142f4"></span><code class="v">#a142f4</code></td><td class="darkcell"><span class="chip" style="background:#c58af9"></span><code class="v">#c58af9</code></td></tr><tr><td><code>--g-purple-bg</code></td><td><span class="chip" style="background:#f3e8fd"></span><code class="v">#f3e8fd</code></td><td class="darkcell"><span class="chip" style="background:#5e2b97"></span><code class="v">#5e2b97</code></td></tr><tr><td><code>--g-purple-fg</code></td><td><span class="chip" style="background:#5e2b97"></span><code class="v">#5e2b97</code></td><td class="darkcell"><span class="chip" style="background:#ead9fc"></span><code class="v">#ead9fc</code></td></tr><tr><td><code>--g-cyan-dot</code></td><td><span class="chip" style="background:#12b5cb"></span><code class="v">#12b5cb</code></td><td class="darkcell"><span class="chip" style="background:#78d9ec"></span><code class="v">#78d9ec</code></td></tr><tr><td><code>--g-cyan-bg</code></td><td><span class="chip" style="background:#e0f7fa"></span><code class="v">#e0f7fa</code></td><td class="darkcell"><span class="chip" style="background:#05707d"></span><code class="v">#05707d</code></td></tr><tr><td><code>--g-cyan-fg</code></td><td><span class="chip" style="background:#05707d"></span><code class="v">#05707d</code></td><td class="darkcell"><span class="chip" style="background:#cbf0f8"></span><code class="v">#cbf0f8</code></td></tr><tr><td><code>--g-orange-dot</code></td><td><span class="chip" style="background:#fa903e"></span><code class="v">#fa903e</code></td><td class="darkcell"><span class="chip" style="background:#fcad70"></span><code class="v">#fcad70</code></td></tr><tr><td><code>--g-orange-bg</code></td><td><span class="chip" style="background:#fef0e6"></span><code class="v">#fef0e6</code></td><td class="darkcell"><span class="chip" style="background:#8c3900"></span><code class="v">#8c3900</code></td></tr><tr><td><code>--g-orange-fg</code></td><td><span class="chip" style="background:#8c3900"></span><code class="v">#8c3900</code></td><td class="darkcell"><span class="chip" style="background:#fddbbd"></span><code class="v">#fddbbd</code></td></tr></table>
+<h2>Structure — type, radius, motion, shadow</h2>
+<table><tr><td><code>--font-sans</code></td><td colspan="2"><code class="v">&quot;Google Sans Text&quot;, &quot;Google Sans&quot;, Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, </code></td></tr><tr><td><code>--font-display</code></td><td colspan="2"><code class="v">&quot;Google Sans&quot;, Roboto, -apple-system, &quot;Segoe UI&quot;, Arial, sans-serif</code></td></tr><tr><td><code>--font-mono</code></td><td colspan="2"><code class="v">ui-monospace, &quot;SF Mono&quot;, Menlo, Consolas, monospace</code></td></tr><tr><td><code>--shadow-color</code></td><td colspan="2"><code class="v">220 20% 20%</code></td></tr><tr><td><code>--elevation-1</code></td><td colspan="2"><code class="v">0 1px 2px hsl(var(--shadow-color) / 0.3), 0 1px 3px 1px hsl(var(--shadow-color) / 0.15)</code></td></tr><tr><td><code>--elevation-3</code></td><td colspan="2"><code class="v">0 4px 8px 3px hsl(var(--shadow-color) / 0.15), 0 1px 3px hsl(var(--shadow-color) / 0.3)</code></td></tr><tr><td><code>--radius-s</code></td><td colspan="2"><code class="v">10px</code></td></tr><tr><td><code>--radius-m</code></td><td colspan="2"><code class="v">14px</code></td></tr><tr><td><code>--radius-l</code></td><td colspan="2"><code class="v">20px</code></td></tr><tr><td><code>--ease</code></td><td colspan="2"><code class="v">cubic-bezier(0.2, 0, 0, 1)</code></td></tr><tr><td><code>--dur</code></td><td colspan="2"><code class="v">140ms</code></td></tr></table>
+</body></html>

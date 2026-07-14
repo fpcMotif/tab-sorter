@@ -26,6 +26,22 @@ describe("sortByTitle", () => {
     expect(sortByTitle([])).toEqual([]);
     expect(sortByTitle([tabs[0]!])).toEqual([1]);
   });
+
+  it("breaks exact ties by index, then by id", () => {
+    const sameTitleAndUrl: TabLite[] = [
+      { id: 7, title: "Same", url: "https://same.example/p", index: 5, pinned: false },
+      { id: 3, title: "Same", url: "https://same.example/p", index: 2, pinned: false },
+    ];
+    // equal title + equal url -> lower index wins
+    expect(sortByTitle(sameTitleAndUrl)).toEqual([3, 7]);
+
+    const sameThroughIndex: TabLite[] = [
+      { id: 7, title: "Same", url: "https://same.example/p", index: 2, pinned: false },
+      { id: 3, title: "Same", url: "https://same.example/p", index: 2, pinned: false },
+    ];
+    // equal title + url + index -> lower id wins
+    expect(sortByTitle(sameThroughIndex)).toEqual([3, 7]);
+  });
 });
 
 describe("sortByDomain", () => {

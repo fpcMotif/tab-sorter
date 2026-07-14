@@ -31,10 +31,12 @@ jobs:
         run: bun run check-types
 
       - name: Test
-        run: bun test
+        run: bun run test:coverage
+
+      # Runs before the build so the generated .output/ bundle is never scanned
+      # (its minified React chunks trip the security/dead-code heuristics).
+      - name: React Doctor
+        run: bun run check:doctor
 
       - name: Build extension
         run: bun run build
-
-      - name: React Doctor
-        run: bunx react-doctor@latest --yes --no-score --blocking error

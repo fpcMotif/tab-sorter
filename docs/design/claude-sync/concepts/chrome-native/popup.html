@@ -1,0 +1,802 @@
+<!-- @dsCard group="Concept - Chrome native" -->
+<title>Tab Sorter — Popup (Chrome Native+)</title>
+<style>
+  :root{
+    --font-sans: "Google Sans Text","Google Sans",Roboto,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    --font-display: "Google Sans",Roboto,-apple-system,"Segoe UI",Arial,sans-serif;
+
+    --surface: #FFFFFF;
+    --surface-container-lowest: #FFFFFF;
+    --surface-container-low: #F8FAFD;
+    --surface-container: #F0F4F9;
+    --surface-container-high: #E9EEF6;
+    --surface-container-highest: #E3E8F0;
+    --on-surface: #1F1F1F;
+    --on-surface-variant: #444746;
+    --outline: #747775;
+    --outline-variant: #C4C7C5;
+
+    --primary: #0B57D0;
+    --on-primary: #FFFFFF;
+    --primary-container: #D3E3FD;
+    --on-primary-container: #041E49;
+
+    --error: #B3261E;
+    --on-error: #FFFFFF;
+    --error-container: #F9DEDC;
+    --on-error-container: #410E0B;
+
+    --shadow-color: 220 20% 20%;
+    --elevation-1: 0 1px 2px hsl(var(--shadow-color) / .30), 0 1px 3px 1px hsl(var(--shadow-color) / .15);
+    --elevation-3: 0 4px 8px 3px hsl(var(--shadow-color) / .15), 0 1px 3px hsl(var(--shadow-color) / .30);
+
+    --g-grey-dot:#5F6368;   --g-grey-bg:#E8EAED;   --g-grey-fg:#3C4043;
+    --g-blue-dot:#1A73E8;   --g-blue-bg:#D2E3FC;   --g-blue-fg:#0842A0;
+    --g-red-dot:#D93025;    --g-red-bg:#FCE8E6;    --g-red-fg:#A50E0E;
+    --g-yellow-dot:#F29900; --g-yellow-bg:#FEF7E0; --g-yellow-fg:#7B5900;
+    --g-green-dot:#1E8E3E;  --g-green-bg:#E6F4EA;  --g-green-fg:#0D652D;
+    --g-pink-dot:#D01884;   --g-pink-bg:#FCE4EC;   --g-pink-fg:#7A0D4B;
+    --g-purple-dot:#A142F4; --g-purple-bg:#F3E8FD; --g-purple-fg:#5E2B97;
+    --g-cyan-dot:#12B5CB;   --g-cyan-bg:#E0F7FA;   --g-cyan-fg:#05707D;
+    --g-orange-dot:#FA903E; --g-orange-bg:#FEF0E6; --g-orange-fg:#8C3900;
+
+    --ease: cubic-bezier(.2,0,0,1);
+    --dur: 140ms;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --surface: #131314;
+      --surface-container-lowest: #0E0E0E;
+      --surface-container-low: #1B1B1B;
+      --surface-container: #1E1F20;
+      --surface-container-high: #282A2C;
+      --surface-container-highest: #333537;
+      --on-surface: #E3E3E3;
+      --on-surface-variant: #C4C7C5;
+      --outline: #8E918F;
+      --outline-variant: #444746;
+
+      --primary: #A8C7FA;
+      --on-primary: #062E6F;
+      --primary-container: #0842A0;
+      --on-primary-container: #D3E3FD;
+
+      --error: #F2B8B5;
+      --on-error: #601410;
+      --error-container: #8C1D18;
+      --on-error-container: #F9DEDC;
+
+      --shadow-color: 220 40% 2%;
+
+      --g-grey-dot:#9AA0A6;   --g-grey-bg:#3C4043;   --g-grey-fg:#DADCE0;
+      --g-blue-dot:#8AB4F8;   --g-blue-bg:#0842A0;   --g-blue-fg:#D2E3FC;
+      --g-red-dot:#F28B82;    --g-red-bg:#8C1D18;    --g-red-fg:#FADAD7;
+      --g-yellow-dot:#FDD663; --g-yellow-bg:#7B5900; --g-yellow-fg:#FEEFC3;
+      --g-green-dot:#81C995;  --g-green-bg:#0D652D;  --g-green-fg:#CEEAD6;
+      --g-pink-dot:#FF8BCB;   --g-pink-bg:#7A0D4B;   --g-pink-fg:#FFD7EC;
+      --g-purple-dot:#C58AF9; --g-purple-bg:#5E2B97; --g-purple-fg:#EAD9FC;
+      --g-cyan-dot:#78D9EC;   --g-cyan-bg:#05707D;   --g-cyan-fg:#CBF0F8;
+      --g-orange-dot:#FCAD70; --g-orange-bg:#8C3900; --g-orange-fg:#FDDBBD;
+    }
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-sans);
+    background:
+      radial-gradient(900px 500px at 15% -10%, hsl(220 60% 92% / .55), transparent),
+      #E9EDF3;
+    color:var(--on-surface);
+    padding:40px 20px 72px;
+  }
+  @media (prefers-color-scheme: dark){
+    body{
+      background:
+        radial-gradient(900px 500px at 15% -10%, hsl(220 45% 18% / .5), transparent),
+        #101114;
+    }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+  }
+
+  .stage{max-width:1160px;margin:0 auto;}
+  .stage-heading{
+    font-family:var(--font-display);
+    font-size:13px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--on-surface-variant);
+    margin:0 0 16px 2px;
+  }
+  .stage-heading .dot{color:var(--primary);}
+
+  .frame-row{display:flex;justify-content:center;margin-bottom:56px;}
+
+  /* ---------- Popup frame ---------- */
+  .popup-frame{
+    width:340px;
+    background:var(--surface-container-lowest);
+    border-radius:16px;
+    box-shadow:var(--elevation-3);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    border:1px solid hsl(var(--shadow-color) / .06);
+  }
+  .popup-scroll{
+    max-height:508px;
+    overflow-y:auto;
+    padding:8px 14px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .popup-scroll::-webkit-scrollbar{width:8px;}
+  .popup-scroll::-webkit-scrollbar-thumb{background:var(--outline-variant);border-radius:8px;}
+
+  /* header */
+  .header{
+    display:flex;align-items:center;gap:10px;
+    padding:14px 14px 6px;
+  }
+  .app-icon{
+    width:30px;height:30px;border-radius:9px;
+    background:var(--primary-container);
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .app-icon svg{width:18px;height:18px;color:var(--on-primary-container);}
+  .brand{display:flex;flex-direction:column;flex:1;min-width:0;}
+  .app-name{font-family:var(--font-display);font-size:14.5px;font-weight:500;line-height:1.2;color:var(--on-surface);}
+  .icon-btn{
+    width:32px;height:32px;border-radius:50%;border:none;background:transparent;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--on-surface-variant);cursor:pointer;flex:none;
+    transition:background var(--dur) var(--ease);
+  }
+  .icon-btn:hover{background:var(--surface-container-high);}
+  .icon-btn:focus-visible{outline:2px solid var(--primary);outline-offset:1px;}
+  .icon-btn svg{width:19px;height:19px;}
+
+  .facts-line{
+    padding:0 14px;
+    font-size:12.5px;color:var(--on-surface-variant);
+    display:flex;align-items:center;gap:6px;
+  }
+
+  /* hero */
+  .hero-tidy{
+    font-family:var(--font-sans);
+    display:flex;align-items:center;gap:12px;
+    width:100%;padding:11px 18px;
+    border:none;border-radius:28px;
+    background:var(--primary);color:var(--on-primary);
+    cursor:pointer;text-align:left;
+    box-shadow:var(--elevation-1);
+    transition:box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease), filter var(--dur) var(--ease);
+  }
+  .hero-tidy:hover{filter:brightness(1.06);}
+  .hero-tidy:active{transform:scale(.98);}
+  .hero-tidy:focus-visible{outline:2px solid var(--on-primary-container);outline-offset:2px;}
+  .hero-icon{
+    width:34px;height:34px;border-radius:50%;
+    background:hsl(0 0% 100% / .16);
+    display:flex;align-items:center;justify-content:center;flex:none;
+  }
+  .hero-icon svg{width:19px;height:19px;}
+  .hero-text{display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .hero-title{font-family:var(--font-display);font-size:15px;font-weight:500;line-height:1.25;}
+  .hero-sub{font-size:12px;line-height:1.2;opacity:.86;}
+
+  /* segmented / chip buttons */
+  .sort-row{display:flex;gap:8px;}
+  .chip-btn{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    font-family:var(--font-sans);font-size:12.5px;font-weight:500;
+    padding:8px 10px;border-radius:20px;
+    border:1px solid var(--outline-variant);
+    background:var(--surface-container-lowest);color:var(--on-surface-variant);
+    cursor:pointer;
+    transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .chip-btn svg{width:15px;height:15px;flex:none;}
+  .chip-btn:hover{background:var(--surface-container-high);}
+  .chip-btn:focus-visible{outline:2px solid var(--primary);outline-offset:1px;}
+
+  /* duplicates row */
+  .dedupe-row{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 10px;border-radius:14px;
+    background:var(--surface-container-low);
+  }
+  .dedupe-icon{color:var(--on-surface-variant);flex:none;display:flex;}
+  .dedupe-icon svg{width:17px;height:17px;}
+  .dedupe-text{flex:1;font-size:12.5px;color:var(--on-surface-variant);}
+  .btn-outline{
+    font-family:var(--font-sans);font-size:12.5px;font-weight:500;
+    padding:7px 14px;border-radius:20px;white-space:nowrap;
+    border:1px solid var(--outline);background:transparent;color:var(--on-surface);
+    cursor:pointer;transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .btn-outline:hover{background:var(--surface-container-high);}
+  .btn-outline:focus-visible{outline:2px solid var(--primary);outline-offset:1px;}
+  .btn-danger-armed{
+    font-family:var(--font-sans);font-size:12.5px;font-weight:500;
+    padding:7px 14px;border-radius:20px;white-space:nowrap;border:none;cursor:pointer;
+    background:var(--error);color:var(--on-error);
+    box-shadow:var(--elevation-1);
+  }
+  .btn-danger-armed:focus-visible{outline:2px solid var(--error);outline-offset:2px;}
+  .armed-hint{font-size:11px;color:var(--on-surface-variant);padding:0 2px;margin-top:-6px;}
+
+  hr.rule{border:none;border-top:1px solid var(--outline-variant);margin:0;}
+
+  /* section label */
+  .section-label{
+    font-family:var(--font-display);
+    font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--on-surface-variant);margin:0 0 6px 2px;
+  }
+
+  /* domain list */
+  .domain-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px;}
+  .domain-row{
+    display:flex;align-items:center;gap:10px;
+    padding:7px 8px;border-radius:10px;
+    cursor:pointer;color:var(--on-surface);
+    transition:background var(--dur) var(--ease);
+  }
+  .domain-row:hover{background:var(--surface-container-low);}
+  .domain-row:hover .row-go{opacity:1;transform:translateX(0);}
+  .domain-row:focus-visible{outline:2px solid var(--primary);outline-offset:-1px;}
+  .dot{width:10px;height:10px;border-radius:50%;flex:none;}
+  .dot-grey{background:var(--g-grey-dot);}
+  .dot-blue{background:var(--g-blue-dot);}
+  .dot-purple{background:var(--g-purple-dot);}
+  .dot-orange{background:var(--g-orange-dot);}
+  .dot-cyan{background:var(--g-cyan-dot);}
+  .domain-name{flex:1;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .domain-name.muted{color:var(--on-surface-variant);font-style:italic;}
+  .row-go{
+    width:14px;height:14px;color:var(--on-surface-variant);flex:none;
+    opacity:0;transform:translateX(-4px);
+    transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .count-badge{
+    min-width:22px;text-align:center;
+    font-size:11.5px;font-weight:500;
+    padding:2px 8px;border-radius:10px;
+    background:var(--surface-container-high);color:var(--on-surface-variant);
+    flex:none;
+  }
+
+  /* disclosure */
+  .disclosure-row{
+    width:100%;display:flex;align-items:center;gap:10px;
+    padding:9px 8px;border-radius:12px;border:none;
+    background:transparent;color:var(--on-surface);cursor:pointer;
+    font-family:var(--font-sans);font-size:13px;text-align:left;
+  }
+  .disclosure-row:hover{background:var(--surface-container-low);}
+  .disclosure-row:focus-visible{outline:2px solid var(--primary);outline-offset:-1px;}
+  .disclosure-icon{color:var(--on-surface-variant);display:flex;flex:none;}
+  .disclosure-icon svg{width:17px;height:17px;}
+  .disclosure-label{flex:1;font-weight:500;}
+  .chevron{color:var(--on-surface-variant);display:flex;flex:none;transition:transform var(--dur) var(--ease);}
+  .chevron svg{width:17px;height:17px;}
+  .disclosure-row[aria-expanded="true"] .chevron{transform:rotate(180deg);}
+
+  .pattern-panel{
+    display:flex;flex-direction:column;gap:10px;
+    padding:10px 8px 4px;
+    animation:expand var(--dur) var(--ease);
+  }
+  @keyframes expand{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+  .field{
+    display:flex;flex-direction:column;gap:4px;
+  }
+  .field label{font-size:11px;color:var(--on-surface-variant);font-weight:500;}
+  .regex-input{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px;padding:8px 10px;border-radius:10px;
+    border:1px solid var(--outline-variant);background:var(--surface-container-low);
+    color:var(--on-surface);width:100%;
+  }
+  .regex-input:focus-visible{outline:2px solid var(--primary);outline-offset:1px;}
+  .flags-row{display:flex;gap:6px;flex-wrap:wrap;}
+  .flag-chip{
+    font-size:11.5px;font-weight:500;padding:5px 10px;border-radius:14px;
+    border:1px solid var(--outline-variant);background:transparent;color:var(--on-surface-variant);
+    cursor:pointer;
+  }
+  .flag-chip.on{background:var(--primary-container);color:var(--on-primary-container);border-color:transparent;}
+  .match-count{font-size:12px;color:var(--on-surface-variant);}
+  .match-count b{color:var(--on-surface);font-weight:500;}
+  .preset-chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .preset-chip{
+    font-size:11.5px;padding:5px 10px;border-radius:14px;
+    border:1px solid var(--outline-variant);background:var(--surface-container-lowest);
+    color:var(--on-surface-variant);cursor:pointer;
+  }
+  .move-btn{
+    align-self:flex-start;
+    font-family:var(--font-sans);font-size:12.5px;font-weight:500;
+    padding:8px 16px;border-radius:20px;border:none;
+    background:var(--primary-container);color:var(--on-primary-container);cursor:pointer;
+  }
+  .move-btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+
+  /* copy row */
+  .copy-row{display:flex;align-items:center;gap:8px;padding:2px 4px;}
+  .copy-label{font-size:12px;color:var(--on-surface-variant);flex:none;}
+  .format-group{display:flex;border:1px solid var(--outline-variant);border-radius:16px;overflow:hidden;flex:1;}
+  .format-chip{
+    flex:1;font-family:var(--font-sans);font-size:11px;font-weight:500;
+    padding:6px 0;border:none;background:transparent;color:var(--on-surface-variant);cursor:pointer;
+    border-right:1px solid var(--outline-variant);
+  }
+  .format-chip:last-child{border-right:none;}
+  .format-chip.is-selected{background:var(--primary-container);color:var(--on-primary-container);}
+  .format-chip:focus-visible{outline:2px solid var(--primary);outline-offset:-2px;}
+  .copy-btn{background:var(--surface-container-high);color:var(--on-surface);}
+
+  .kbd-hint{
+    text-align:center;font-size:10.5px;color:var(--on-surface-variant);
+    padding-top:2px;
+  }
+  .kbd-hint kbd{
+    font-family:var(--font-sans);font-size:10px;
+    padding:1px 5px;border-radius:5px;background:var(--surface-container-high);
+    border:1px solid var(--outline-variant);
+  }
+
+  /* toasts */
+  .toast{
+    display:flex;align-items:flex-start;gap:9px;
+    padding:10px 10px;border-radius:14px;
+    background:var(--g-green-bg);color:var(--g-green-fg);
+  }
+  .toast.is-error{background:var(--error-container);color:var(--on-error-container);}
+  .toast svg{width:18px;height:18px;flex:none;margin-top:1px;}
+  .toast-body{flex:1;font-size:12.5px;line-height:1.35;}
+  .toast-body b{font-weight:600;}
+  .toast-close{
+    width:22px;height:22px;border-radius:50%;border:none;background:transparent;
+    color:inherit;opacity:.7;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;
+  }
+  .toast-close svg{width:14px;height:14px;}
+  .undo-pill{
+    display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+    font-family:var(--font-sans);font-size:12.5px;font-weight:500;
+    padding:7px 14px 7px 12px;border-radius:20px;border:none;cursor:pointer;
+    background:var(--primary-container);color:var(--on-primary-container);
+  }
+  .undo-pill svg{width:15px;height:15px;}
+  .undo-pill:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+
+  /* loading */
+  .loading-block{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:12px;padding:56px 20px 60px;color:var(--on-surface-variant);
+  }
+  .spinner{width:28px;height:28px;color:var(--primary);animation:spin 900ms linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:13px;}
+  .skeleton{height:34px;border-radius:10px;background:var(--surface-container-high);position:relative;overflow:hidden;}
+  .skeleton::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg, transparent, hsl(0 0% 100% / .5), transparent);
+    animation:shimmer 1.3s var(--ease) infinite;
+  }
+  @media (prefers-color-scheme: dark){
+    .skeleton::after{background:linear-gradient(90deg, transparent, hsl(0 0% 100% / .08), transparent);}
+  }
+  @keyframes shimmer{from{transform:translateX(-100%);}to{transform:translateX(100%);}}
+
+  /* empty */
+  .empty-block{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    gap:10px;padding:44px 24px 50px;
+  }
+  .empty-icon{width:40px;height:40px;color:var(--outline);}
+  .empty-title{font-family:var(--font-display);font-size:14.5px;font-weight:500;color:var(--on-surface);}
+  .empty-sub{font-size:12.5px;color:var(--on-surface-variant);max-width:220px;line-height:1.4;}
+
+  /* states strip */
+  .states-strip{margin-top:8px;}
+  .states-grid{
+    display:flex;flex-wrap:wrap;gap:28px 24px;justify-content:center;
+  }
+  .state-card{display:flex;flex-direction:column;align-items:center;gap:10px;width:340px;}
+  .state-caption{
+    font-family:var(--font-display);font-size:12px;font-weight:500;color:var(--on-surface-variant);
+    text-align:center;
+  }
+  .state-caption span{display:block;font-family:var(--font-sans);font-weight:400;font-size:11px;margin-top:2px;color:var(--on-surface-variant);opacity:.8;}
+
+  /* forced dark demo card, independent of OS scheme */
+  .demo-dark{
+    --surface: #131314;
+    --surface-container-lowest: #0E0E0E;
+    --surface-container-low: #1B1B1B;
+    --surface-container: #1E1F20;
+    --surface-container-high: #282A2C;
+    --surface-container-highest: #333537;
+    --on-surface: #E3E3E3;
+    --on-surface-variant: #C4C7C5;
+    --outline: #8E918F;
+    --outline-variant: #444746;
+    --primary: #A8C7FA;
+    --on-primary: #062E6F;
+    --primary-container: #0842A0;
+    --on-primary-container: #D3E3FD;
+    --error: #F2B8B5;
+    --on-error: #601410;
+    --error-container: #8C1D18;
+    --on-error-container: #F9DEDC;
+    --shadow-color: 220 40% 2%;
+    --g-grey-dot:#9AA0A6;   --g-grey-bg:#3C4043;   --g-grey-fg:#DADCE0;
+    --g-blue-dot:#8AB4F8;   --g-blue-bg:#0842A0;   --g-blue-fg:#D2E3FC;
+    --g-red-dot:#F28B82;    --g-red-bg:#8C1D18;    --g-red-fg:#FADAD7;
+    --g-yellow-dot:#FDD663; --g-yellow-bg:#7B5900; --g-yellow-fg:#FEEFC3;
+    --g-green-dot:#81C995;  --g-green-bg:#0D652D;  --g-green-fg:#CEEAD6;
+    --g-pink-dot:#FF8BCB;   --g-pink-bg:#7A0D4B;   --g-pink-fg:#FFD7EC;
+    --g-purple-dot:#C58AF9; --g-purple-bg:#5E2B97; --g-purple-fg:#EAD9FC;
+    --g-cyan-dot:#78D9EC;   --g-cyan-bg:#05707D;   --g-cyan-fg:#CBF0F8;
+    --g-orange-dot:#FCAD70; --g-orange-bg:#8C3900; --g-orange-fg:#FDDBBD;
+    background:#000;
+    padding:20px;border-radius:20px;
+  }
+  .demo-dark .popup-frame{box-shadow:0 1px 3px hsl(0 0% 0% / .6), 0 8px 24px hsl(0 0% 0% / .5);}
+
+  /* icon symbol defs are visually hidden */
+  .icon-defs{position:absolute;width:0;height:0;overflow:hidden;}
+</style>
+
+<svg class="icon-defs" aria-hidden="true">
+  <defs>
+    <symbol id="i-sparkle" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11 3.2l1.9 5.3 5.3 1.9-5.3 1.9L11 17.6l-1.9-5.3L3.8 10.4l5.3-1.9L11 3.2z"/>
+      <path d="M18.3 2.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z"/>
+    </symbol>
+    <symbol id="i-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="15" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/>
+    </symbol>
+    <symbol id="i-domain" viewBox="0 0 24 24" fill="currentColor">
+      <rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/>
+      <rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>
+    </symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 15.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7zm7.4-3.5c0-.4 0-.8-.1-1.2l1.9-1.5-1.9-3.3-2.3.9a7.6 7.6 0 00-2-1.2L14.6 3H9.4l-.4 2.7a7.6 7.6 0 00-2 1.2l-2.3-.9L2.8 9.3l1.9 1.5c-.1.4-.1.8-.1 1.2s0 .8.1 1.2L2.8 14.7l1.9 3.3 2.3-.9c.6.5 1.3.9 2 1.2l.4 2.7h5.2l.4-2.7c.7-.3 1.4-.7 2-1.2l2.3.9 1.9-3.3-1.9-1.5c.1-.4.1-.8.1-1.2z"/>
+    </symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4.5 10.8a7.7 7.7 0 1 1 2 6.4"/><polyline points="4 4.5 4.5 10.8 10.7 10"/>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+    </symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M12 3.3 22 20H2z"/><line x1="12" y1="9.5" x2="12" y2="14.5"/><circle cx="12" cy="17.3" r=".9" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/><polyline points="7.5 12.5 10.5 15.5 16.5 9"/>
+    </symbol>
+    <symbol id="i-open-new" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 5h10v10"/><line x1="19" y1="5" x2="9.5" y2="14.5"/><path d="M15 19H5V9"/>
+    </symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3.5 4h17l-6.3 7.6v6l-4.4 2.2v-8.2z"/>
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <rect x="3.5" y="8.5" width="11" height="12" rx="2"/><path d="M7.5 8.5V4.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-3"/>
+    </symbol>
+    <symbol id="i-duplicate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <rect x="5" y="8" width="11" height="12" rx="1.5"/><path d="M9 8V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-2"/>
+    </symbol>
+    <symbol id="i-window" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+      <rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="9.4" x2="21" y2="9.4"/>
+      <rect x="5.2" y="6.4" width="6" height="2" rx="1" fill="currentColor" stroke="none"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="stage">
+  <p class="stage-heading"><span class="dot">●</span> Popup — default state, 340px</p>
+  <div class="frame-row">
+    <div class="popup-frame">
+      <div class="header">
+        <span class="app-icon"><svg><use href="#i-sparkle"/></svg></span>
+        <div class="brand"><span class="app-name">Tab Sorter</span></div>
+        <button class="icon-btn" aria-label="Open settings"><svg><use href="#i-gear"/></svg></button>
+      </div>
+      <p class="facts-line">23 tabs · 9 sites · 3 duplicates</p>
+
+      <div class="popup-scroll">
+        <button class="hero-tidy">
+          <span class="hero-icon"><svg><use href="#i-sparkle"/></svg></span>
+          <span class="hero-text">
+            <span class="hero-title">Tidy this window</span>
+            <span class="hero-sub">Sort and group by site</span>
+          </span>
+        </button>
+
+        <div class="sort-row" role="group" aria-label="Sort tabs">
+          <button class="chip-btn"><svg><use href="#i-sort"/></svg>A to Z</button>
+          <button class="chip-btn"><svg><use href="#i-domain"/></svg>By domain</button>
+        </div>
+
+        <div class="dedupe-row">
+          <span class="dedupe-icon"><svg><use href="#i-duplicate"/></svg></span>
+          <span class="dedupe-text">3 duplicates found</span>
+          <button class="btn-outline">Close 3 duplicates</button>
+        </div>
+
+        <hr class="rule"/>
+
+        <div>
+          <h3 class="section-label">Extract a domain</h3>
+          <ul class="domain-list">
+            <li class="domain-row" tabindex="0">
+              <span class="dot dot-grey"></span><span class="domain-name">github.com</span>
+              <svg class="row-go"><use href="#i-open-new"/></svg><span class="count-badge">7</span>
+            </li>
+            <li class="domain-row" tabindex="0">
+              <span class="dot dot-blue"></span><span class="domain-name">docs.google.com</span>
+              <svg class="row-go"><use href="#i-open-new"/></svg><span class="count-badge">4</span>
+            </li>
+            <li class="domain-row" tabindex="0">
+              <span class="dot dot-purple"></span><span class="domain-name">figma.com</span>
+              <svg class="row-go"><use href="#i-open-new"/></svg><span class="count-badge">3</span>
+            </li>
+            <li class="domain-row" tabindex="0">
+              <span class="dot dot-orange"></span><span class="domain-name">news.ycombinator.com</span>
+              <svg class="row-go"><use href="#i-open-new"/></svg><span class="count-badge">3</span>
+            </li>
+            <li class="domain-row" tabindex="0">
+              <span class="dot dot-cyan"></span><span class="domain-name">linear.app</span>
+              <svg class="row-go"><use href="#i-open-new"/></svg><span class="count-badge">2</span>
+            </li>
+            <li class="domain-row" tabindex="0">
+              <span class="dot dot-grey"></span><span class="domain-name muted">(chrome)</span>
+              <svg class="row-go"><use href="#i-open-new"/></svg><span class="count-badge">2</span>
+            </li>
+          </ul>
+        </div>
+
+        <hr class="rule"/>
+
+        <button class="disclosure-row" aria-expanded="false">
+          <span class="disclosure-icon"><svg><use href="#i-filter"/></svg></span>
+          <span class="disclosure-label">Extract by pattern</span>
+          <span class="chevron"><svg><use href="#i-chevron"/></svg></span>
+        </button>
+
+        <div class="copy-row">
+          <span class="copy-label">Copy tabs</span>
+          <div class="format-group" role="group" aria-label="Copy format">
+            <button class="format-chip is-selected">MD</button>
+            <button class="format-chip">JSON</button>
+            <button class="format-chip">URL</button>
+            <button class="format-chip">HTML</button>
+          </div>
+          <button class="icon-btn copy-btn" aria-label="Copy tabs"><svg><use href="#i-copy"/></svg></button>
+        </div>
+
+        <p class="kbd-hint">Tidy anytime with <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <section class="states-strip">
+    <p class="stage-heading"><span class="dot">●</span> States</p>
+    <div class="states-grid">
+
+      <div class="state-card">
+        <p class="state-caption">Loading<span>Popup opened, reading the window</span></p>
+        <div class="popup-frame">
+          <div class="header">
+            <span class="app-icon"><svg><use href="#i-sparkle"/></svg></span>
+            <div class="brand"><span class="app-name">Tab Sorter</span></div>
+            <button class="icon-btn" aria-label="Open settings"><svg><use href="#i-gear"/></svg></button>
+          </div>
+          <p class="facts-line">Reading this window…</p>
+          <div class="popup-scroll" style="max-height:none;">
+            <div class="loading-block">
+              <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9.5" stroke-dasharray="38 60"/></svg>
+              <span class="loading-text">Counting tabs and sites…</span>
+            </div>
+            <div class="skeleton"></div>
+            <div class="skeleton" style="opacity:.7;"></div>
+            <div class="skeleton" style="opacity:.45;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-card">
+        <p class="state-caption">Empty<span>Only one tab open — nothing to tidy</span></p>
+        <div class="popup-frame">
+          <div class="header">
+            <span class="app-icon"><svg><use href="#i-sparkle"/></svg></span>
+            <div class="brand"><span class="app-name">Tab Sorter</span></div>
+            <button class="icon-btn" aria-label="Open settings"><svg><use href="#i-gear"/></svg></button>
+          </div>
+          <p class="facts-line">1 tab · 1 site</p>
+          <div class="popup-scroll" style="max-height:none;">
+            <div class="empty-block">
+              <svg class="empty-icon"><use href="#i-window"/></svg>
+              <span class="empty-title">Nothing to tidy</span>
+              <span class="empty-sub">This window has 1 tab. Open a few more and Tab Sorter will find a shape worth grouping.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-card">
+        <p class="state-caption">Duplicates — armed<span>Second click executes · Esc cancels</span></p>
+        <div class="popup-frame">
+          <div class="header">
+            <span class="app-icon"><svg><use href="#i-sparkle"/></svg></span>
+            <div class="brand"><span class="app-name">Tab Sorter</span></div>
+            <button class="icon-btn" aria-label="Open settings"><svg><use href="#i-gear"/></svg></button>
+          </div>
+          <p class="facts-line">23 tabs · 9 sites · 3 duplicates</p>
+          <div class="popup-scroll" style="max-height:none;">
+            <button class="hero-tidy">
+              <span class="hero-icon"><svg><use href="#i-sparkle"/></svg></span>
+              <span class="hero-text"><span class="hero-title">Tidy this window</span><span class="hero-sub">Sort and group by site</span></span>
+            </button>
+            <div class="sort-row" role="group" aria-label="Sort tabs">
+              <button class="chip-btn"><svg><use href="#i-sort"/></svg>A to Z</button>
+              <button class="chip-btn"><svg><use href="#i-domain"/></svg>By domain</button>
+            </div>
+            <div class="dedupe-row">
+              <span class="dedupe-icon"><svg><use href="#i-duplicate"/></svg></span>
+              <span class="dedupe-text">3 duplicates found</span>
+              <button class="btn-danger-armed">Close 3 duplicates?</button>
+            </div>
+            <p class="armed-hint">Press again to confirm — closes the newer copy of each</p>
+            <hr class="rule"/>
+            <div>
+              <h3 class="section-label">Extract a domain</h3>
+              <ul class="domain-list">
+                <li class="domain-row"><span class="dot dot-grey"></span><span class="domain-name">github.com</span><span class="count-badge">7</span></li>
+                <li class="domain-row"><span class="dot dot-blue"></span><span class="domain-name">docs.google.com</span><span class="count-badge">4</span></li>
+                <li class="domain-row"><span class="dot dot-purple"></span><span class="domain-name">figma.com</span><span class="count-badge">3</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-card">
+        <p class="state-caption">Success toast + undo pill<span>Shown right after Tidy runs</span></p>
+        <div class="popup-frame">
+          <div class="header">
+            <span class="app-icon"><svg><use href="#i-sparkle"/></svg></span>
+            <div class="brand"><span class="app-name">Tab Sorter</span></div>
+            <button class="icon-btn" aria-label="Open settings"><svg><use href="#i-gear"/></svg></button>
+          </div>
+          <p class="facts-line">23 tabs · 5 groups</p>
+          <div class="popup-scroll" style="max-height:none;">
+            <div class="toast">
+              <svg><use href="#i-check-circle"/></svg>
+              <span class="toast-body"><b>Grouped 18 tabs into 5 groups</b> · 12 moved</span>
+              <button class="toast-close" aria-label="Dismiss"><svg><use href="#i-close"/></svg></button>
+            </div>
+            <button class="undo-pill"><svg><use href="#i-undo"/></svg>Undo</button>
+            <button class="hero-tidy">
+              <span class="hero-icon"><svg><use href="#i-sparkle"/></svg></span>
+              <span class="hero-text"><span class="hero-title">Tidy this window</span><span class="hero-sub">Sort and group by site</span></span>
+            </button>
+            <div class="sort-row" role="group" aria-label="Sort tabs">
+              <button class="chip-btn"><svg><use href="#i-sort"/></svg>A to Z</button>
+              <button class="chip-btn"><svg><use href="#i-domain"/></svg>By domain</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-card">
+        <p class="state-caption">Error toast<span>Something in the tidy couldn't complete</span></p>
+        <div class="popup-frame">
+          <div class="header">
+            <span class="app-icon"><svg><use href="#i-sparkle"/></svg></span>
+            <div class="brand"><span class="app-name">Tab Sorter</span></div>
+            <button class="icon-btn" aria-label="Open settings"><svg><use href="#i-gear"/></svg></button>
+          </div>
+          <p class="facts-line">23 tabs · 9 sites · 3 duplicates</p>
+          <div class="popup-scroll" style="max-height:none;">
+            <div class="toast is-error">
+              <svg><use href="#i-warning"/></svg>
+              <span class="toast-body"><b>Couldn't move 2 tabs</b> — unpin them first</span>
+              <button class="toast-close" aria-label="Dismiss"><svg><use href="#i-close"/></svg></button>
+            </div>
+            <button class="hero-tidy">
+              <span class="hero-icon"><svg><use href="#i-sparkle"/></svg></span>
+              <span class="hero-text"><span class="hero-title">Tidy this window</span><span class="hero-sub">Sort and group by site</span></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-card">
+        <p class="state-caption">Pattern disclosure — expanded<span>Regex, flags, live match count, presets</span></p>
+        <div class="popup-frame">
+          <div class="header">
+            <span class="app-icon"><svg><use href="#i-sparkle"/></svg></span>
+            <div class="brand"><span class="app-name">Tab Sorter</span></div>
+            <button class="icon-btn" aria-label="Open settings"><svg><use href="#i-gear"/></svg></button>
+          </div>
+          <p class="facts-line">23 tabs · 9 sites · 3 duplicates</p>
+          <div class="popup-scroll" style="max-height:none;">
+            <button class="disclosure-row" aria-expanded="true">
+              <span class="disclosure-icon"><svg><use href="#i-filter"/></svg></span>
+              <span class="disclosure-label">Extract by pattern</span>
+              <span class="chevron"><svg><use href="#i-chevron"/></svg></span>
+            </button>
+            <div class="pattern-panel">
+              <div class="field">
+                <label for="rx">Pattern</label>
+                <input id="rx" class="regex-input" value="\.google\.com$" />
+              </div>
+              <div class="flags-row">
+                <button class="flag-chip on">Case-insensitive</button>
+                <button class="flag-chip">Match full URL</button>
+              </div>
+              <p class="match-count">Matches <b>6 of 23</b> tabs</p>
+              <div class="preset-chips">
+                <button class="preset-chip">Google properties</button>
+                <button class="preset-chip">Localhost</button>
+                <button class="preset-chip">PDFs</button>
+                <button class="preset-chip">Social</button>
+              </div>
+              <button class="move-btn">Move 6 tabs to new window</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state-card demo-dark">
+        <p class="state-caption" style="color:var(--on-surface-variant);">Dark mode<span>Tonal surfaces flip; group chips deepen instead of dimming</span></p>
+        <div class="popup-frame">
+          <div class="header">
+            <span class="app-icon"><svg><use href="#i-sparkle"/></svg></span>
+            <div class="brand"><span class="app-name">Tab Sorter</span></div>
+            <button class="icon-btn" aria-label="Open settings"><svg><use href="#i-gear"/></svg></button>
+          </div>
+          <p class="facts-line">23 tabs · 9 sites · 3 duplicates</p>
+          <div class="popup-scroll" style="max-height:none;">
+            <button class="hero-tidy">
+              <span class="hero-icon"><svg><use href="#i-sparkle"/></svg></span>
+              <span class="hero-text"><span class="hero-title">Tidy this window</span><span class="hero-sub">Sort and group by site</span></span>
+            </button>
+            <div class="sort-row" role="group" aria-label="Sort tabs">
+              <button class="chip-btn"><svg><use href="#i-sort"/></svg>A to Z</button>
+              <button class="chip-btn"><svg><use href="#i-domain"/></svg>By domain</button>
+            </div>
+            <div class="dedupe-row">
+              <span class="dedupe-icon"><svg><use href="#i-duplicate"/></svg></span>
+              <span class="dedupe-text">3 duplicates found</span>
+              <button class="btn-outline">Close 3 duplicates</button>
+            </div>
+            <hr class="rule"/>
+            <div>
+              <h3 class="section-label">Extract a domain</h3>
+              <ul class="domain-list">
+                <li class="domain-row"><span class="dot dot-grey"></span><span class="domain-name">github.com</span><span class="count-badge">7</span></li>
+                <li class="domain-row"><span class="dot dot-blue"></span><span class="domain-name">docs.google.com</span><span class="count-badge">4</span></li>
+                <li class="domain-row"><span class="dot dot-purple"></span><span class="domain-name">figma.com</span><span class="count-badge">3</span></li>
+                <li class="domain-row"><span class="dot dot-orange"></span><span class="domain-name">news.ycombinator.com</span><span class="count-badge">3</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>

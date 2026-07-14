@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tab Sorter — Popup · Tactile Soft</title>
+<style>
+  /* ================= TOKENS ================= */
+  :root{
+    --font: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    --page-bg: #EDE7DC;
+    --canvas: #F7F1E7;
+    --surface: #FFFFFF;
+    --surface-2: #FFFCF6;
+    --chrome-bg: #E3DCCE;
+    --ink: #2A2318;
+    --ink-muted: #6B6152;
+    --ink-faint: #9C927E;
+    --border: rgba(42,35,24,0.10);
+    --border-strong: rgba(42,35,24,0.18);
+
+    --primary: #C2431B;
+    --primary-ink: #FFF7EF;
+    --primary-2: #A83815;
+
+    --danger: #B23423;
+    --danger-ink: #FFF3EF;
+    --danger-bg: #FCE7E1;
+    --danger-border: #F0B7A6;
+
+    --mint-bg: #E3F3EA; --mint-border: #BEE1CD;
+    --lav-bg:  #ECE6FB; --lav-border: #D2C4F5;
+    --peach-bg:#FCEADC; --peach-border:#F3C79E;
+    --sky-bg:  #E1F0FC; --sky-border: #B9DBF4;
+    --butter-bg:#FBF0CE; --butter-border:#E9D189;
+
+    --grp-grey:#7C8388; --grp-blue:#1A73E8; --grp-red:#D93025; --grp-yellow:#DE9200;
+    --grp-green:#1E8E3E; --grp-pink:#D01884; --grp-purple:#8A3FE0; --grp-cyan:#0E9AA6; --grp-orange:#E8710A;
+
+    --focus-ring: #2F6FED;
+
+    --r-lg: 20px; --r-md: 16px; --r-sm: 12px; --r-pill: 999px;
+
+    --shadow-raised: 0 1px 0 rgba(255,255,255,0.65) inset, 0 1px 2px rgba(96,60,24,0.07), 0 8px 18px -9px rgba(96,60,24,0.28), 0 2px 5px rgba(96,60,24,0.10);
+    --shadow-raised-lg: 0 1px 0 rgba(255,255,255,0.7) inset, 0 14px 28px -12px rgba(96,60,24,0.32), 0 3px 8px rgba(96,60,24,0.14);
+    --shadow-pressed: 0 1px 1px rgba(96,60,24,0.18) inset;
+    --shadow-flat: 0 1px 0 rgba(255,255,255,0.55) inset, 0 1px 2px rgba(96,60,24,0.08);
+
+    --dur: 150ms;
+    --ease: cubic-bezier(.22,1.4,.36,1);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --page-bg: #17151B;
+      --canvas: #221E27;
+      --surface: #2C2733;
+      --surface-2: #322D3A;
+      --chrome-bg: #1D1B22;
+      --ink: #F4EFE7;
+      --ink-muted: #B6AC9C;
+      --ink-faint: #847C70;
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.15);
+
+      --primary: #F0754A;
+      --primary-ink: #2A1206;
+      --primary-2: #F58F6C;
+
+      --danger: #F0685A;
+      --danger-ink: #2A0D08;
+      --danger-bg: #3A211D;
+      --danger-border: #5C332A;
+
+      --mint-bg:#1F3A2C; --mint-border:#2E5940;
+      --lav-bg:#2E2A46; --lav-border:#453E6C;
+      --peach-bg:#3A2A20; --peach-border:#5C3F2A;
+      --sky-bg:#1F3140; --sky-border:#2C4C63;
+      --butter-bg:#3A331C; --butter-border:#59481E;
+
+      --focus-ring: #6FA0FF;
+
+      --shadow-raised: 0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 20px -9px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35);
+      --shadow-raised-lg: 0 1px 0 rgba(255,255,255,0.06) inset, 0 16px 34px -14px rgba(0,0,0,0.62), 0 4px 12px rgba(0,0,0,0.4);
+      --shadow-pressed: 0 1px 3px rgba(0,0,0,0.45) inset;
+      --shadow-flat: 0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 3px rgba(0,0,0,0.3);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+
+  /* ================= RESET ================= */
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:auto; }
+  body{
+    font-family:var(--font); font-size:15px; line-height:1.45; color:var(--ink);
+    background:var(--page-bg);
+    padding:48px 20px 80px;
+    display:flex; flex-direction:column; align-items:center; gap:56px;
+  }
+  svg{ display:block; flex:none; }
+  button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
+  input{ font:inherit; color:inherit; }
+  h1,h2,h3{ font-weight:800; }
+  p{ color:inherit; }
+  .muted{ color:var(--ink-muted); }
+
+  /* ================= BROWSER FRAME CHROME ================= */
+  .demo{ width:100%; max-width:340px; }
+  .chrome-bar{
+    background:var(--chrome-bg); border-radius:14px 14px 0 0;
+    padding:9px 12px; display:flex; align-items:center; gap:6px;
+    box-shadow: var(--shadow-flat);
+  }
+  .chrome-dot{ width:7px; height:7px; border-radius:50%; background:var(--border-strong); }
+  .chrome-spacer{ flex:1; }
+  .chrome-ext-icon{
+    width:22px; height:22px; border-radius:7px; background:var(--primary);
+    box-shadow:var(--shadow-flat); display:flex; align-items:center; justify-content:center;
+  }
+  .chrome-ext-icon svg{ width:13px; height:13px; color:var(--primary-ink); }
+
+  /* ================= POPUP FRAME ================= */
+  .popup{
+    width:100%; background:var(--canvas); border-radius:var(--r-lg);
+    box-shadow:var(--shadow-raised-lg); padding:14px; display:flex; flex-direction:column; gap:10px;
+  }
+  .popup--attached{ border-radius:0 0 var(--r-lg) var(--r-lg); }
+
+  /* ---- header ---- */
+  .pop-header{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .brand{ display:flex; align-items:center; gap:8px; }
+  .brand-mark{
+    width:26px; height:26px; border-radius:8px; background:var(--primary); color:var(--primary-ink);
+    display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-flat); flex:none;
+  }
+  .brand-mark svg{ width:15px; height:15px; }
+  .brand-name{ font-size:14.5px; font-weight:800; letter-spacing:-0.01em; }
+  .icon-btn{
+    width:30px; height:30px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    background:var(--surface); box-shadow:var(--shadow-flat); color:var(--ink-muted);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), color var(--dur) var(--ease);
+    text-decoration:none;
+  }
+  .icon-btn:hover{ color:var(--ink); }
+  .icon-btn:active{ transform:translateY(2px); box-shadow:var(--shadow-pressed); }
+  .icon-btn svg{ width:16px; height:16px; }
+  .facts-line{ font-size:12.5px; color:var(--ink-muted); padding-left:1px; }
+
+  /* ---- hero ---- */
+  .btn-hero{
+    display:flex; align-items:center; gap:11px; width:100%;
+    background:var(--primary); color:var(--primary-ink); border-radius:var(--r-lg);
+    padding:11px 14px; box-shadow:var(--shadow-raised-lg);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .btn-hero:active{ transform:translateY(3px); box-shadow:var(--shadow-pressed); }
+  .btn-hero:focus-visible{ outline:3px solid var(--focus-ring); outline-offset:3px; }
+  .btn-hero .hero-icon{
+    width:38px; height:38px; border-radius:12px; background:rgba(255,255,255,0.18);
+    display:flex; align-items:center; justify-content:center; flex:none;
+  }
+  .btn-hero .hero-icon svg{ width:20px; height:20px; }
+  .btn-hero .hero-copy{ text-align:left; }
+  .btn-hero .hero-title{ font-size:15px; font-weight:800; line-height:1.2; }
+  .btn-hero .hero-sub{ font-size:12px; font-weight:600; opacity:0.82; margin-top:1px; }
+
+  /* ---- secondary sort row ---- */
+  .sort-row{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .btn-secondary{
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-md);
+    padding:8px 10px; font-weight:700; font-size:13.5px; box-shadow:var(--shadow-flat);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .btn-secondary svg{ width:15px; height:15px; color:var(--ink-muted); }
+  .btn-secondary:active{ transform:translateY(2px); box-shadow:var(--shadow-pressed); }
+  .btn-secondary:focus-visible{ outline:3px solid var(--focus-ring); outline-offset:2px; }
+
+  /* ---- duplicates card ---- */
+  .card{ border-radius:var(--r-md); padding:10px 12px; box-shadow:var(--shadow-flat); }
+  .card-peach{ background:var(--peach-bg); border:1px solid var(--peach-border); }
+  .dupe-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .dupe-left{ display:flex; align-items:center; gap:9px; min-width:0; }
+  .dupe-left svg{ width:18px; height:18px; color:var(--primary-2); flex:none; }
+  .dupe-title{ font-size:13.5px; font-weight:700; line-height:1.25; }
+  .dupe-sub{ font-size:11.5px; color:var(--ink-muted); line-height:1.25; }
+  .btn-danger{
+    flex:none; background:var(--surface); border:1px solid var(--danger-border); color:var(--danger);
+    font-weight:700; font-size:12.5px; border-radius:var(--r-pill); padding:7px 12px;
+    box-shadow:var(--shadow-flat);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .btn-danger.armed{ background:var(--danger); color:var(--danger-ink); border-color:transparent; box-shadow:var(--shadow-raised); }
+  .btn-danger:active{ transform:translateY(2px); box-shadow:var(--shadow-pressed); }
+  .btn-danger:focus-visible{ outline:3px solid var(--focus-ring); outline-offset:2px; }
+  .dupe-hint{ font-size:11px; color:var(--primary-2); margin-top:6px; font-weight:600; }
+  .dupe-hint[hidden]{ display:none; }
+
+  /* ---- extract by domain ---- */
+  .section-label{ font-size:11px; font-weight:800; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink-faint); padding:2px 2px 0; }
+  .domain-list{ display:flex; flex-direction:column; gap:3px; }
+  .domain-row{
+    display:flex; align-items:center; gap:9px; width:100%; padding:6px 8px; border-radius:var(--r-sm);
+    transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .domain-row:hover{ background:var(--surface-2); }
+  .domain-row:active{ transform:translateY(1px); }
+  .domain-row:focus-visible{ outline:3px solid var(--focus-ring); outline-offset:1px; }
+  .domain-dot{ width:9px; height:9px; border-radius:50%; flex:none; }
+  .domain-name{ font-size:13px; font-weight:600; flex:1; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .count-badge{
+    flex:none; background:var(--surface-2); border:1px solid var(--border); color:var(--ink-muted);
+    font-size:11px; font-weight:800; border-radius:var(--r-pill); padding:1px 8px;
+  }
+
+  /* ---- disclosure ---- */
+  .disclosure{ border-radius:var(--r-md); background:var(--surface-2); box-shadow:var(--shadow-flat); overflow:hidden; }
+  .disclosure-summary{
+    display:flex; align-items:center; gap:9px; width:100%; padding:9px 11px; font-weight:700; font-size:13.5px;
+  }
+  .disclosure-summary svg{ width:16px; height:16px; color:var(--ink-muted); flex:none; }
+  .disclosure-summary .disc-label{ flex:1; text-align:left; }
+  .chevron{ transition: transform var(--dur) var(--ease); }
+  .disclosure-summary.is-open .chevron{ transform:rotate(180deg); }
+  .disclosure-body{ padding:0 11px 12px; display:flex; flex-direction:column; gap:9px; }
+  .disclosure-body[hidden]{ display:none; }
+
+  .field-label{ font-size:11px; font-weight:700; color:var(--ink-muted); }
+  .pattern-input{
+    width:100%; font-family:var(--mono); font-size:12.5px; background:var(--surface);
+    border:1px solid var(--border-strong); border-radius:var(--r-sm); padding:8px 10px;
+    box-shadow:var(--shadow-pressed);
+  }
+  .pattern-input:focus-visible{ outline:3px solid var(--focus-ring); outline-offset:1px; }
+  .pattern-input.is-invalid{ border-color:var(--danger-border); color:var(--danger); }
+
+  .flag-row{ display:flex; align-items:center; gap:6px; }
+  .chip{
+    font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:var(--r-pill);
+    background:var(--surface); border:1px solid var(--border-strong); box-shadow:var(--shadow-flat);
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .chip:active{ transform:translateY(1px); }
+  .chip.active{ background:var(--primary); border-color:transparent; color:var(--primary-ink); }
+  .chip:focus-visible{ outline:3px solid var(--focus-ring); outline-offset:2px; }
+  .flag-chip{ font-family:var(--mono); min-width:26px; text-align:center; }
+
+  .preset-row{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .match-count{ font-size:12px; font-weight:700; color:var(--ink-muted); }
+  .match-count.has-matches{ color:var(--primary-2); }
+
+  .btn-move{
+    width:100%; background:var(--ink); color:var(--canvas); font-weight:700; font-size:13px;
+    border-radius:var(--r-md); padding:9px 10px; box-shadow:var(--shadow-raised);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .btn-move:active{ transform:translateY(2px); box-shadow:var(--shadow-pressed); }
+  .btn-move:disabled{ opacity:0.45; cursor:not-allowed; }
+  .btn-move:focus-visible{ outline:3px solid var(--focus-ring); outline-offset:2px; }
+
+  /* ---- copy row ---- */
+  .copy-row{ display:flex; align-items:center; gap:8px; padding:2px 2px 0; flex-wrap:wrap; }
+  .copy-label{ font-size:12.5px; font-weight:700; color:var(--ink-muted); flex:none; }
+  .segmented{ display:flex; background:var(--surface-2); border-radius:var(--r-pill); padding:2px; box-shadow:var(--shadow-pressed); flex:1; min-width:150px; }
+  .seg-btn{
+    flex:1; text-align:center; font-size:11.5px; font-weight:700; padding:5px 4px; border-radius:var(--r-pill);
+    color:var(--ink-muted); transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .seg-btn.active{ background:var(--surface); color:var(--ink); box-shadow:var(--shadow-flat); }
+  .seg-btn:focus-visible{ outline:3px solid var(--focus-ring); outline-offset:1px; }
+  .btn-copy{
+    flex:none; display:flex; align-items:center; gap:5px; background:var(--surface); border:1px solid var(--border-strong);
+    border-radius:var(--r-pill); padding:6px 12px; font-weight:700; font-size:12.5px; box-shadow:var(--shadow-flat);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .btn-copy svg{ width:14px; height:14px; }
+  .btn-copy:active{ transform:translateY(2px); box-shadow:var(--shadow-pressed); }
+  .btn-copy:focus-visible{ outline:3px solid var(--focus-ring); outline-offset:2px; }
+  .btn-copy.is-done{ color:var(--primary-2); }
+
+  /* ================= STATES STRIP ================= */
+  .states{ width:100%; max-width:1180px; display:flex; flex-direction:column; gap:20px; }
+  .states-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .states-head h2{ font-size:20px; }
+  .states-head p{ font-size:13px; color:var(--ink-muted); }
+  .states-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:22px; align-items:start; }
+  .state-card{ display:flex; flex-direction:column; gap:10px; }
+  .state-card figcaption{
+    font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-muted);
+  }
+  .state-card .popup{ max-width:340px; margin-inline:auto; width:100%; border-radius:var(--r-lg); }
+
+  /* skeleton (loading) */
+  .skel{ background:linear-gradient(90deg, var(--border) 0%, var(--border-strong) 50%, var(--border) 100%); border-radius:var(--r-sm); }
+  .skel-line{ height:9px; }
+  @media (prefers-reduced-motion: no-preference){
+    .skel{ background-size:200% 100%; animation:shimmer 1.3s ease-in-out infinite; }
+  }
+  @keyframes shimmer{ 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+
+  .spinner{
+    width:16px; height:16px; border-radius:50%; border:2.5px solid rgba(255,255,255,0.35); border-top-color:currentColor;
+  }
+  @media (prefers-reduced-motion: no-preference){ .spinner{ animation:spin 0.8s linear infinite; } }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* empty state */
+  .empty-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:18px 8px 6px; }
+  .empty-wrap h3{ font-size:14.5px; }
+  .empty-wrap p{ font-size:12.5px; color:var(--ink-muted); }
+
+  /* toasts */
+  .toast{ display:flex; align-items:flex-start; gap:9px; border-radius:var(--r-md); padding:10px 12px; box-shadow:var(--shadow-raised); }
+  .toast svg{ width:18px; height:18px; flex:none; margin-top:1px; }
+  .toast-success{ background:var(--mint-bg); border:1px solid var(--mint-border); }
+  .toast-success svg{ color:#1E8E3E; }
+  .toast-error{ background:var(--danger-bg); border:1px solid var(--danger-border); }
+  .toast-error svg{ color:var(--danger); }
+  .toast-title{ font-size:13px; font-weight:700; line-height:1.3; }
+  .toast-sub{ font-size:11.5px; color:var(--ink-muted); margin-top:2px; }
+  .toast-action{ font-size:12px; font-weight:800; color:var(--primary-2); text-decoration:underline; text-underline-offset:2px; margin-top:5px; display:inline-block; }
+
+  .undo-pill{
+    display:inline-flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--border-strong);
+    border-radius:var(--r-pill); padding:6px 12px 6px 8px; font-weight:700; font-size:12.5px; box-shadow:var(--shadow-flat);
+    margin-top:8px; color:var(--ink);
+  }
+  .undo-pill svg.ring{ color:var(--primary-2); }
+  .undo-pill svg.arrow{ width:13px; height:13px; color:var(--ink-muted); }
+
+  .dark-note{ font-size:12.5px; color:var(--ink-muted); }
+
+  /* forced-dark preview swatch (independent of OS theme) */
+  .dark-preview{
+    --canvas: #221E27; --surface:#2C2733; --surface-2:#322D3A; --chrome-bg:#1D1B22;
+    --ink:#F4EFE7; --ink-muted:#B6AC9C; --ink-faint:#847C70;
+    --border:rgba(255,255,255,0.08); --border-strong:rgba(255,255,255,0.15);
+    --primary:#F0754A; --primary-ink:#2A1206; --primary-2:#F58F6C;
+    --danger:#F0685A; --danger-ink:#2A0D08; --danger-bg:#3A211D; --danger-border:#5C332A;
+    --peach-bg:#3A2A20; --peach-border:#5C3F2A; --mint-bg:#1F3A2C; --mint-border:#2E5940;
+    --shadow-raised: 0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 20px -9px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35);
+    --shadow-raised-lg: 0 1px 0 rgba(255,255,255,0.06) inset, 0 16px 34px -14px rgba(0,0,0,0.62), 0 4px 12px rgba(0,0,0,0.4);
+    --shadow-pressed: 0 1px 3px rgba(0,0,0,0.45) inset;
+    --shadow-flat: 0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .dark-preview{ background:var(--page-bg); border-radius:var(--r-lg); padding:18px; }
+  @media (prefers-color-scheme: light){ .dark-preview{ --page-bg:#17151B; } }
+
+  footer.credit{ font-size:12px; color:var(--ink-faint); text-align:center; max-width:640px; }
+</style>
+</head>
+<body>
+
+  <div class="demo">
+    <div class="chrome-bar" aria-hidden="true">
+      <span class="chrome-dot"></span><span class="chrome-dot"></span><span class="chrome-dot"></span>
+      <span class="chrome-spacer"></span>
+      <span class="chrome-ext-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+          <rect x="3" y="3" width="12" height="9" rx="2"/><rect x="9" y="12" width="12" height="9" rx="2"/>
+        </svg>
+      </span>
+    </div>
+
+    <div class="popup popup--attached">
+      <div class="pop-header">
+        <div class="brand">
+          <span class="brand-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+              <rect x="3" y="3" width="12" height="9" rx="2"/><rect x="9" y="12" width="12" height="9" rx="2"/>
+            </svg>
+          </span>
+          <span class="brand-name">Tab Sorter</span>
+        </div>
+        <a class="icon-btn" href="settings.html" aria-label="Open settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="4" y1="7" x2="20" y2="7"/><circle cx="14" cy="7" r="2" fill="var(--surface)"/>
+            <line x1="4" y1="12" x2="20" y2="12"/><circle cx="9" cy="12" r="2" fill="var(--surface)"/>
+            <line x1="4" y1="17" x2="20" y2="17"/><circle cx="16" cy="17" r="2" fill="var(--surface)"/>
+          </svg>
+        </a>
+      </div>
+      <p class="facts-line">23 tabs · 9 sites · 3 duplicates</p>
+
+      <button class="btn-hero" autofocus>
+        <span class="hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+            <polygon points="12 3 22 9 12 15 2 9"/><polyline points="2 14 12 20 22 14"/>
+          </svg>
+        </span>
+        <span class="hero-copy">
+          <span class="hero-title">Tidy this window</span>
+          <span class="hero-sub">Sort and group into 5 tab groups</span>
+        </span>
+      </button>
+
+      <div class="sort-row">
+        <button class="btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="11" y2="6"/><line x1="4" y1="12" x2="16" y2="12"/><line x1="4" y1="18" x2="21" y2="18"/></svg>
+          A to Z
+        </button>
+        <button class="btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+          By domain
+        </button>
+      </div>
+
+      <div class="card card-peach">
+        <div class="dupe-row">
+          <div class="dupe-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="7" width="12" height="12" rx="2"/><rect x="9" y="3" width="12" height="12" rx="2" fill="var(--peach-bg)"/></svg>
+            <span>
+              <span class="dupe-title" style="display:block;">3 duplicate tabs</span>
+              <span class="dupe-sub">Same page open more than once</span>
+            </span>
+          </div>
+          <button class="btn-danger" id="dupeBtn">Close duplicates</button>
+        </div>
+        <p class="dupe-hint" id="dupeHint" hidden>Press again to confirm · Esc to cancel</p>
+      </div>
+
+      <div>
+        <p class="section-label">Extract a domain</p>
+        <div class="domain-list">
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-grey)"></span><span class="domain-name">github.com</span><span class="count-badge">7</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-blue)"></span><span class="domain-name">docs.google.com</span><span class="count-badge">4</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-pink)"></span><span class="domain-name">figma.com</span><span class="count-badge">3</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-orange)"></span><span class="domain-name">news.ycombinator.com</span><span class="count-badge">3</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-purple)"></span><span class="domain-name">linear.app</span><span class="count-badge">2</span></button>
+          <button class="domain-row"><span class="domain-dot" style="background:var(--grp-cyan)"></span><span class="domain-name">(chrome)</span><span class="count-badge">2</span></button>
+        </div>
+      </div>
+
+      <div class="disclosure">
+        <button class="disclosure-summary" id="patternToggle" aria-expanded="false" aria-controls="patternBody">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><polygon points="4 4 20 4 14 12 14 19 10 21 10 12"/></svg>
+          <span class="disc-label">Extract by pattern</span>
+          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="disclosure-body" id="patternBody" hidden>
+          <div>
+            <p class="field-label">Pattern</p>
+            <input class="pattern-input" id="patternInput" type="text" placeholder="e.g. github\.com/.+/pull" spellcheck="false">
+          </div>
+          <div class="flag-row">
+            <span class="field-label" style="margin-right:2px;">Flags</span>
+            <button class="chip flag-chip" data-flag="i">i</button>
+            <button class="chip flag-chip" data-flag="g">g</button>
+            <button class="chip flag-chip" data-flag="m">m</button>
+            <span class="match-count" id="matchCount" style="margin-left:auto;">Matches 0 tabs</span>
+          </div>
+          <div class="preset-row">
+            <button class="chip preset-chip" data-pattern="github\.com/.+/pull" data-flags="i">GitHub PRs</button>
+            <button class="chip preset-chip" data-pattern="docs\.google\.com" data-flags="">Google Docs</button>
+            <button class="chip preset-chip" data-pattern="news\.ycombinator\.com" data-flags="">Hacker News</button>
+          </div>
+          <button class="btn-move" id="moveBtn" disabled>Move to new window</button>
+        </div>
+      </div>
+
+      <div class="copy-row">
+        <span class="copy-label">Copy tabs</span>
+        <div class="segmented" role="group" aria-label="Copy format">
+          <button class="seg-btn active" data-format="md">MD</button>
+          <button class="seg-btn" data-format="json">JSON</button>
+          <button class="seg-btn" data-format="url">URLs</button>
+          <button class="seg-btn" data-format="html">HTML</button>
+        </div>
+        <button class="btn-copy" id="copyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="8" y="2" width="8" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/></svg>
+          Copy
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <section class="states">
+    <div class="states-head">
+      <h2>States</h2>
+      <p>Loading, empty, armed, feedback, expansion and dark mode — same frame, different moments.</p>
+    </div>
+    <div class="states-grid">
+
+      <figure class="state-card">
+        <figcaption>Loading</figcaption>
+        <div class="popup">
+          <div class="pop-header">
+            <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="3" width="12" height="9" rx="2"/><rect x="9" y="12" width="12" height="9" rx="2"/></svg></span><span class="brand-name">Tab Sorter</span></div>
+          </div>
+          <div class="skel skel-line" style="width:55%;"></div>
+          <button class="btn-hero" disabled style="opacity:0.9;">
+            <span class="hero-icon"><span class="spinner" style="width:20px;height:20px;"></span></span>
+            <span class="hero-copy">
+              <span class="hero-title">Tidying…</span>
+              <span class="hero-sub">Reading this window</span>
+            </span>
+          </button>
+          <div class="sort-row">
+            <div class="skel" style="height:34px;"></div>
+            <div class="skel" style="height:34px;"></div>
+          </div>
+          <div class="skel" style="height:46px; border-radius:16px;"></div>
+          <div class="skel" style="height:96px; border-radius:16px;"></div>
+        </div>
+      </figure>
+
+      <figure class="state-card">
+        <figcaption>Empty</figcaption>
+        <div class="popup">
+          <div class="pop-header">
+            <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="3" width="12" height="9" rx="2"/><rect x="9" y="12" width="12" height="9" rx="2"/></svg></span><span class="brand-name">Tab Sorter</span></div>
+            <span class="icon-btn" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="14" cy="7" r="2" fill="var(--surface)"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="9" cy="12" r="2" fill="var(--surface)"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="16" cy="17" r="2" fill="var(--surface)"/></svg></span>
+          </div>
+          <p class="facts-line">1 tab · 1 site · 0 duplicates</p>
+          <div class="empty-wrap">
+            <svg viewBox="0 0 64 48" width="60" height="45"><rect x="2" y="2" width="60" height="44" rx="12" fill="var(--mint-bg)" stroke="var(--mint-border)" stroke-width="2"/><polyline points="22 24 29 31 44 16" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h3>Nothing to tidy</h3>
+            <p>This window has 1 tab.</p>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="state-card">
+        <figcaption>Dedupe armed</figcaption>
+        <div class="popup">
+          <div class="pop-header">
+            <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="3" width="12" height="9" rx="2"/><rect x="9" y="12" width="12" height="9" rx="2"/></svg></span><span class="brand-name">Tab Sorter</span></div>
+          </div>
+          <p class="facts-line">23 tabs · 9 sites · 3 duplicates</p>
+          <div class="card card-peach">
+            <div class="dupe-row">
+              <div class="dupe-left">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="7" width="12" height="12" rx="2"/><rect x="9" y="3" width="12" height="12" rx="2" fill="var(--peach-bg)"/></svg>
+                <span><span class="dupe-title" style="display:block;">3 duplicate tabs</span><span class="dupe-sub">Same page open more than once</span></span>
+              </div>
+              <button class="btn-danger armed">Close 3 duplicates?</button>
+            </div>
+            <p class="dupe-hint">Press again to confirm · Esc to cancel</p>
+          </div>
+          <div class="sort-row" style="opacity:0.5;">
+            <button class="btn-secondary" tabindex="-1">A to Z</button>
+            <button class="btn-secondary" tabindex="-1">By domain</button>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="state-card">
+        <figcaption>Success + undo</figcaption>
+        <div class="popup">
+          <div class="pop-header">
+            <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="3" width="12" height="9" rx="2"/><rect x="9" y="12" width="12" height="9" rx="2"/></svg></span><span class="brand-name">Tab Sorter</span></div>
+          </div>
+          <p class="facts-line">23 tabs · 5 groups · 0 duplicates</p>
+          <div class="toast toast-success">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/></svg>
+            <div>
+              <p class="toast-title">Grouped 18 tabs into 5 groups · 12 moved</p>
+            </div>
+          </div>
+          <div class="undo-pill">
+            <svg class="ring" width="15" height="15" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="var(--border-strong)" stroke-width="2"/><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="28 37.7" stroke-linecap="round" transform="rotate(-90 8 8)"/></svg>
+            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6h6"/><path d="M4.5 10A8 8 0 1 1 7 16.5"/></svg>
+            Undo
+          </div>
+        </div>
+      </figure>
+
+      <figure class="state-card">
+        <figcaption>Pattern expanded</figcaption>
+        <div class="popup">
+          <div class="pop-header">
+            <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="3" width="12" height="9" rx="2"/><rect x="9" y="12" width="12" height="9" rx="2"/></svg></span><span class="brand-name">Tab Sorter</span></div>
+          </div>
+          <div class="disclosure">
+            <button class="disclosure-summary is-open" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><polygon points="4 4 20 4 14 12 14 19 10 21 10 12"/></svg>
+              <span class="disc-label">Extract by pattern</span>
+              <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="disclosure-body">
+              <div>
+                <p class="field-label">Pattern</p>
+                <input class="pattern-input" value="news\.ycombinator\.com" readonly>
+              </div>
+              <div class="flag-row">
+                <span class="field-label" style="margin-right:2px;">Flags</span>
+                <span class="chip flag-chip">i</span>
+                <span class="chip flag-chip active">g</span>
+                <span class="chip flag-chip">m</span>
+                <span class="match-count has-matches" style="margin-left:auto;">Matches 3 tabs</span>
+              </div>
+              <div class="preset-row">
+                <span class="chip preset-chip active">Hacker News</span>
+                <span class="chip preset-chip">Google Docs</span>
+                <span class="chip preset-chip">GitHub PRs</span>
+              </div>
+              <button class="btn-move" style="opacity:1;">Move 3 tabs to new window</button>
+            </div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="state-card">
+        <figcaption>Error toast</figcaption>
+        <div class="popup">
+          <div class="pop-header">
+            <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="3" width="12" height="9" rx="2"/><rect x="9" y="12" width="12" height="9" rx="2"/></svg></span><span class="brand-name">Tab Sorter</span></div>
+          </div>
+          <p class="facts-line">23 tabs · 9 sites · 3 duplicates</p>
+          <div class="toast toast-error">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.4" r="0.9" fill="currentColor" stroke="none"/></svg>
+            <div>
+              <p class="toast-title">Couldn't move 2 tabs</p>
+              <p class="toast-sub">They're pinned in another window.</p>
+              <span class="toast-action">Try again</span>
+            </div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="state-card">
+        <figcaption>Dark mode</figcaption>
+        <div class="dark-preview">
+          <div class="popup">
+            <div class="pop-header">
+              <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="3" width="12" height="9" rx="2"/><rect x="9" y="12" width="12" height="9" rx="2"/></svg></span><span class="brand-name">Tab Sorter</span></div>
+              <span class="icon-btn" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="14" cy="7" r="2" fill="var(--surface)"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="9" cy="12" r="2" fill="var(--surface)"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="16" cy="17" r="2" fill="var(--surface)"/></svg></span>
+            </div>
+            <p class="facts-line">23 tabs · 9 sites · 3 duplicates</p>
+            <button class="btn-hero" tabindex="-1">
+              <span class="hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><polygon points="12 3 22 9 12 15 2 9"/><polyline points="2 14 12 20 22 14"/></svg></span>
+              <span class="hero-copy"><span class="hero-title">Tidy this window</span><span class="hero-sub">Sort and group into 5 tab groups</span></span>
+            </button>
+            <div class="card card-peach">
+              <div class="dupe-row">
+                <div class="dupe-left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="7" width="12" height="12" rx="2"/><rect x="9" y="3" width="12" height="12" rx="2" fill="var(--peach-bg)"/></svg><span><span class="dupe-title" style="display:block;">3 duplicate tabs</span><span class="dupe-sub">Same page open more than once</span></span></div>
+                <button class="btn-danger" tabindex="-1">Close duplicates</button>
+              </div>
+            </div>
+          </div>
+          <p class="dark-note" style="margin-top:10px;">Cards deepen, shadows turn to soft glows, and the terracotta brightens with dark ink so contrast holds at AA.</p>
+        </div>
+      </figure>
+
+    </div>
+  </section>
+
+  <footer class="credit">Tactile Soft — Tab Sorter popup concept. Everything above (except the pinned dark-mode swatch) follows your OS light/dark setting.</footer>
+
+<script>
+(function(){
+  // Pattern disclosure toggle
+  var toggle = document.getElementById('patternToggle');
+  var body = document.getElementById('patternBody');
+  if (toggle && body) {
+    toggle.addEventListener('click', function(){
+      var open = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!open));
+      toggle.classList.toggle('is-open', !open);
+      body.hidden = open;
+    });
+  }
+
+  // Dedupe two-step confirm
+  var dupeBtn = document.getElementById('dupeBtn');
+  var dupeHint = document.getElementById('dupeHint');
+  var armTimer = null;
+  function disarm(){
+    if (!dupeBtn) return;
+    dupeBtn.classList.remove('armed');
+    dupeBtn.textContent = 'Close duplicates';
+    if (dupeHint) dupeHint.hidden = true;
+    clearTimeout(armTimer);
+  }
+  if (dupeBtn) {
+    dupeBtn.addEventListener('click', function(){
+      var armed = dupeBtn.classList.contains('armed');
+      if (!armed) {
+        dupeBtn.classList.add('armed');
+        dupeBtn.textContent = 'Close 3 duplicates?';
+        if (dupeHint) dupeHint.hidden = false;
+        armTimer = setTimeout(disarm, 8000);
+      } else {
+        clearTimeout(armTimer);
+        dupeBtn.textContent = 'Closed 3 duplicates';
+        setTimeout(function(){
+          dupeBtn.classList.remove('armed');
+          dupeBtn.textContent = 'Close duplicates';
+          if (dupeHint) dupeHint.hidden = true;
+        }, 1400);
+      }
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape') disarm();
+    });
+  }
+
+  // Copy format segmented control
+  var segButtons = document.querySelectorAll('.seg-btn');
+  segButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      segButtons.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  });
+
+  var copyBtn = document.getElementById('copyBtn');
+  if (copyBtn) {
+    var copyOriginal = copyBtn.innerHTML;
+    copyBtn.addEventListener('click', function(){
+      copyBtn.textContent = 'Copied';
+      copyBtn.classList.add('is-done');
+      setTimeout(function(){
+        copyBtn.innerHTML = copyOriginal;
+        copyBtn.classList.remove('is-done');
+      }, 1400);
+    });
+  }
+
+  // Live regex match count against a representative demo tab set
+  var demoUrls = [
+    'https://github.com/anthropics/claude-code/pull/482',
+    'https://github.com/anthropics/claude-code/pull/399',
+    'https://github.com/anthropics/claude-code/issues/12',
+    'https://github.com/wxt-dev/wxt',
+    'https://github.com/anthropics/claude-code',
+    'https://github.com/settings/profile',
+    'https://github.com/notifications',
+    'https://docs.google.com/document/d/1abc',
+    'https://docs.google.com/spreadsheets/d/2def',
+    'https://docs.google.com/presentation/d/3ghi',
+    'https://docs.google.com/document/d/4jkl',
+    'https://figma.com/file/abc/tab-sorter',
+    'https://figma.com/file/def/icons',
+    'https://figma.com/file/ghi/palette',
+    'https://news.ycombinator.com/item?id=44012933',
+    'https://news.ycombinator.com/item?id=44011820',
+    'https://news.ycombinator.com/newest',
+    'https://linear.app/team/issue/TAB-12',
+    'https://linear.app/team/issue/TAB-9',
+    'chrome://extensions',
+    'chrome://settings'
+  ];
+
+  var patternInput = document.getElementById('patternInput');
+  var matchCount = document.getElementById('matchCount');
+  var moveBtn = document.getElementById('moveBtn');
+  var flagChips = document.querySelectorAll('.flag-chip[data-flag]');
+  var presetChips = document.querySelectorAll('.preset-chip[data-pattern]');
+
+  function activeFlags(){
+    var f = '';
+    flagChips.forEach(function(c){ if (c.classList.contains('active')) f += c.dataset.flag; });
+    return f;
+  }
+
+  function recompute(){
+    if (!patternInput) return;
+    var pattern = patternInput.value.trim();
+    var flags = activeFlags();
+    var count = 0, invalid = false;
+    if (pattern) {
+      try {
+        var re = new RegExp(pattern, flags);
+        count = demoUrls.filter(function(u){ return re.test(u); }).length;
+      } catch (e) { invalid = true; }
+    }
+    patternInput.classList.toggle('is-invalid', invalid);
+    if (matchCount) {
+      matchCount.textContent = invalid ? 'Invalid pattern' : ('Matches ' + count + ' tab' + (count === 1 ? '' : 's'));
+      matchCount.classList.toggle('has-matches', !invalid && count > 0);
+    }
+    if (moveBtn) {
+      moveBtn.disabled = invalid || count === 0;
+      moveBtn.textContent = (!invalid && count > 0) ? ('Move ' + count + ' tab' + (count === 1 ? '' : 's') + ' to new window') : 'Move to new window';
+    }
+  }
+
+  if (patternInput) patternInput.addEventListener('input', recompute);
+  flagChips.forEach(function(chip){
+    chip.addEventListener('click', function(){ chip.classList.toggle('active'); recompute(); });
+  });
+  presetChips.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      if (!patternInput) return;
+      patternInput.value = chip.dataset.pattern;
+      var flags = chip.dataset.flags || '';
+      flagChips.forEach(function(c){ c.classList.toggle('active', flags.indexOf(c.dataset.flag) !== -1); });
+      recompute();
+      patternInput.focus();
+    });
+  });
+
+  if (moveBtn) {
+    moveBtn.addEventListener('click', function(){
+      if (moveBtn.disabled) return;
+      var original = moveBtn.textContent;
+      moveBtn.textContent = 'Moved';
+      setTimeout(function(){ moveBtn.textContent = original; }, 1200);
+    });
+  }
+})();
+</script>
+</body>
+</html>

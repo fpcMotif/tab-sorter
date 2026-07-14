@@ -1,0 +1,466 @@
+<!-- @dsCard group="Concept - Utility dense" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tab Sorter — Settings · Utility Dense</title>
+<style>
+  :root{
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+    --page-bg: #e7e9ee;
+    --bg: #eef0f3;
+    --surface: #ffffff;
+    --surface-2: #f5f6f8;
+    --surface-hover: #eceef2;
+    --border: #e1e4e9;
+    --border-strong: #cfd3da;
+    --text: #14161a;
+    --text-muted: #656b76;
+    --text-faint: #9aa1ac;
+
+    --accent: #5457e5;
+    --accent-hover: #4448cf;
+    --accent-ink: #4548d1;
+    --accent-subtle: #eceeff;
+    --accent-subtle-border: #d7d9fb;
+    --on-accent: #ffffff;
+
+    --danger-ink: #b91f32;
+    --danger-subtle: #fcecee;
+
+    --success-ink: #147d52;
+
+    --warning-ink: #8a5a12;
+    --warning-subtle: #fdf3e1;
+    --warning-subtle-border: #f5e0b6;
+
+    --shadow-card: 0 1px 2px rgba(20,22,26,.04);
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --ease: cubic-bezier(.2,.8,.2,1);
+    --dur: 140ms;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root{
+      --page-bg: #08090b;
+      --bg: #0c0d10;
+      --surface: #17181c;
+      --surface-2: #1c1e23;
+      --surface-hover: #24262c;
+      --border: #2a2c33;
+      --border-strong: #383b44;
+      --text: #e8e9ec;
+      --text-muted: #9aa3af;
+      --text-faint: #656b76;
+
+      --accent: #5457e5;
+      --accent-hover: #6669f2;
+      --accent-ink: #9092f7;
+      --accent-subtle: #23243a;
+      --accent-subtle-border: #34366a;
+
+      --danger-ink: #ff7b86;
+      --danger-subtle: #3a2024;
+
+      --success-ink: #4ad995;
+
+      --warning-ink: #e3a94a;
+      --warning-subtle: #322613;
+      --warning-subtle-border: #4a3a1c;
+
+      --shadow-card: 0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:var(--font-ui);
+    font-size:13px;
+    line-height:1.5;
+    color:var(--text);
+    background:var(--page-bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,p,ul,ol{ margin:0; }
+  button,input,select{ font:inherit; color:inherit; }
+  button{ cursor:pointer; }
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+
+  :focus-visible{ outline:2px solid var(--accent-ink); outline-offset:2px; border-radius:var(--radius-sm); }
+
+  .icon{ width:14px; height:14px; flex:none; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+
+  .page{ max-width:688px; margin:0 auto; padding:28px 24px 96px; }
+
+  /* top bar */
+  .topbar{ display:flex; align-items:center; gap:10px; padding-bottom:18px; margin-bottom:20px; border-bottom:1px solid var(--border); }
+  .mark{ width:24px; height:24px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; flex:none; }
+  .mark .icon{ width:14px; height:14px; stroke:var(--on-accent); }
+  .topbar-title{ font-size:14px; font-weight:650; letter-spacing:-.005em; }
+  .topbar-sub{ font-size:12px; color:var(--text-muted); margin-top:1px; }
+  .topbar-right{ margin-left:auto; font-size:11px; color:var(--text-faint); }
+
+  /* section */
+  .section{ margin-bottom:28px; }
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px; }
+  .section-title{ font-size:11px; font-weight:650; text-transform:uppercase; letter-spacing:.08em; color:var(--text-faint); }
+
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); overflow:hidden; }
+
+  .pref-row{
+    display:flex; align-items:center; gap:16px; padding:11px 14px; min-height:32px;
+    border-bottom:1px solid var(--border);
+  }
+  .pref-row:last-child{ border-bottom:none; }
+  .pref-main{ flex:1; min-width:0; }
+  .pref-label{ font-size:13px; font-weight:550; }
+  .pref-note{ font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+  .pref-note.warn{ color:var(--warning-ink); }
+  .pref-control{ flex:none; display:flex; align-items:center; gap:8px; }
+
+  /* toggle switch */
+  .switch{ position:relative; width:32px; height:19px; border-radius:999px; background:var(--border-strong); border:0; flex:none; transition:background var(--dur) var(--ease); }
+  .switch::after{ content:""; position:absolute; top:2px; left:2px; width:15px; height:15px; border-radius:50%; background:var(--surface); box-shadow:0 1px 2px rgba(0,0,0,.25); transition:transform var(--dur) var(--ease); }
+  .switch.is-on{ background:var(--accent); }
+  .switch.is-on::after{ transform:translateX(13px); }
+  .switch[aria-checked="true"]{ background:var(--accent); }
+  .switch[aria-checked="true"]::after{ transform:translateX(13px); }
+
+  /* segmented control */
+  .seg2{ display:inline-flex; border:1px solid var(--border-strong); border-radius:var(--radius-md); padding:2px; background:var(--surface-2); }
+  .seg2 button{ height:24px; padding:0 10px; border-radius:4px; font-size:11.5px; font-weight:600; color:var(--text-muted); background:transparent; transition:background var(--dur) var(--ease), color var(--dur) var(--ease); }
+  .seg2 button.is-active{ background:var(--surface); color:var(--text); box-shadow:0 1px 2px rgba(20,22,26,.12); }
+
+  /* stepper */
+  .stepper{ display:inline-flex; align-items:center; border:1px solid var(--border-strong); border-radius:var(--radius-md); overflow:hidden; }
+  .stepper button{ width:24px; height:24px; display:flex; align-items:center; justify-content:center; background:var(--surface-2); color:var(--text-muted); }
+  .stepper button:hover{ background:var(--surface-hover); color:var(--text); }
+  .stepper input{ width:36px; height:24px; text-align:center; border:0; border-left:1px solid var(--border-strong); border-right:1px solid var(--border-strong); background:var(--surface); font-family:var(--font-mono); font-size:12px; font-variant-numeric:tabular-nums; }
+  .stepper input:focus-visible{ outline-offset:-1px; }
+
+  /* saved confirmation */
+  .saved{ font-size:11px; color:var(--success-ink); opacity:0; transition:opacity var(--dur) var(--ease); white-space:nowrap; display:flex; align-items:center; gap:3px; }
+  .saved.is-visible{ opacity:1; }
+
+  /* warning banner */
+  .warn-line{ display:flex; gap:7px; align-items:flex-start; padding:9px 14px; background:var(--warning-subtle); border-top:1px solid var(--warning-subtle-border); font-size:11.5px; color:var(--warning-ink); }
+  .warn-line .icon{ stroke:var(--warning-ink); margin-top:1px; }
+
+  /* regex presets */
+  .preset-form{ display:flex; gap:8px; padding:12px 14px; border-bottom:1px solid var(--border); background:var(--surface-2); flex-wrap:wrap; }
+  .field{ display:flex; flex-direction:column; gap:3px; }
+  .field label{ font-size:10.5px; font-weight:650; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); }
+  .field input{ height:26px; border:1px solid var(--border-strong); border-radius:var(--radius-sm); padding:0 8px; background:var(--surface); font-size:12px; }
+  .field input.mono{ font-family:var(--font-mono); }
+  .field.f-label{ width:150px; }
+  .field.f-pattern{ flex:1; min-width:160px; }
+  .field.f-flags{ width:64px; }
+  .btn-add{ align-self:flex-end; height:26px; padding:0 12px; border-radius:var(--radius-sm); background:var(--accent); color:var(--on-accent); font-size:12px; font-weight:650; display:flex; align-items:center; gap:5px; transition:background var(--dur) var(--ease); }
+  .btn-add:hover{ background:var(--accent-hover); }
+
+  .preset-row{ display:flex; align-items:center; gap:10px; padding:9px 14px; min-height:32px; border-bottom:1px solid var(--border); }
+  .preset-row:last-child{ border-bottom:none; }
+  .preset-label{ font-size:12.5px; font-weight:550; flex:none; width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .preset-pattern-wrap{ flex:1; min-width:0; overflow-x:auto; }
+  .preset-pattern{ font-family:var(--font-mono); font-size:11.5px; color:var(--text-muted); white-space:nowrap; }
+  .preset-pattern .slash{ color:var(--text-faint); }
+  .preset-flags{ flex:none; font-family:var(--font-mono); font-size:10.5px; font-weight:650; color:var(--accent-ink); background:var(--accent-subtle); border:1px solid var(--accent-subtle-border); border-radius:999px; padding:1px 6px; }
+  .preset-del{ flex:none; width:24px; height:24px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm); color:var(--text-faint); transition:background var(--dur) var(--ease), color var(--dur) var(--ease); }
+  .preset-del:hover{ background:var(--danger-subtle); color:var(--danger-ink); }
+
+  /* shortcuts table */
+  .shortcut-row{ display:flex; align-items:center; padding:9px 14px; min-height:32px; border-bottom:1px solid var(--border); }
+  .shortcut-row:last-child{ border-bottom:none; }
+  .shortcut-name{ font-size:12.5px; flex:1; }
+  .keys{ display:inline-flex; gap:3px; }
+  kbd{
+    font-family:var(--font-mono); font-size:10.5px; line-height:1; padding:4px 6px 3.5px;
+    background:var(--surface-2); border:1px solid var(--border-strong); border-radius:4px; color:var(--text-muted);
+    box-shadow: inset 0 -1px 0 var(--border-strong);
+  }
+  .shortcut-note{ padding:10px 14px; font-size:11.5px; color:var(--text-muted); background:var(--surface-2); }
+  .shortcut-note code{ font-family:var(--font-mono); font-size:11px; background:var(--surface); border:1px solid var(--border-strong); border-radius:3px; padding:1px 5px; }
+
+  footer.page-foot{ text-align:center; font-size:11px; color:var(--text-faint); margin-top:36px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="mark"><svg class="icon" viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="9" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="5" y1="4.9" x2="8" y2="4.9"/></svg></div>
+    <div>
+      <div class="topbar-title">Settings</div>
+      <div class="topbar-sub">Tab Sorter</div>
+    </div>
+    <div class="topbar-right mono">v1.4.0</div>
+  </div>
+
+  <!-- SORTING -->
+  <section class="section">
+    <div class="section-head"><span class="section-title">Sorting</span></div>
+    <div class="card">
+      <div class="pref-row">
+        <div class="pref-main">
+          <div class="pref-label">Default sort</div>
+          <div class="pref-note">Used when you trigger sort without choosing a mode.</div>
+        </div>
+        <div class="pref-control">
+          <span class="saved" data-saved><svg class="icon" viewBox="0 0 16 16" style="width:11px;height:11px;"><path d="M3.5 8.5l3 3 6-7"/></svg>Saved</span>
+          <div class="seg2" data-seg>
+            <button class="is-active">A → Z</button>
+            <button>By domain</button>
+          </div>
+        </div>
+      </div>
+      <div class="pref-row">
+        <div class="pref-main">
+          <div class="pref-label">Keep pinned tabs fixed</div>
+          <div class="pref-note">Pinned tabs stay in place during sort and tidy.</div>
+        </div>
+        <div class="pref-control">
+          <span class="saved" data-saved><svg class="icon" viewBox="0 0 16 16" style="width:11px;height:11px;"><path d="M3.5 8.5l3 3 6-7"/></svg>Saved</span>
+          <button class="switch is-on" role="switch" aria-checked="true" data-toggle></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIDY -->
+  <section class="section">
+    <div class="section-head"><span class="section-title">Tidy</span></div>
+    <div class="card">
+      <div class="pref-row">
+        <div class="pref-main">
+          <div class="pref-label">Collapse groups after tidy</div>
+          <div class="pref-note">New groups start collapsed so the tab strip stays short.</div>
+        </div>
+        <div class="pref-control">
+          <span class="saved" data-saved><svg class="icon" viewBox="0 0 16 16" style="width:11px;height:11px;"><path d="M3.5 8.5l3 3 6-7"/></svg>Saved</span>
+          <button class="switch is-on" role="switch" aria-checked="true" data-toggle></button>
+        </div>
+      </div>
+      <div class="pref-row">
+        <div class="pref-main">
+          <div class="pref-label">Minimum tabs to form a group</div>
+          <div class="pref-note">Domains with fewer tabs than this stay ungrouped.</div>
+        </div>
+        <div class="pref-control">
+          <span class="saved" data-saved><svg class="icon" viewBox="0 0 16 16" style="width:11px;height:11px;"><path d="M3.5 8.5l3 3 6-7"/></svg>Saved</span>
+          <div class="stepper" data-stepper>
+            <button data-step="-1" aria-label="Decrease">
+              <svg class="icon" style="width:12px;height:12px;" viewBox="0 0 16 16"><path d="M3 8h10"/></svg>
+            </button>
+            <input class="mono" type="text" inputmode="numeric" value="2" data-step-value />
+            <button data-step="1" aria-label="Increase">
+              <svg class="icon" style="width:12px;height:12px;" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="pref-row">
+        <div class="pref-main">
+          <div class="pref-label">Group order</div>
+          <div class="pref-note">Controls how new groups are arranged left to right.</div>
+        </div>
+        <div class="pref-control">
+          <span class="saved" data-saved><svg class="icon" viewBox="0 0 16 16" style="width:11px;height:11px;"><path d="M3.5 8.5l3 3 6-7"/></svg>Saved</span>
+          <div class="seg2" data-seg>
+            <button class="is-active">Alphabetical</button>
+            <button>Largest first</button>
+          </div>
+        </div>
+      </div>
+      <div class="pref-row">
+        <div class="pref-main">
+          <div class="pref-label">Also regroup tabs already in groups</div>
+          <div class="pref-note">Off by default — leaves existing groups untouched.</div>
+        </div>
+        <div class="pref-control">
+          <span class="saved" data-saved><svg class="icon" viewBox="0 0 16 16" style="width:11px;height:11px;"><path d="M3.5 8.5l3 3 6-7"/></svg>Saved</span>
+          <button class="switch" role="switch" aria-checked="false" data-toggle data-warn-target="regroup-warn"></button>
+        </div>
+      </div>
+      <div class="warn-line" id="regroup-warn" hidden>
+        <svg class="icon" style="width:13px;height:13px;" viewBox="0 0 16 16"><path d="M8 2.5l6.2 11H1.8L8 2.5z"/><path d="M8 6.5v3.2"/><circle cx="8" cy="11.6" r=".2" fill="currentColor" stroke="none"/></svg>
+        <span>Reshuffles hand-made groups — existing groupings may be rearranged or merged.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DUPLICATES -->
+  <section class="section">
+    <div class="section-head"><span class="section-title">Duplicates</span></div>
+    <div class="card">
+      <div class="pref-row">
+        <div class="pref-main">
+          <div class="pref-label">Ignore URL fragment</div>
+          <div class="pref-note"><span class="mono">example.com/#a</span> and <span class="mono">example.com/#b</span> count as duplicates.</div>
+        </div>
+        <div class="pref-control">
+          <span class="saved" data-saved><svg class="icon" viewBox="0 0 16 16" style="width:11px;height:11px;"><path d="M3.5 8.5l3 3 6-7"/></svg>Saved</span>
+          <button class="switch is-on" role="switch" aria-checked="true" data-toggle></button>
+        </div>
+      </div>
+      <div class="pref-row">
+        <div class="pref-main">
+          <div class="pref-label">Ignore query string</div>
+          <div class="pref-note"><span class="mono">example.com/?ref=1</span> and <span class="mono">example.com/?ref=2</span> count as duplicates.</div>
+        </div>
+        <div class="pref-control">
+          <span class="saved" data-saved><svg class="icon" viewBox="0 0 16 16" style="width:11px;height:11px;"><path d="M3.5 8.5l3 3 6-7"/></svg>Saved</span>
+          <button class="switch" role="switch" aria-checked="false" data-toggle></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REGEX PRESETS -->
+  <section class="section">
+    <div class="section-head"><span class="section-title">Regex presets</span></div>
+    <div class="card">
+      <div class="preset-form">
+        <div class="field f-label"><label for="pf-label">Label</label><input id="pf-label" type="text" placeholder="Staging envs" /></div>
+        <div class="field f-pattern"><label for="pf-pattern">Pattern</label><input id="pf-pattern" class="mono" type="text" placeholder="^https?://staging\." /></div>
+        <div class="field f-flags"><label for="pf-flags">Flags</label><input id="pf-flags" class="mono" type="text" placeholder="gi" /></div>
+        <button class="btn-add" id="preset-add">
+          <svg class="icon" style="stroke:var(--on-accent);width:12px;height:12px;" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>
+          Add preset
+        </button>
+      </div>
+      <div id="preset-list">
+        <div class="preset-row">
+          <div class="preset-label">*.dev domains</div>
+          <div class="preset-pattern-wrap"><div class="preset-pattern"><span class="slash">/</span>\.dev$<span class="slash">/</span></div></div>
+          <span class="preset-flags">i</span>
+          <button class="preset-del" aria-label="Delete preset"><svg class="icon" style="width:13px;height:13px;" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+        </div>
+        <div class="preset-row">
+          <div class="preset-label">PRs &amp; issues</div>
+          <div class="preset-pattern-wrap"><div class="preset-pattern"><span class="slash">/</span>\/(pull|issues)\/<span class="slash">/</span></div></div>
+          <span class="preset-flags">i</span>
+          <button class="preset-del" aria-label="Delete preset"><svg class="icon" style="width:13px;height:13px;" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+        </div>
+        <div class="preset-row">
+          <div class="preset-label">Localhost</div>
+          <div class="preset-pattern-wrap"><div class="preset-pattern"><span class="slash">/</span>^https?:\/\/localhost<span class="slash">/</span></div></div>
+          <span class="preset-flags">—</span>
+          <button class="preset-del" aria-label="Delete preset"><svg class="icon" style="width:13px;height:13px;" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHORTCUTS -->
+  <section class="section">
+    <div class="section-head"><span class="section-title">Keyboard shortcuts</span></div>
+    <div class="card">
+      <div class="shortcut-row">
+        <span class="shortcut-name">Tidy this window</span>
+        <span class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>Space</kbd></span>
+      </div>
+      <div class="shortcut-row">
+        <span class="shortcut-name">Undo last action</span>
+        <span class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>Z</kbd></span>
+      </div>
+      <div class="shortcut-row">
+        <span class="shortcut-name">Sort A → Z</span>
+        <span class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>T</kbd></span>
+      </div>
+      <div class="shortcut-row">
+        <span class="shortcut-name">Default sort</span>
+        <span class="keys"><kbd>⌥</kbd><kbd>⇧</kbd><kbd>S</kbd></span>
+      </div>
+      <div class="shortcut-note">Shortcuts are managed by Chrome, not this extension. Change them at <code>chrome://extensions/shortcuts</code>.</div>
+    </div>
+  </section>
+
+  <footer class="page-foot">Preferences save automatically as you change them.</footer>
+</div>
+
+<script>
+  function flashSaved(row){
+    var saved = row.querySelector('[data-saved]');
+    if (!saved) return;
+    saved.classList.add('is-visible');
+    clearTimeout(saved._t);
+    saved._t = setTimeout(function(){ saved.classList.remove('is-visible'); }, 1600);
+  }
+
+  // toggles
+  document.querySelectorAll('[data-toggle]').forEach(function(sw){
+    sw.addEventListener('click', function(){
+      var on = sw.getAttribute('aria-checked') === 'true';
+      sw.setAttribute('aria-checked', String(!on));
+      sw.classList.toggle('is-on', !on);
+      var warnId = sw.getAttribute('data-warn-target');
+      if (warnId){
+        var w = document.getElementById(warnId);
+        if (w) w.hidden = on; // hidden when turning ON->OFF means show when now true
+      }
+      flashSaved(sw.closest('.pref-row'));
+    });
+  });
+
+  // segmented controls
+  document.querySelectorAll('[data-seg]').forEach(function(seg){
+    var buttons = seg.querySelectorAll('button');
+    buttons.forEach(function(b){
+      b.addEventListener('click', function(){
+        buttons.forEach(function(x){ x.classList.remove('is-active'); });
+        b.classList.add('is-active');
+        flashSaved(seg.closest('.pref-row'));
+      });
+    });
+  });
+
+  // stepper
+  document.querySelectorAll('[data-stepper]').forEach(function(stepper){
+    var input = stepper.querySelector('[data-step-value]');
+    stepper.querySelectorAll('button[data-step]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var delta = parseInt(btn.getAttribute('data-step'), 10);
+        var val = Math.min(99, Math.max(1, (parseInt(input.value, 10) || 1) + delta));
+        input.value = val;
+        flashSaved(stepper.closest('.pref-row'));
+      });
+    });
+    input.addEventListener('change', function(){
+      var val = Math.min(99, Math.max(1, parseInt(input.value, 10) || 1));
+      input.value = val;
+      flashSaved(stepper.closest('.pref-row'));
+    });
+  });
+
+  // preset add / delete
+  document.getElementById('preset-add').addEventListener('click', function(){
+    var label = document.getElementById('pf-label');
+    var pattern = document.getElementById('pf-pattern');
+    var flags = document.getElementById('pf-flags');
+    if (!pattern.value.trim()) { pattern.focus(); return; }
+    var row = document.createElement('div');
+    row.className = 'preset-row';
+    row.innerHTML = '<div class="preset-label">' + (label.value.trim() || 'Untitled') + '</div>' +
+      '<div class="preset-pattern-wrap"><div class="preset-pattern"><span class="slash">/</span>' + pattern.value.trim() + '<span class="slash">/</span></div></div>' +
+      '<span class="preset-flags">' + (flags.value.trim() || '—') + '</span>' +
+      '<button class="preset-del" aria-label="Delete preset"><svg class="icon" style="width:13px;height:13px;" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>';
+    document.getElementById('preset-list').appendChild(row);
+    row.querySelector('.preset-del').addEventListener('click', function(){ row.remove(); });
+    label.value = ''; pattern.value = ''; flags.value = '';
+  });
+  document.querySelectorAll('.preset-del').forEach(function(btn){
+    btn.addEventListener('click', function(){ btn.closest('.preset-row').remove(); });
+  });
+</script>
+</body>
+</html>
