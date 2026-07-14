@@ -38,9 +38,8 @@ describe("tabs service", () => {
 
     await applyOrder([3, 2, 1]);
 
-    expect(move).toHaveBeenNthCalledWith(1, 3, { index: 0 });
-    expect(move).toHaveBeenNthCalledWith(2, 1, { index: 1 });
-    expect(move).toHaveBeenCalledTimes(2);
+    expect(move).toHaveBeenCalledWith([3, 1], { index: 0 });
+    expect(move).toHaveBeenCalledTimes(1);
   });
 
   it("does not move empty or single-id order lists", async () => {

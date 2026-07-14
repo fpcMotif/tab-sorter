@@ -48,8 +48,8 @@ export async function applyOrder(orderedIds: number[]): Promise<void> {
   );
   const movableIds = orderedIds.filter((id) => currentIds.has(id));
 
-  for (const [index, tabId] of movableIds.entries()) {
-    await browser.tabs.move(tabId, { index });
+  if (movableIds.length > 0) {
+    await browser.tabs.move(movableIds, { index: 0 });
   }
 }
 
