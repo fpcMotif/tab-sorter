@@ -6,8 +6,8 @@ import {
   buildUrlExport,
   COPY_FORMATS,
   DOWNLOAD_FORMATS,
-} from "./export.ts";
-import type { TabLite } from "./types.ts";
+} from "./export";
+import type { TabLite } from "./types";
 
 function makeTabs(
   items: Array<Partial<TabLite> & { id: number; title: string; url: string }>,

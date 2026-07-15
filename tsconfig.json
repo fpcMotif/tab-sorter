@@ -1,3 +1,4 @@
 {
-  "extends": "@tab-sorter/config/tsconfig.base.json"
+  "extends": "@tab-sorter/config/tsconfig.base.json",
+  "files": []
 }

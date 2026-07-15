@@ -94,7 +94,7 @@ export async function applyOrder(orderedIds: number[], windowId: number): Promis
       survivors.has(tabId) ? [position] : [],
     );
     const absoluteIndex =
-      index < survivorPositions.length ? survivorPositions[index] : strip.length;
+      index < survivorPositions.length ? survivorPositions[index]! : strip.length;
     strip.splice(absoluteIndex, 0, id);
     await browser.tabs.move(id, { index: absoluteIndex });
   }
@@ -224,7 +224,8 @@ function asNonEmpty(ids: number[]): [number, ...number[]] {
 // later phase reasons about the live strip's CURRENT layout, not a stale one.
 function simMove(sim: StripTab[], id: number, index: number): void {
   const from = sim.findIndex((tab) => tab.id === id);
-  const tab = sim[from];
+  // Callers only sim-move an id that just moved in the live strip, so it is present.
+  const tab = sim[from]!;
 
   sim.splice(from, 1);
   sim.splice(index, 0, tab);
@@ -407,7 +408,9 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
   let cursor = pinnedIds.size;
   for (const block of blocks) {
     if ("id" in block) {
-      if (sim[cursor].id !== block.id) {
+      // cursor walks sim slot-by-slot as blocks are placed; an id block always
+      // addresses an existing slot, so sim[cursor] is defined.
+      if (sim[cursor]!.id !== block.id) {
         await browser.tabs.move(block.id, { index: cursor });
         simMove(sim, block.id, cursor);
       }

@@ -1,7 +1,7 @@
 import { fakeBrowser } from "@webext-core/fake-browser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { clearUndo, loadUndo, saveUndo } from "./session-store";
+import { loadUndo, saveUndo } from "./session-store";
 import type { WindowSnapshot } from "./types";
 
 function snapshot(windowId: number): WindowSnapshot {
@@ -43,16 +43,6 @@ describe("session undo store", () => {
     await saveUndo(1, replacement);
 
     await expect(loadUndo(1)).resolves.toEqual(replacement);
-  });
-
-  it("clearUndo removes only its own window", async () => {
-    await saveUndo(1, snapshot(1));
-    await saveUndo(2, snapshot(2));
-
-    await clearUndo(1);
-
-    await expect(loadUndo(1)).resolves.toBeUndefined();
-    await expect(loadUndo(2)).resolves.toEqual(snapshot(2));
   });
 
   it("rejects a stored value that isn't an object", async () => {

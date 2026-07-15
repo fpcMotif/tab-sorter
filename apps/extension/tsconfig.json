@@ -1,7 +1,6 @@
 {
-  "extends": "./.wxt/tsconfig.json",
+  "extends": ["./.wxt/tsconfig.json", "@tab-sorter/config/tsconfig.base.json"],
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": ["node", "chrome", "vitest/globals", "@testing-library/jest-dom"]

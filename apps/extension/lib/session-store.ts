@@ -36,7 +36,3 @@ export async function loadUndo(windowId: number): Promise<WindowSnapshot | undef
 
   return isWindowSnapshot(value) ? value : undefined;
 }
-
-export async function clearUndo(windowId: number): Promise<void> {
-  await browser.storage.session.remove(undoKey(windowId));
-}
