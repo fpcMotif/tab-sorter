@@ -47,7 +47,7 @@ tab-sorter/                 # Bun workspaces monorepo
 
 ## Tech notes
 
-- `packageManager` is pinned to `bun@1.4.0`.
+- `packageManager` is pinned to `bun@1.3.14` (the latest stable Bun release; CI installs the same version via `oven-sh/setup-bun`).
 - Type checking uses `@rslint/tsgo` (the native/Go TypeScript preview). The `typescript` package is kept for declaration files and editor support.
 - Linting uses `oxlint` with the React, TypeScript, Unicorn, and Import plugins.
 - Formatting uses `oxfmt`.
