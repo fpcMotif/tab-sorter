@@ -1,3 +1,6 @@
+import { GROUP_COLORS } from "./types";
+import type { GroupColor } from "./types";
+
 const SPECIAL_SCHEME_BUCKETS = new Map([
   ["about:", "(about)"],
   ["chrome:", "(chrome)"],
@@ -36,4 +39,18 @@ export function getDomain(url: string): string {
   } catch {
     return "(unknown)";
   }
+}
+
+// Deterministic domain -> palette color, so the same domain always gets the
+// same swatch across tidy runs (a djb2 string hash needs no shared state or
+// storage). Collisions across the 9-color palette are expected and accepted
+// per the PRD ("Many domains > 9 colors" — title disambiguates).
+export function assignColor(domain: string): GroupColor {
+  let hash = 5381;
+
+  for (let i = 0; i < domain.length; i += 1) {
+    hash = (hash * 33 + domain.charCodeAt(i)) | 0;
+  }
+
+  return GROUP_COLORS[Math.abs(hash) % GROUP_COLORS.length]!;
 }

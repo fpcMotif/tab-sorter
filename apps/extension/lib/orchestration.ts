@@ -1,5 +1,6 @@
 import { planDedupe } from "./dedupe";
-import { groupByDomain, matchByDomain, matchPattern } from "./match";
+import { groupByDomain, matchByDomain } from "./domain-groups";
+import { matchPattern } from "./match";
 import { planWindowOrder } from "./plan";
 import { getPrefs } from "./storage";
 import { loadUndo, saveUndo } from "./session-store";

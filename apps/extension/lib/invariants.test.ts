@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getDomain } from "./domain";
-import { groupByDomain } from "./match";
+import { groupByDomain } from "./domain-groups";
 import { planWindowOrder } from "./plan";
 import { sortByDomain, sortByTitle } from "./sort";
 import { planMoves, type TabMove } from "./tab-moves";

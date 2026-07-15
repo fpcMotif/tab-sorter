@@ -12,7 +12,9 @@ this file names the **domain**.
   terse). The only shape `domain`/`sort`/`match`/`plan`/`tidy`/`dedupe`/`undo` ever
   see; the browser's `Tab` never leaks past `tabs-service`.
 - **SortMode** — `"title"` (A→Z by page title) or `"domain"` (grouped by domain, then title).
-- **DomainGroup** — `{ domain, count, tabIds }`; feeds the popup's clickable domain list.
+- **DomainGroup** — `{ domain, count, tabIds }`; feeds the popup's clickable domain list. Built by
+  `groupByDomain` in `lib/domain-groups.ts` (domain-bucketing of tabs), the sibling to `match.ts`'s
+  pattern surface; `matchByDomain` (same module) resolves one bucket's ids for extraction.
 - **Prefs** — `{ defaultSort, ignorePinned, regexPresets }` plus the Layer 1 tidy/dedupe knobs
   (`collapseAfterTidy`, `minGroupSize`, `groupOrder`, `regroupExisting`, `dedupeIgnoreHash`,
   `dedupeIgnoreQuery`), persisted in `chrome.storage.sync`.
@@ -106,9 +108,10 @@ this file names the **domain**.
   among the unpinned region, and `ungroup` stays empty — tidy only ever claims *ungrouped*
   unpinned tabs. With it on, every unpinned tab is reclaimed and rebucketed by domain, dissolving
   old groups; a previously-grouped tab that lands as a leftover singleton is reported in
-  `ungroup` (one absorbed into a *new* group needs no entry). **assignColor** is a deterministic
-  djb2-hash → 9-color palette lookup, so the same domain always gets the same swatch; collisions
-  across >9 domains are expected and accepted, the title disambiguates.
+  `ungroup` (one absorbed into a *new* group needs no entry). **assignColor** (`lib/domain.ts` —
+  the domain vocabulary: name + color) is a deterministic djb2-hash → 9-color palette lookup, so
+  the same domain always gets the same swatch; collisions across >9 domains are expected and
+  accepted, the title disambiguates.
 
 ## The group reconciler
 

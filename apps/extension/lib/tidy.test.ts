@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { assignColor, planTidy } from "./tidy";
-import { GROUP_COLORS, TAB_GROUP_NONE } from "./types";
+import { planTidy } from "./tidy";
+import { TAB_GROUP_NONE } from "./types";
 import type { GroupOrder, Prefs, TabLite } from "./types";
 
 type TidyPrefs = Pick<
@@ -246,25 +246,6 @@ describe("planTidy — degenerate windows", () => {
     expect(plan.groups).toEqual([]);
     expect(plan.ungroup).toEqual([]);
     expect(plan.close).toEqual([]);
-  });
-});
-
-describe("assignColor", () => {
-  it("is stable across repeated calls for the same domain", () => {
-    expect(assignColor("github.com")).toBe(assignColor("github.com"));
-    expect(assignColor("example.com")).toBe(assignColor("example.com"));
-  });
-
-  it("returns one of the 9 GROUP_COLORS and reaches all of them over many domains", () => {
-    const seen = new Set<string>();
-
-    for (let i = 0; i < 200; i += 1) {
-      const color = assignColor(`site${i}.example.com`);
-      expect(GROUP_COLORS).toContain(color);
-      seen.add(color);
-    }
-
-    expect(seen.size).toBe(GROUP_COLORS.length);
   });
 });
 
