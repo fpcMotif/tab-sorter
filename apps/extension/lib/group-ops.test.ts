@@ -95,9 +95,7 @@ describe("planGroupOps", () => {
     const c = live(8, [902], { title: "Group" });
     const d = spec("g1", [1, 2]); // zero overlap with all three
 
-    expect(planGroupOps([a, b, c], [d])).toEqual([
-      { type: "group", tabIds: [1, 2], groupId: 2 },
-    ]);
+    expect(planGroupOps([a, b, c], [d])).toEqual([{ type: "group", tabIds: [1, 2], groupId: 2 }]);
   });
 
   it("never lets the title fallback claim an already-claimed group", () => {
