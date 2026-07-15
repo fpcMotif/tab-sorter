@@ -60,8 +60,9 @@ this file names the **domain**.
   `matchPattern`, not through the internal primitive.
 - **match safety cap** (`MATCH_SAFETY_CAP`, 1000) — the one length bound every matching path
   inherits, capping regex backtracking (ReDoS) cost and closing the formerly-unbounded
-  `runExtract` regex path. **Not** the same as the `options` preset's stricter storage cap (500,
-  a `chrome.storage.sync` quota rule); the two are deliberately separate — see
+  `runExtract` regex path. **Not** the same as the preset's stricter storage cap
+  (`MAX_PRESET_SOURCE_LENGTH`, 500 — a `chrome.storage.sync` quota rule owned by the
+  persistence module, `lib/storage.ts`); the two are deliberately separate — see
   `docs/adr/0001-two-pattern-caps.md`. Cap, compilation, and preview all route through the
   pattern surface, so validity is judged by the same rule everywhere.
 

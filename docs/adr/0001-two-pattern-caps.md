@@ -45,3 +45,5 @@ persistence caller owns storage.
   preset — that ordering is intentional, not redundant.
 - Two numbers to know instead of one. This ADR exists so future reviews don't
   re-suggest collapsing them.
+
+> Postscript (2026-07-15): the preset storage cap now lives in lib/storage.ts — the persistence module; still deliberately separate from MATCH_SAFETY_CAP.
