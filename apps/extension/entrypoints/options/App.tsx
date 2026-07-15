@@ -1,8 +1,18 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 
 import { useAsyncAction } from "@/hooks/use-async-action";
-import { reasonToString, validatePattern } from "@/lib/match";
-import { getPrefs, onPrefsChanged, setPrefs } from "@/lib/storage";
+import {
+  getPrefs,
+  MAX_PRESET_LABEL_LENGTH,
+  MAX_PRESET_SOURCE_LENGTH,
+  MIN_GROUP_SIZE_CEIL,
+  MIN_GROUP_SIZE_ERROR,
+  MIN_GROUP_SIZE_FLOOR,
+  onPrefsChanged,
+  parseMinGroupSize,
+  setPrefs,
+  validatePreset,
+} from "@/lib/storage";
 import type { GroupColor, GroupOrder, Prefs, RegexPreset, SortMode } from "@/lib/types";
 import { DEFAULT_PREFS } from "@/lib/types";
 
@@ -12,63 +22,6 @@ interface PresetDraft {
   label: string;
   source: string;
   flags: string;
-}
-
-// Bounds keep the whole prefs object well under chrome.storage.sync's
-// ~8KB-per-item quota, beyond which every save (not just presets) would fail.
-const MAX_PRESETS = 50;
-const MAX_PRESET_SOURCE_LENGTH = 500;
-const MAX_PRESET_LABEL_LENGTH = 60;
-
-function validatePreset(draft: PresetDraft, existingCount: number): string {
-  if (draft.label.trim().length === 0) {
-    return "Preset label is required.";
-  }
-
-  if (draft.label.length > MAX_PRESET_LABEL_LENGTH) {
-    return `Label is too long (max ${MAX_PRESET_LABEL_LENGTH} characters).`;
-  }
-
-  if (draft.source.trim().length === 0) {
-    return "Pattern is required.";
-  }
-
-  if (draft.source.length > MAX_PRESET_SOURCE_LENGTH) {
-    return `Pattern is too long (max ${MAX_PRESET_SOURCE_LENGTH} characters).`;
-  }
-
-  if (existingCount >= MAX_PRESETS) {
-    return `Preset limit reached (${MAX_PRESETS}). Delete one to add another.`;
-  }
-
-  const verdict = validatePattern(draft.source, draft.flags);
-
-  if (!verdict.ok) {
-    return reasonToString(verdict.reason);
-  }
-
-  return "";
-}
-
-// Mirrors storage.ts' normalizeMinGroupSize bounds — a value outside this
-// range would just be clamped back to DEFAULT_PREFS on the next load, so the
-// input rejects it up front instead of silently persisting a value that
-// won't stick. Floor is 2, not 1: a "group" of one tab is the exact noise
-// this pref exists to prevent (DESIGN-SPEC's stepper floor agrees).
-const MIN_GROUP_SIZE_FLOOR = 2;
-const MIN_GROUP_SIZE_CEIL = 99;
-const MIN_GROUP_SIZE_ERROR = `Enter a whole number from ${MIN_GROUP_SIZE_FLOOR} to ${MIN_GROUP_SIZE_CEIL}.`;
-
-function parseMinGroupSize(raw: string): number | undefined {
-  const trimmed = raw.trim();
-
-  if (!/^\d+$/.test(trimmed)) {
-    return undefined;
-  }
-
-  const value = Number(trimmed);
-
-  return value >= MIN_GROUP_SIZE_FLOOR && value <= MIN_GROUP_SIZE_CEIL ? value : undefined;
 }
 
 // Cycled onto preset rows purely for visual scannability — presets have no

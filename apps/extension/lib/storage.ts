@@ -1,3 +1,4 @@
+import { reasonToString, validatePattern } from "./match";
 import {
   DEFAULT_PREFS,
   type GroupOrder,
@@ -15,8 +16,66 @@ const GROUP_ORDERS = new Set<GroupOrder>(["alpha", "sizeDesc"]);
 // DEFAULT_PREFS.minGroupSize's own doc comment says this pref exists to
 // prevent; DESIGN-SPEC's stepper floor is 2) or make grouping unreachable
 // (huge).
-const MIN_GROUP_SIZE_FLOOR = 2;
-const MIN_GROUP_SIZE_CEIL = 99;
+export const MIN_GROUP_SIZE_FLOOR = 2;
+export const MIN_GROUP_SIZE_CEIL = 99;
+export const MIN_GROUP_SIZE_ERROR = `Enter a whole number from ${MIN_GROUP_SIZE_FLOOR} to ${MIN_GROUP_SIZE_CEIL}.`;
+
+// Bounds keep the whole prefs object well under chrome.storage.sync's
+// ~8KB-per-item quota, beyond which every save (not just presets) would fail.
+export const MAX_PRESETS = 50;
+// Deliberately stricter than match.ts' MATCH_SAFETY_CAP (1000) — a storage
+// quota bound, not a ReDoS bound. See docs/adr/0001-two-pattern-caps.md.
+export const MAX_PRESET_SOURCE_LENGTH = 500;
+export const MAX_PRESET_LABEL_LENGTH = 60;
+
+// Same semantics as the stepper's own clamp: reject anything that isn't a
+// bare non-negative integer in range, rather than coercing ("  3 " -> 3)
+// and silently accepting input the stepper itself would never produce.
+export function parseMinGroupSize(raw: string): number | undefined {
+  const trimmed = raw.trim();
+
+  if (!/^\d+$/.test(trimmed)) {
+    return undefined;
+  }
+
+  const value = Number(trimmed);
+
+  return value >= MIN_GROUP_SIZE_FLOOR && value <= MIN_GROUP_SIZE_CEIL ? value : undefined;
+}
+
+// The one home for judging a preset draft, so the options form and any future
+// producer read the same rule. Checks the storage cap (500) before deferring
+// to validatePattern's safety cap (1000) — the storage cap always fires first
+// (ADR-0001's intentional ordering).
+export function validatePreset(draft: RegexPreset, existingCount: number): string {
+  if (draft.label.trim().length === 0) {
+    return "Preset label is required.";
+  }
+
+  if (draft.label.length > MAX_PRESET_LABEL_LENGTH) {
+    return `Label is too long (max ${MAX_PRESET_LABEL_LENGTH} characters).`;
+  }
+
+  if (draft.source.trim().length === 0) {
+    return "Pattern is required.";
+  }
+
+  if (draft.source.length > MAX_PRESET_SOURCE_LENGTH) {
+    return `Pattern is too long (max ${MAX_PRESET_SOURCE_LENGTH} characters).`;
+  }
+
+  if (existingCount >= MAX_PRESETS) {
+    return `Preset limit reached (${MAX_PRESETS}). Delete one to add another.`;
+  }
+
+  const verdict = validatePattern(draft.source, draft.flags);
+
+  if (!verdict.ok) {
+    return reasonToString(verdict.reason);
+  }
+
+  return "";
+}
 
 function isSortMode(value: unknown): value is SortMode {
   return SORT_MODES.has(value as SortMode);

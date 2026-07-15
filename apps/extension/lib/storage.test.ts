@@ -1,7 +1,18 @@
 import { fakeBrowser } from "@webext-core/fake-browser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getPrefs, onPrefsChanged, setPrefs } from "./storage";
+import {
+  getPrefs,
+  MAX_PRESET_LABEL_LENGTH,
+  MAX_PRESET_SOURCE_LENGTH,
+  MAX_PRESETS,
+  MIN_GROUP_SIZE_CEIL,
+  MIN_GROUP_SIZE_FLOOR,
+  onPrefsChanged,
+  parseMinGroupSize,
+  setPrefs,
+  validatePreset,
+} from "./storage";
 import { DEFAULT_PREFS } from "./types";
 
 describe("prefs storage", () => {
@@ -225,5 +236,84 @@ describe("onPrefsChanged", () => {
     });
 
     expect(cb).toHaveBeenCalledWith(DEFAULT_PREFS);
+  });
+});
+
+describe("parseMinGroupSize", () => {
+  it("accepts the floor and ceiling as bare integers", () => {
+    expect(parseMinGroupSize(String(MIN_GROUP_SIZE_FLOOR))).toBe(MIN_GROUP_SIZE_FLOOR);
+    expect(parseMinGroupSize(String(MIN_GROUP_SIZE_CEIL))).toBe(MIN_GROUP_SIZE_CEIL);
+  });
+
+  it("trims surrounding whitespace before parsing", () => {
+    expect(parseMinGroupSize(`  ${MIN_GROUP_SIZE_FLOOR}  `)).toBe(MIN_GROUP_SIZE_FLOOR);
+  });
+
+  it("rejects a value below the floor", () => {
+    expect(parseMinGroupSize(String(MIN_GROUP_SIZE_FLOOR - 1))).toBeUndefined();
+  });
+
+  it("rejects a value above the ceiling", () => {
+    expect(parseMinGroupSize(String(MIN_GROUP_SIZE_CEIL + 1))).toBeUndefined();
+  });
+
+  it("rejects non-digit input: empty, decimals, negatives, and non-numeric text", () => {
+    expect(parseMinGroupSize("")).toBeUndefined();
+    expect(parseMinGroupSize("2.5")).toBeUndefined();
+    expect(parseMinGroupSize("-5")).toBeUndefined();
+    expect(parseMinGroupSize("abc")).toBeUndefined();
+  });
+});
+
+describe("validatePreset", () => {
+  const draft = { label: "Docs", source: "docs", flags: "i" };
+
+  it("requires a non-blank label", () => {
+    expect(validatePreset({ ...draft, label: "" }, 0)).toBe("Preset label is required.");
+    expect(validatePreset({ ...draft, label: "   " }, 0)).toBe("Preset label is required.");
+  });
+
+  it("rejects a label over the max length", () => {
+    const message = validatePreset({ ...draft, label: "x".repeat(MAX_PRESET_LABEL_LENGTH + 1) }, 0);
+
+    expect(message).toBe(`Label is too long (max ${MAX_PRESET_LABEL_LENGTH} characters).`);
+  });
+
+  it("requires a non-blank pattern", () => {
+    expect(validatePreset({ ...draft, source: "" }, 0)).toBe("Pattern is required.");
+    expect(validatePreset({ ...draft, source: "   " }, 0)).toBe("Pattern is required.");
+  });
+
+  // A 501-1000 char source is invalid regex-wise nowhere — it fails the
+  // storage cap (500) before validatePattern's safety cap (1000) is ever
+  // consulted, proving ADR-0001's ordering: the storage cap always fires first.
+  it("rejects a pattern over the storage cap even though it's under the safety cap", () => {
+    const overStorageCap = "a".repeat(MAX_PRESET_SOURCE_LENGTH + 1);
+    const message = validatePreset({ ...draft, source: overStorageCap }, 0);
+
+    expect(overStorageCap.length).toBeLessThan(1000);
+    expect(message).toBe(`Pattern is too long (max ${MAX_PRESET_SOURCE_LENGTH} characters).`);
+  });
+
+  it("rejects a new preset once the preset limit is reached", () => {
+    const message = validatePreset(draft, MAX_PRESETS);
+
+    expect(message).toBe(`Preset limit reached (${MAX_PRESETS}). Delete one to add another.`);
+  });
+
+  it("rejects an invalid regex pattern via validatePattern", () => {
+    const message = validatePreset({ ...draft, source: "(" }, 0);
+
+    expect(message).toBe("Invalid regular expression.");
+  });
+
+  it("rejects invalid flags via validatePattern", () => {
+    const message = validatePreset({ ...draft, flags: "z" }, 0);
+
+    expect(message).toBe("Invalid regex flags.");
+  });
+
+  it("accepts a valid preset", () => {
+    expect(validatePreset(draft, 0)).toBe("");
   });
 });
