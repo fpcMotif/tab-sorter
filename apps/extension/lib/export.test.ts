@@ -37,7 +37,7 @@ describe("buildExportEntries", () => {
 describe("buildUrlExport (markdown)", () => {
   it("reports no tabs", () => {
     const result = buildUrlExport([], "markdown");
-    expect(result.extension).toBe("md");
+    expect(result.filename).toBe("tab-sorter-export.md");
     expect(result.mimeType).toBe("text/markdown");
     expect(result.content).toContain("No tabs to export");
   });
@@ -258,7 +258,7 @@ describe("COPY_FORMATS registry", () => {
 describe("buildUrlExport (plain text)", () => {
   it("reports no tabs", () => {
     const result = buildUrlExport([], "text");
-    expect(result.extension).toBe("txt");
+    expect(result.filename).toBe("tab-sorter-export.txt");
     expect(result.mimeType).toBe("text/plain");
     expect(result.content).toContain("No tabs to export");
   });
@@ -290,7 +290,7 @@ describe("DOWNLOAD_FORMATS registry", () => {
     for (const { format } of DOWNLOAD_FORMATS) {
       const result = buildUrlExport(tabs, format);
       expect(typeof result.content).toBe("string");
-      expect(result.extension.length).toBeGreaterThan(0);
+      expect(result.filename.length).toBeGreaterThan(0);
       expect(result.mimeType.length).toBeGreaterThan(0);
     }
   });

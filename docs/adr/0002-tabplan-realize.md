@@ -105,3 +105,5 @@ capability nothing yet uses.
   undo, this toggle behavior is what has to change first.
 - `TabPlan` gains `windowId` (or an equivalent) only when a producer actually needs to describe
   more than one window — don't add it speculatively.
+
+> Postscript (2026-07-15): the realize layer described here now lives in lib/realize.ts; behavior unchanged.

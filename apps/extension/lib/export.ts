@@ -156,24 +156,26 @@ export const DOWNLOAD_FORMATS: DownloadFormatOption[] = [
   { format: "text", label: "Text" },
 ];
 
+// Filename policy lives here (not the popup): a download is described end to end
+// by { content, filename, mimeType }, so the delivery adapter stays generic.
 export function buildUrlExport(
   tabs: TabLite[],
   format: ExportFormat,
-): { content: string; extension: string; mimeType: string } {
+): { content: string; filename: string; mimeType: string } {
   const entries = buildExportEntries(tabs);
 
   switch (format) {
     case "text":
       return {
         content: formatPlainText(entries),
-        extension: "txt",
+        filename: "tab-sorter-export.txt",
         mimeType: "text/plain",
       };
     case "markdown":
     default:
       return {
         content: formatMarkdown(entries),
-        extension: "md",
+        filename: "tab-sorter-export.md",
         mimeType: "text/markdown",
       };
   }

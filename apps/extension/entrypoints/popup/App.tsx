@@ -11,6 +11,7 @@ import {
 import "./App.css";
 
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { downloadFile, writeClipboard } from "@/lib/deliver";
 import {
   buildClipboardContent,
   buildUrlExport,
@@ -21,6 +22,7 @@ import { MATCH_SAFETY_CAP, matchPattern, reasonToString } from "@/lib/match";
 import {
   getPopupData,
   getSelectedTabs,
+  openOptionsPage,
   runDedupe,
   runExtract,
   runSort,
@@ -460,25 +462,19 @@ function App() {
     setTidyPending(true);
     void runWithStatus(async () => {
       const result = await runTidy();
-      const next = await loadData();
+      await loadData();
 
       if (result.moved === 0 && result.grouped === 0) {
         dispatch({ type: "statusSet", status: { message: "Already tidy.", tone: "success" } });
         return;
       }
 
-      // TidyResult doesn't carry the colors it just assigned, so derive them
-      // from the refreshed domain groups using the same minGroupSize bucket
-      // rule planTidy applies — a best-effort echo, not a mutation-time fact.
-      const dots = next.domainGroups
-        .filter((group) => group.count >= next.prefs.minGroupSize)
-        .slice(0, result.groupsCreated)
-        .map((group) => assignColor(group.domain));
+      const dots = result.createdGroups.map((group) => group.color);
 
       dispatch({
         type: "statusSet",
         status: {
-          message: `Grouped ${result.grouped} tabs into ${result.groupsCreated} groups · ${result.moved} moved`,
+          message: `Grouped ${result.grouped} tabs into ${result.createdGroups.length} groups · ${result.moved} moved`,
           tone: "success",
           dots,
         },
@@ -608,7 +604,7 @@ function App() {
     void run(
       async () => {
         const tabs = await getSelectedTabs();
-        await navigator.clipboard.writeText(buildClipboardContent(tabs, copyFormat));
+        await writeClipboard(buildClipboardContent(tabs, copyFormat));
 
         const label =
           COPY_FORMATS.find((option) => option.format === copyFormat)?.label ?? copyFormat;
@@ -636,15 +632,7 @@ function App() {
     void run(
       async () => {
         const tabs = await getSelectedTabs();
-        const { content, extension, mimeType } = buildUrlExport(tabs, format);
-
-        const blob = new Blob([content], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        anchor.download = `tab-sorter-export.${extension}`;
-        anchor.click();
-        URL.revokeObjectURL(url);
+        downloadFile(buildUrlExport(tabs, format));
       },
       () => {
         dispatch({
@@ -674,7 +662,7 @@ function App() {
         <button
           aria-label="Open settings"
           className="icon-btn"
-          onClick={() => void browser.runtime.openOptionsPage()}
+          onClick={() => void openOptionsPage()}
           type="button"
         >
           <IconGear />
