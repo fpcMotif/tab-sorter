@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 
+import { IconCheck, IconSparkle, IconTrash, IconWarning } from "@/components/icons";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   getPrefs,
@@ -37,67 +38,6 @@ const GROUP_ORDER_OPTIONS: readonly { label: string; value: GroupOrder }[] = [
   { label: "Alphabetical", value: "alpha" },
   { label: "Largest first", value: "sizeDesc" },
 ];
-
-function IconSparkle() {
-  return (
-    <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M11 3.2l1.9 5.3 5.3 1.9-5.3 1.9L11 17.6l-1.9-5.3L3.8 10.4l5.3-1.9L11 3.2z" />
-      <path d="M18.3 2.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z" />
-    </svg>
-  );
-}
-
-function IconCheck() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2.4"
-      viewBox="0 0 24 24"
-    >
-      <polyline points="5 12.5 9.5 17 19 7" />
-    </svg>
-  );
-}
-
-function IconWarning() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="M12 3.3 22 20H2z" />
-      <line x1="12" x2="12" y1="9.5" y2="14.5" />
-      <circle cx="12" cy="17.3" fill="currentColor" r=".9" stroke="none" />
-    </svg>
-  );
-}
-
-function IconTrash() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="M4 7h16" />
-      <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-      <path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" />
-    </svg>
-  );
-}
 
 interface SegmentedOption<T extends string> {
   label: string;
