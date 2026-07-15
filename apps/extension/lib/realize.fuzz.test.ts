@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { applyOrder } from "./tabs-service";
+import { applyOrder } from "./realize";
 
 // The realize layer is where the subtle bugs live: planMoves speaks in
 // survivor-strip coordinates, but `browser.tabs.move` takes an ABSOLUTE window

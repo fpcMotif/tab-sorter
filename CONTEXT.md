@@ -67,7 +67,7 @@ this file names the **domain**.
 
 ## Realizing an order
 
-- **applyOrder (realize layer)** (`lib/tabs-service.ts`) — takes a window order, re-queries a
+- **applyOrder (realize layer)** (`lib/realize.ts`) — takes a window order, re-queries a
   fresh snapshot, drops vanished ids, and issues only the moves needed (via `planMoves`) using
   single-id `browser.tabs.move` calls (never the batch/array form, which has an off-by-one).
   Knows nothing about pinning; positioning against the live strip keeps each region in place
@@ -133,7 +133,7 @@ this file names the **domain**.
 
 ## Realizing a plan
 
-- **applyPlan** (`lib/tabs-service.ts`) — realizes a `TabPlan` against the current window in
+- **applyPlan** (`lib/realize.ts`) — realizes a `TabPlan` against the current window in
   four phases, always in this order: **UNGROUP** (`plan.ungroup`, one batch `tabs.ungroup`
   call) → **GROUPS** (`planGroupOps` reconciled and executed) → **ORDER** (skipped entirely
   when `order` is empty) → **CLOSE** (`plan.close`, one batch `tabs.remove` call). Each phase
@@ -145,7 +145,7 @@ this file names the **domain**.
   override as the pinned-front clamp above. Running GROUPS *after* ORDER would let that
   auto-move undo whatever position ORDER had just carefully set; running GROUPS first means
   every group is already one relocatable span by the time ORDER's block model queries the strip.
-- **the block model** (`runOrder`, `lib/tabs-service.ts`) — realizes `plan.order` as three
+- **the block model** (`runOrder`, `lib/realize.ts`) — realizes `plan.order` as three
   passes: (a) the pinned region via `planMoves` (its region-relative index is already the
   absolute one — pinned tabs are always the window's contiguous front block); (b) fix each live
   group's *internal* member order via `planMoves` scoped to the group's own span, before it
@@ -222,7 +222,7 @@ future host-driven (CLI/MCP) work must still respect:
 - **Grouping silently unpins.** `chrome.tabs.group()` does **not refuse** pinned tabs — it
   *unpins* them, then groups them ([chromium #40639773](https://issues.chromium.org/issues/40639773)).
   So the planner/adapter must **exclude pinned ids from group calls** to keep pinned tabs pinned
-  and pinned-first. **Enforced** in `runGroups` (`lib/tabs-service.ts`): every desired group's
+  and pinned-first. **Enforced** in `runGroups` (`lib/realize.ts`): every desired group's
   `tabIds` is filtered against a *fresh* live-strip query for pinned ids right before any
   `tabs.group()` call, re-checked at realize time in case a tab was pinned after the plan was
   built (not just against whatever the plan's producer saw).

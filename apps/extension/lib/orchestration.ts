@@ -2,21 +2,22 @@ import { planDedupe } from "./dedupe";
 import { groupByDomain, matchByDomain } from "./domain-groups";
 import { matchPattern } from "./match";
 import { planWindowOrder } from "./plan";
+import { applyPlan } from "./realize";
 import { getPrefs } from "./storage";
 import { loadUndo, saveUndo } from "./session-store";
 import {
-  applyPlan,
   getCurrentWindow,
   getCurrentWindowId,
   getCurrentWindowTabs,
   getHighlightedTabs,
   moveTabsToNewWindow,
+  openOptionsPage as openOptionsPageService,
   reopenTabs,
   snapshotWindow,
 } from "./tabs-service";
 import { planTidy } from "./tidy";
 import { planUndo } from "./undo";
-import type { DomainGroup, Prefs, SortMode, TabLite } from "./types";
+import type { DomainGroup, GroupColor, Prefs, SortMode, TabLite } from "./types";
 
 export type ExtractMatcher =
   | { type: "domain"; domain: string }
@@ -29,7 +30,7 @@ export interface ActionResult {
 export interface TidyResult {
   moved: number;
   grouped: number;
-  groupsCreated: number;
+  createdGroups: Array<{ title: string; color: GroupColor }>;
 }
 
 export interface DedupeResult {
@@ -129,6 +130,12 @@ export function getSelectedTabs(): Promise<TabLite[]> {
   return getHighlightedTabs();
 }
 
+// Delegates to tabs-service (same routing as getSelectedTabs) so the popup's
+// settings button never reaches browser.runtime directly.
+export function openOptionsPage(): Promise<void> {
+  return openOptionsPageService();
+}
+
 // Sort + group in one verb (CONTEXT.md). Only writes an undo snapshot when
 // something actually changed — moved > 0, a group formed, or an id needs
 // ungrouping — so re-tidying an already-tidy window doesn't clobber a
@@ -137,7 +144,7 @@ export async function runTidy(): Promise<TidyResult> {
   const [{ windowId, tabs }, prefs] = await Promise.all([getCurrentWindow(), getPrefs()]);
 
   if (tabs.length === 0) {
-    return { moved: 0, grouped: 0, groupsCreated: 0 };
+    return { moved: 0, grouped: 0, createdGroups: [] };
   }
 
   const snapshot = await snapshotWindow(windowId);
@@ -152,7 +159,7 @@ export async function runTidy(): Promise<TidyResult> {
     await saveUndo(windowId, snapshot);
   }
 
-  return { moved, grouped: result.grouped, groupsCreated: result.groupsCreated };
+  return { moved, grouped: result.grouped, createdGroups: result.createdGroups };
 }
 
 // Preview vs confirm: an unconfirmed call is pure preview (no snapshot, no
