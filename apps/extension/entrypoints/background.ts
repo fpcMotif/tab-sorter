@@ -1,15 +1,6 @@
 import { getDomain } from "@/lib/domain";
 import { runDefaultSort, runExtract, runSort, runTidy, runUndo } from "@/lib/orchestration";
 
-const MENU_IDS = {
-  tidy: "tidy",
-  extractSite: "extract-site",
-  sortByDomain: "sort-by-domain",
-  sortByTitle: "sort-by-title",
-  sortDefault: "sort-default",
-  undo: "undo",
-} as const;
-
 interface MenuClickInfo {
   menuItemId: string | number;
   pageUrl?: string;
@@ -19,101 +10,66 @@ interface ClickedTab {
   url?: string;
 }
 
+interface MenuItem {
+  id: string;
+  title: string;
+  // `url` is only ever populated from a context-menu click (a page to derive
+  // a domain from); commands never supply one.
+  run(ctx: { url?: string }): Promise<unknown>;
+}
+
+const EXTRACT_SITE_ID = "extract-site";
+
+// Single table driving both the context menu (all six items, created in this
+// order) and the two command dispatchers below. wxt.config.ts registers only
+// five keyboard commands — extract-site needs a page url a shortcut can't
+// supply — so handleCommand excludes it explicitly rather than relying on
+// the manifest to never produce that id.
+const MENU_ITEMS: MenuItem[] = [
+  { id: "tidy", title: "Tidy this window", run: () => runTidy() },
+  { id: "sort-default", title: "Sort tabs (your default)", run: () => runDefaultSort() },
+  { id: "sort-by-title", title: "Sort tabs A to Z", run: () => runSort("title") },
+  { id: "sort-by-domain", title: "Sort tabs by domain", run: () => runSort("domain") },
+  {
+    id: EXTRACT_SITE_ID,
+    title: "Extract this site to new window",
+    run: (ctx) => {
+      if (ctx.url === undefined) {
+        return Promise.resolve(undefined);
+      }
+
+      return runExtract({ type: "domain", domain: getDomain(ctx.url) });
+    },
+  },
+  { id: "undo", title: "Undo last tidy", run: () => runUndo() },
+];
+
 async function setupContextMenus(): Promise<void> {
   await browser.contextMenus.removeAll();
 
-  browser.contextMenus.create({
-    contexts: ["page"],
-    id: MENU_IDS.tidy,
-    title: "Tidy this window",
-  });
-  browser.contextMenus.create({
-    contexts: ["page"],
-    id: MENU_IDS.sortDefault,
-    title: "Sort tabs (your default)",
-  });
-  browser.contextMenus.create({
-    contexts: ["page"],
-    id: MENU_IDS.sortByTitle,
-    title: "Sort tabs A to Z",
-  });
-  browser.contextMenus.create({
-    contexts: ["page"],
-    id: MENU_IDS.sortByDomain,
-    title: "Sort tabs by domain",
-  });
-  browser.contextMenus.create({
-    contexts: ["page"],
-    id: MENU_IDS.extractSite,
-    title: "Extract this site to new window",
-  });
-  browser.contextMenus.create({
-    contexts: ["page"],
-    id: MENU_IDS.undo,
-    title: "Undo last tidy",
-  });
+  for (const item of MENU_ITEMS) {
+    browser.contextMenus.create({ contexts: ["page"], id: item.id, title: item.title });
+  }
 }
 
 async function handleCommand(command: string): Promise<void> {
-  if (command === MENU_IDS.tidy) {
-    await runTidy();
+  const item = MENU_ITEMS.find((entry) => entry.id === command);
+
+  if (item === undefined || item.id === EXTRACT_SITE_ID) {
     return;
   }
 
-  if (command === MENU_IDS.sortDefault) {
-    await runDefaultSort();
-    return;
-  }
-
-  if (command === MENU_IDS.sortByTitle) {
-    await runSort("title");
-    return;
-  }
-
-  if (command === MENU_IDS.sortByDomain) {
-    await runSort("domain");
-    return;
-  }
-
-  if (command === MENU_IDS.undo) {
-    await runUndo();
-  }
+  await item.run({});
 }
 
 async function handleContextMenu(info: MenuClickInfo, tab: ClickedTab | undefined): Promise<void> {
-  if (info.menuItemId === MENU_IDS.tidy) {
-    await runTidy();
+  const item = MENU_ITEMS.find((entry) => entry.id === info.menuItemId);
+
+  if (item === undefined) {
     return;
   }
 
-  if (info.menuItemId === MENU_IDS.sortDefault) {
-    await runDefaultSort();
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.sortByTitle) {
-    await runSort("title");
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.sortByDomain) {
-    await runSort("domain");
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.extractSite) {
-    const url = tab?.url ?? info.pageUrl;
-
-    if (url !== undefined) {
-      await runExtract({ type: "domain", domain: getDomain(url) });
-    }
-
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.undo) {
-    await runUndo();
-  }
+  await item.run({ url: tab?.url ?? info.pageUrl });
 }
 
 export default defineBackground(() => {
