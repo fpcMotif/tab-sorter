@@ -11,20 +11,22 @@ function longestIncreasingIndices(values: number[]): Set<number> {
   const previous = values.map(() => -1);
   let best = -1;
 
+  // `length` and `previous` are values-sized, and i, j, best, and previous[i] all
+  // index within [0, values.length), so the `!` reads below are never undefined.
   for (let i = 0; i < values.length; i += 1) {
     for (let j = 0; j < i; j += 1) {
-      if (values[j] < values[i] && length[j] + 1 > length[i]) {
-        length[i] = length[j] + 1;
+      if (values[j]! < values[i]! && length[j]! + 1 > length[i]!) {
+        length[i] = length[j]! + 1;
         previous[i] = j;
       }
     }
-    if (best === -1 || length[i] > length[best]) {
+    if (best === -1 || length[i]! > length[best]!) {
       best = i;
     }
   }
 
   const keep = new Set<number>();
-  for (let i = best; i !== -1; i = previous[i]) {
+  for (let i = best; i !== -1; i = previous[i]!) {
     keep.add(i);
   }
 
@@ -46,7 +48,8 @@ export function planMoves(currentIds: number[], targetIds: number[]): TabMove[] 
 
   const keptPositions = longestIncreasingIndices(currentIds.map(rankOf));
   const keepers = new Set<number>();
-  keptPositions.forEach((position) => keepers.add(currentIds[position]));
+  // keptPositions are indices into currentIds, so each read is in-bounds.
+  keptPositions.forEach((position) => keepers.add(currentIds[position]!));
 
   const placed = new Set<number>(keepers);
   const strip = [...currentIds];
@@ -62,8 +65,9 @@ export function planMoves(currentIds: number[], targetIds: number[]): TabMove[] 
     strip.splice(strip.indexOf(id), 1);
 
     let index = 0;
+    // i indexes within [0, strip.length), so strip[i] is never undefined.
     for (let i = 0; i < strip.length; i += 1) {
-      if (placed.has(strip[i]) && rankOf(strip[i]) < rankOf(id)) {
+      if (placed.has(strip[i]!) && rankOf(strip[i]!) < rankOf(id)) {
         index = i + 1;
       }
     }

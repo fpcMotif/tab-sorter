@@ -8,7 +8,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["lib/**/*.ts"],
-      exclude: ["lib/**/*.d.ts", "lib/**/*.test.ts", "lib/**/__tests__/**"],
+      exclude: ["lib/**/*.d.ts", "lib/**/*.test.ts"],
       thresholds: {
         statements: 100,
         branches: 100,
@@ -19,6 +19,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      // The WXT tsconfig also declares ~/, @@/, ~~/ alias families; mirror them here if ever used.
       "@/": new URL("./", import.meta.url).pathname,
     },
   },

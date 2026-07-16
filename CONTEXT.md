@@ -186,7 +186,7 @@ this file names the **domain**.
 - **session-store** (`lib/session-store.ts`) — one `WindowSnapshot` per window in
   `browser.storage.session` (in-memory for the browser session, no `sync` quota, readable from
   the popup across close/reopen — what lets undo survive the popup closing between "tidy" and
-  "undo"). `saveUndo` / `loadUndo` / `clearUndo`; a malformed stored value fails a shape check,
+  "undo"). `saveUndo` / `loadUndo`; a malformed stored value fails a shape check,
   not a per-field salvage — a `WindowSnapshot` is only ever written by this same extension in
   this same browser session, so a bad shape means an interrupted write, not a value worth
   repairing.

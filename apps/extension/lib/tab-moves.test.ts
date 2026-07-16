@@ -16,13 +16,14 @@ function replay(start: number[], moves: TabMove[]): number[] {
 function longestIncreasingLength(values: number[]): number {
   const length = values.map(() => 1);
   let best = 0;
+  // `length` is values-sized and i, j index within [0, values.length).
   for (let i = 0; i < values.length; i += 1) {
     for (let j = 0; j < i; j += 1) {
-      if (values[j] < values[i]) {
-        length[i] = Math.max(length[i], length[j] + 1);
+      if (values[j]! < values[i]!) {
+        length[i] = Math.max(length[i]!, length[j]! + 1);
       }
     }
-    best = Math.max(best, length[i]);
+    best = Math.max(best, length[i]!);
   }
   return best;
 }
@@ -35,7 +36,7 @@ function* permutations(values: number[]): Generator<number[]> {
   for (let i = 0; i < values.length; i += 1) {
     const rest = [...values.slice(0, i), ...values.slice(i + 1)];
     for (const tail of permutations(rest)) {
-      yield [values[i], ...tail];
+      yield [values[i]!, ...tail];
     }
   }
 }

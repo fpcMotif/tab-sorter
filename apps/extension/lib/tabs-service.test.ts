@@ -52,8 +52,9 @@ function createFakeBrowser(initialStrip: FakeStripTab[], initialGroups: FakeGrou
 
   const fakeMove = vi.fn((id: number, { index }: { index: number }) => {
     const from = strip.findIndex((tab) => tab.id === id);
+    // move is only issued for ids present in the strip, so the splice yields one tab.
     const [tab] = strip.splice(from, 1);
-    strip.splice(index, 0, tab);
+    strip.splice(index, 0, tab!);
     return Promise.resolve();
   });
 
@@ -795,8 +796,9 @@ describe("applyPlan — windowId threading (focus-change regression)", () => {
       for (const strip of strips.values()) {
         const from = strip.findIndex((tab) => tab.id === id);
         if (from !== -1) {
+          // from !== -1 guarantees the splice yields exactly one tab.
           const [tab] = strip.splice(from, 1);
-          strip.splice(index, 0, tab);
+          strip.splice(index, 0, tab!);
           break;
         }
       }
