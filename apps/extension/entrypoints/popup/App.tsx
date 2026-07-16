@@ -28,7 +28,7 @@ import {
   runUndo,
   type PopupData,
 } from "@/lib/orchestration";
-import { assignColor } from "@/lib/tidy";
+import { assignColor } from "@/lib/domain";
 import type { ClipboardFormat, DomainGroup, ExportFormat, GroupColor, SortMode } from "@/lib/types";
 
 // Esc, any other action, or this timeout disarms the two-step dedupe confirm

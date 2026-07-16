@@ -1,29 +1,11 @@
-import { getDomain } from "./domain";
+import { assignColor, getDomain } from "./domain";
 import { sortByTitle } from "./sort";
-import { GROUP_COLORS, TAB_GROUP_NONE } from "./types";
-import type { GroupColor, GroupOrder, GroupSpec, Prefs, TabLite, TabPlan } from "./types";
-
-const collator = new Intl.Collator(undefined, {
-  numeric: true,
-  sensitivity: "base",
-});
+import { compareText } from "./text";
+import { TAB_GROUP_NONE } from "./types";
+import type { GroupOrder, GroupSpec, Prefs, TabLite, TabPlan } from "./types";
 
 function isGrouped(tab: TabLite): boolean {
   return (tab.groupId ?? TAB_GROUP_NONE) !== TAB_GROUP_NONE;
-}
-
-// Deterministic domain -> palette color, so the same domain always gets the
-// same swatch across tidy runs (a djb2 string hash needs no shared state or
-// storage). Collisions across the 9-color palette are expected and accepted
-// per the PRD ("Many domains > 9 colors" — title disambiguates).
-export function assignColor(domain: string): GroupColor {
-  let hash = 5381;
-
-  for (let i = 0; i < domain.length; i += 1) {
-    hash = (hash * 33 + domain.charCodeAt(i)) | 0;
-  }
-
-  return GROUP_COLORS[Math.abs(hash) % GROUP_COLORS.length]!;
 }
 
 function compareBuckets(
@@ -35,7 +17,7 @@ function compareBuckets(
     return right.tabs.length - left.tabs.length;
   }
 
-  return collator.compare(left.domain, right.domain);
+  return compareText(left.domain, right.domain);
 }
 
 // Sort + group in one verb. Pinned tabs are never reordered or grouped — they

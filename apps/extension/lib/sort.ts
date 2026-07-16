@@ -1,14 +1,6 @@
 import { getDomain } from "./domain";
+import { compareText } from "./text";
 import type { TabLite } from "./types";
-
-const collator = new Intl.Collator(undefined, {
-  numeric: true,
-  sensitivity: "base",
-});
-
-function compareText(left: string, right: string): number {
-  return collator.compare(left, right);
-}
 
 function compareByTitle(left: TabLite, right: TabLite): number {
   return (
