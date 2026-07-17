@@ -1,3 +1,4 @@
+import { assemblePlan } from "./plan";
 import { TAB_GROUP_NONE } from "./types";
 import type { GroupSpec, TabLite, TabPlan, WindowSnapshot } from "./types";
 
@@ -27,7 +28,6 @@ export function planUndo(
   const unpinnedSurvivors = survivors
     .filter((tab) => !currentById.get(tab.id)!.pinned)
     .toSorted(byIndex);
-  const order = [...pinnedOrder, ...unpinnedSurvivors.map((tab) => tab.id)];
 
   // A tab group's members are always a contiguous run of indices at snapshot
   // time — Chrome never lets an unrelated tab sit between two members of the
@@ -35,7 +35,7 @@ export function planUndo(
   // to survivors that are STILL unpinned can only shrink a group's run from
   // its edges/middle; it can never splice a foreign id into it. Filtering
   // `unpinnedSurvivors` (already sorted by snapshot index) by groupId is
-  // therefore already a contiguous slice of `order`'s unpinned tail.
+  // therefore already a contiguous slice of assemblePlan's unpinned tail.
   const groups: GroupSpec[] = [];
   for (const group of snapshot.groups) {
     const tabIds = unpinnedSurvivors
@@ -65,5 +65,12 @@ export function planUndo(
     .filter((tab) => !currentById.has(tab.id) && tab.url !== "")
     .map((tab) => tab.url);
 
-  return { plan: { order, groups, ungroup, close: [] }, reopen };
+  const plan = assemblePlan({
+    pinnedOrder,
+    unpinnedTail: unpinnedSurvivors.map((tab) => tab.id),
+    groups,
+    ungroup,
+  });
+
+  return { plan, reopen };
 }

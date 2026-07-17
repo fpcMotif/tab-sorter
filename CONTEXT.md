@@ -37,6 +37,12 @@ this file names the **domain**.
   id into the unpinned region. Makes the clamp bug structurally unrepresentable. **Must
   stay split forever** — collapsing to one comparator over all tabs reintroduces the bug;
   `lib/plan.test.ts` is the regression guard.
+- **assemblePlan** (`lib/plan.ts`) — the one constructor that performs the never-interleave
+  splice: `{ pinnedOrder, unpinnedTail, groups?, ungroup?, close? } → TabPlan`. Every producer
+  (`planWindowOrder`, `planTidy`, `planUndo`) designates its own pinned region and unpinned
+  tail (pre-concatenating any composite of its own, e.g. tidy's existing-blocks + new-groups +
+  leftover); `assemblePlan` owns the single pinned-first concatenation, so the splice is typed
+  once instead of re-typed at each producer.
 - **ignorePinned** — when set, the pinned block keeps its current order (frozen); otherwise
   pinned tabs are sorted among themselves. Pinned ids always precede unpinned ids either way.
 

@@ -221,6 +221,13 @@ async function runGroups(
   windowId: number,
   groups: GroupSpec[],
 ): Promise<{ grouped: number; groupsCreated: number }> {
+  // A groupless plan — plain sort, dedupe, ungroup-only undo — should not pay
+  // for two queries (the live strip and tabGroups.query) it has no use for;
+  // bail before either fires, matching sibling phases runUngroup/runClose.
+  if (groups.length === 0) {
+    return { grouped: 0, groupsCreated: 0 };
+  }
+
   const [strip, rawGroups] = await Promise.all([
     getLiveStrip(windowId),
     browser.tabGroups.query({ windowId }),

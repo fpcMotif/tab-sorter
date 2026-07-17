@@ -1,4 +1,5 @@
 import { assignColor, getDomain } from "./domain";
+import { assemblePlan } from "./plan";
 import { sortByTitle } from "./sort";
 import { compareText } from "./text";
 import { TAB_GROUP_NONE } from "./types";
@@ -73,8 +74,11 @@ export function planTidy(
       tabIds: sortByTitle(bucketTabs),
     }));
 
-  const order = [
-    ...pinnedOrder,
+  // The unpinned tail is itself a composite of three blocks — untouched
+  // existing groups first, then the freshly-bucketed groups, then leftover
+  // singletons — pre-concatenated here so assemblePlan only ever splices two
+  // regions (pinned, unpinned), never reaching inside this composite.
+  const unpinnedTail = [
     ...existingBlockOrder,
     ...groups.flatMap((group) => group.tabIds),
     ...sortByTitle(leftover),
@@ -84,5 +88,5 @@ export function planTidy(
   // ungroup; ones absorbed into a new group leave their old group implicitly.
   const ungroup = prefs.regroupExisting ? leftover.filter(isGrouped).map((tab) => tab.id) : [];
 
-  return { order, groups, ungroup, close: [] };
+  return assemblePlan({ pinnedOrder, unpinnedTail, groups, ungroup });
 }
