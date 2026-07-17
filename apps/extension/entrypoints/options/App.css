@@ -144,8 +144,10 @@ body {
   min-width: 0;
 }
 
-.pref-text label {
+.pref-text label,
+.pref-text .pref-label {
   color: var(--on-surface);
+  cursor: default; /* spans fall back to the text I-beam; labels get this from the UA stylesheet */
   display: block;
   font-size: 14px;
   font-weight: 500;

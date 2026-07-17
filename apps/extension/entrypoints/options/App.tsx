@@ -479,7 +479,9 @@ function App() {
 
         <div className="pref-row">
           <div className="pref-text">
-            <label id="lbl-default-sort">Default sort</label>
+            <span className="pref-label" id="lbl-default-sort">
+              Default sort
+            </span>
             <p className="consequence">
               Used when you click Sort without choosing A to Z or By domain.
             </p>
@@ -535,7 +537,9 @@ function App() {
 
         <div className="pref-row">
           <div className="pref-text">
-            <label id="lbl-min-size">Minimum tabs to form a group</label>
+            <label htmlFor="min-group-size" id="lbl-min-size">
+              Minimum tabs to form a group
+            </label>
             <p className="consequence">
               Sites with fewer tabs than this stay loose instead of becoming a group.
             </p>
@@ -557,8 +561,8 @@ function App() {
               <input
                 aria-describedby={minGroupSizeError.length > 0 ? "min-group-size-error" : undefined}
                 aria-invalid={minGroupSizeError.length > 0}
-                aria-label="Minimum tabs to form a group"
                 className={`stepper-input${minGroupSizeError.length > 0 ? " is-invalid" : ""}`}
+                id="min-group-size"
                 inputMode="numeric"
                 onBlur={handleMinGroupSizeBlur}
                 onChange={(event) => handleMinGroupSizeInput(event.target.value)}
@@ -585,7 +589,9 @@ function App() {
 
         <div className="pref-row">
           <div className="pref-text">
-            <label id="lbl-group-order">Group order</label>
+            <span className="pref-label" id="lbl-group-order">
+              Group order
+            </span>
             <p className="consequence">
               Controls left-to-right placement of new groups in the tab strip.
             </p>
