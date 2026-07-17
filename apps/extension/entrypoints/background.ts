@@ -54,53 +54,28 @@ async function setupContextMenus(): Promise<void> {
   });
 }
 
+// Shared by the keyboard-command and context-menu handlers below: both surfaces
+// route the same MENU_IDS to the same orchestration calls, so the mapping lives
+// once here. extract-site is deliberately absent — it needs the clicked tab's
+// URL, which only the context-menu handler has, so it stays as an explicit case
+// there instead of being contorted into this table.
+const dispatch: Record<string, () => Promise<unknown>> = {
+  [MENU_IDS.tidy]: runTidy,
+  [MENU_IDS.sortDefault]: runDefaultSort,
+  [MENU_IDS.sortByTitle]: () => runSort("title"),
+  [MENU_IDS.sortByDomain]: () => runSort("domain"),
+  [MENU_IDS.undo]: runUndo,
+};
+
 async function handleCommand(command: string): Promise<void> {
-  if (command === MENU_IDS.tidy) {
-    await runTidy();
-    return;
-  }
+  const action = dispatch[command];
 
-  if (command === MENU_IDS.sortDefault) {
-    await runDefaultSort();
-    return;
-  }
-
-  if (command === MENU_IDS.sortByTitle) {
-    await runSort("title");
-    return;
-  }
-
-  if (command === MENU_IDS.sortByDomain) {
-    await runSort("domain");
-    return;
-  }
-
-  if (command === MENU_IDS.undo) {
-    await runUndo();
+  if (action !== undefined) {
+    await action();
   }
 }
 
 async function handleContextMenu(info: MenuClickInfo, tab: ClickedTab | undefined): Promise<void> {
-  if (info.menuItemId === MENU_IDS.tidy) {
-    await runTidy();
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.sortDefault) {
-    await runDefaultSort();
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.sortByTitle) {
-    await runSort("title");
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.sortByDomain) {
-    await runSort("domain");
-    return;
-  }
-
   if (info.menuItemId === MENU_IDS.extractSite) {
     const url = tab?.url ?? info.pageUrl;
 
@@ -111,8 +86,10 @@ async function handleContextMenu(info: MenuClickInfo, tab: ClickedTab | undefine
     return;
   }
 
-  if (info.menuItemId === MENU_IDS.undo) {
-    await runUndo();
+  const action = typeof info.menuItemId === "string" ? dispatch[info.menuItemId] : undefined;
+
+  if (action !== undefined) {
+    await action();
   }
 }
 

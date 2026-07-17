@@ -1,10 +1,11 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 
+import { IconCheck, IconSparkle, IconTrash, IconWarning } from "@/components/icons";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { reasonToString, validatePattern } from "@/lib/match";
 import { getPrefs, onPrefsChanged, setPrefs } from "@/lib/storage";
 import type { GroupColor, GroupOrder, Prefs, RegexPreset, SortMode } from "@/lib/types";
-import { DEFAULT_PREFS } from "@/lib/types";
+import { DEFAULT_PREFS, MIN_GROUP_SIZE_CEIL, MIN_GROUP_SIZE_FLOOR } from "@/lib/types";
 
 import "./App.css";
 
@@ -50,13 +51,11 @@ function validatePreset(draft: PresetDraft, existingCount: number): string {
   return "";
 }
 
-// Mirrors storage.ts' normalizeMinGroupSize bounds — a value outside this
-// range would just be clamped back to DEFAULT_PREFS on the next load, so the
-// input rejects it up front instead of silently persisting a value that
-// won't stick. Floor is 2, not 1: a "group" of one tab is the exact noise
-// this pref exists to prevent (DESIGN-SPEC's stepper floor agrees).
-const MIN_GROUP_SIZE_FLOOR = 2;
-const MIN_GROUP_SIZE_CEIL = 99;
+// Mirrors lib/types.ts' MIN_GROUP_SIZE_FLOOR/CEIL, the same bounds
+// storage.ts' normalizeMinGroupSize enforces — a value outside this range
+// would just be clamped back to DEFAULT_PREFS on the next load, so the input
+// rejects it up front instead of silently persisting a value that won't
+// stick.
 const MIN_GROUP_SIZE_ERROR = `Enter a whole number from ${MIN_GROUP_SIZE_FLOOR} to ${MIN_GROUP_SIZE_CEIL}.`;
 
 function parseMinGroupSize(raw: string): number | undefined {
@@ -84,67 +83,6 @@ const GROUP_ORDER_OPTIONS: readonly { label: string; value: GroupOrder }[] = [
   { label: "Alphabetical", value: "alpha" },
   { label: "Largest first", value: "sizeDesc" },
 ];
-
-function IconSparkle() {
-  return (
-    <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M11 3.2l1.9 5.3 5.3 1.9-5.3 1.9L11 17.6l-1.9-5.3L3.8 10.4l5.3-1.9L11 3.2z" />
-      <path d="M18.3 2.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z" />
-    </svg>
-  );
-}
-
-function IconCheck() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2.4"
-      viewBox="0 0 24 24"
-    >
-      <polyline points="5 12.5 9.5 17 19 7" />
-    </svg>
-  );
-}
-
-function IconWarning() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="M12 3.3 22 20H2z" />
-      <line x1="12" x2="12" y1="9.5" y2="14.5" />
-      <circle cx="12" cy="17.3" fill="currentColor" r=".9" stroke="none" />
-    </svg>
-  );
-}
-
-function IconTrash() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="M4 7h16" />
-      <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-      <path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" />
-    </svg>
-  );
-}
 
 interface SegmentedOption<T extends string> {
   label: string;
