@@ -320,6 +320,12 @@ describe("applyPlan — vanished is a DISTINCT cross-phase union", () => {
     const result = await applyPlan(plan, 1);
 
     // closed: 0 — by CLOSE's own query 55 was already gone, nothing to remove.
-    expect(result).toEqual({ grouped: 2, groupsCreated: 1, closed: 0, vanished: 1 });
+    expect(result).toEqual({
+      grouped: 2,
+      groupsCreated: 1,
+      createdGroupKeys: ["g"],
+      closed: 0,
+      vanished: 1,
+    });
   });
 });

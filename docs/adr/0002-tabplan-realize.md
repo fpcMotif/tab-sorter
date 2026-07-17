@@ -91,6 +91,10 @@ future work (CONTEXT.md's "Where the seam extends"); it will need `windowId` bac
 addition to `TabPlan` v1, not a field every current producer has to thread through today for a
 capability nothing yet uses.
 
+> **Amended 2026-07-18:** `applyPlan` now takes `windowId` explicitly — orchestration resolves
+> the window once per action and threads it; see the `applyPlan` doc comment and ADR-0003
+> (`docs/adr/0003-realize-order-pure-planner.md`).
+
 ## Consequences
 
 - One realize path (`applyPlan`) for sort, tidy, dedupe, and undo — no producer talks to

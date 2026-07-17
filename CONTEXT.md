@@ -74,7 +74,8 @@ this file names the **domain**.
 ## Realizing an order
 
 - **applyOrder (realize layer)** (`lib/tabs-service.ts`) — takes a window order, re-queries a
-  fresh snapshot, drops vanished ids, and issues only the moves needed (via `planMoves`) using
+  fresh snapshot, drops vanished ids, and issues only the moves needed (computed by
+  `planFlatMoves` in `lib/realize-order.ts`) using
   single-id `browser.tabs.move` calls (never the batch/array form, which has an off-by-one).
   Knows nothing about pinning; positioning against the live strip keeps each region in place
   and is immune to a stale boundary. Today it is the **fast path** `applyPlan`'s ORDER phase
@@ -151,17 +152,20 @@ this file names the **domain**.
   override as the pinned-front clamp above. Running GROUPS *after* ORDER would let that
   auto-move undo whatever position ORDER had just carefully set; running GROUPS first means
   every group is already one relocatable span by the time ORDER's block model queries the strip.
-- **the block model** (`runOrder`, `lib/tabs-service.ts`) — realizes `plan.order` as three
-  passes: (a) the pinned region via `planMoves` (its region-relative index is already the
-  absolute one — pinned tabs are always the window's contiguous front block); (b) fix each live
-  group's *internal* member order via `planMoves` scoped to the group's own span, before it
-  moves as a whole — `tabGroups.move` carries members along in their current relative order, so
-  getting that order right first means the group needs only one relocating move; (c) walk the
-  desired unpinned sequence left to right, relocating each top-level block — a group (one
-  `tabGroups.move`, spanning its full LIVE membership even if `plan.order` doesn't mention every
-  member) or an ungrouped singleton (`tabs.move`) — into place. **Fast path**: when nothing in
-  the plan or the live window touches groups, this degenerates to plain `applyOrder`/`planMoves`
-  (above) instead of re-deriving the same result the slow way.
+- **the block model** (`planBlockMoves`, `lib/realize-order.ts`) — the **pure planner** that
+  computes `plan.order`'s move script as three passes: (a) the pinned region via `planMoves` (its
+  region-relative index is already the absolute one — pinned tabs are always the window's
+  contiguous front block); (b) fix each live group's *internal* member order via `planMoves`
+  scoped to the group's own span, before it moves as a whole — `tabGroups.move` carries members
+  along in their current relative order, so getting that order right first means the group needs
+  only one relocating move; (c) walk the desired unpinned sequence left to right, relocating each
+  top-level block — a group (one `tabGroups.move`, spanning its full LIVE membership even if
+  `plan.order` doesn't mention every member) or an ungrouped singleton (`tabs.move`) — into place.
+  `runOrder`/`applyPlan` (`lib/tabs-service.ts`) is now the **replaying executor** — one browser
+  call per emitted `RealizeMove`, in order; phase ordering stays owned by the executor
+  (`docs/adr/0003-realize-order-pure-planner.md`). **Fast path**: when nothing in the plan or the
+  live window touches groups, this degenerates to `planFlatMoves` (the fast-path translation)
+  instead of re-deriving the same result the slow way.
 - **vanished (count)** — the number of DISTINCT plan-referenced ids `applyPlan` observed missing
   from a phase's *own* fresh live query: a tab the plan named that had already closed out from
   under the action before that phase ran. Each phase returns the ids it saw absent (UNGROUP: ids
@@ -177,6 +181,32 @@ this file names the **domain**.
   already": its messages already end in "closed", and a vanished dedupe target is simply a
   duplicate that's already gone. `runExtract` never realizes a plan, so it carries no vanished
   count. Deliberately **not** surfaced by `background.ts` (hotkey/menu actions have no toast).
+
+## The realize-order planner (pure move script — ADR-0003)
+
+Split-Phase result of `docs/adr/0003-realize-order-pure-planner.md`: the ORDER math is a **pure
+planner** (`lib/realize-order.ts`) that emits a move script from an in-memory strip simulation,
+and the executor in `tabs-service.ts` replays it call-for-call. Same browser calls, same ids,
+same order — the split just moves the hardest arithmetic in the repo to a seam testable without a
+fake browser.
+
+- **realize-order.ts** — the pure realize planner: no `browser.*` calls, all index arithmetic.
+  Houses `planFlatMoves`, `planBlockMoves`, and the `RealizeMove` / `StripTab` vocabulary that
+  `runOrder` / `applyOrder` (`lib/tabs-service.ts`) replay one browser call at a time.
+- **planFlatMoves** (`realize-order.ts`) — the fast-path translation behind `applyOrder`:
+  survivor-filter plus the `planMoves` minimal-moves diff, mapped from survivor-strip indices to
+  absolute window slots (a non-survivor still in the live strip would otherwise shift every move).
+  What the ORDER phase degenerates to when nothing touches groups.
+- **planBlockMoves** (`realize-order.ts`) — the three-pass block model (pinned region →
+  within-group member order → top-level block walk), simulating each move internally so a later
+  pass reasons about the layout the executor will have produced; emits `RealizeMove[]`. Full
+  detail under **the block model** above.
+- **RealizeMove** (`realize-order.ts`) — one emitted move: `{ kind: "tab"; id; index }` (a single
+  `browser.tabs.move`) or `{ kind: "group"; groupId; index }` (a whole live group span via
+  `browser.tabGroups.move`). The executor issues one browser call per move, strictly in order.
+- **StripTab** (`realize-order.ts`) — the realize layer's per-tab view (`{ id, pinned, groupId }`),
+  just enough live-strip state to drive `planBlockMoves`. Browser-boundary-only data, distinct
+  from the pure layer's `TabLite`.
 
 ## Dedupe
 

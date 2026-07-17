@@ -16,7 +16,7 @@ import {
 } from "./tabs-service";
 import { planTidy } from "./tidy";
 import { planUndo } from "./undo";
-import type { DomainGroup, Prefs, SortMode, TabLite } from "./types";
+import type { DomainGroup, GroupColor, Prefs, SortMode, TabLite } from "./types";
 
 export type ExtractMatcher =
   | { type: "domain"; domain: string }
@@ -40,6 +40,11 @@ export interface TidyResult {
   moved: number;
   grouped: number;
   groupsCreated: number;
+  // The domain + assigned color of each group tidy freshly created this run,
+  // carried straight from applyPlan's createdGroupKeys joined against the plan
+  // — the exact fact the popup echoes as color dots, never re-derived from a
+  // post-mutation domain-group snapshot.
+  createdGroups: { domain: string; color: GroupColor }[];
   vanished: number;
 }
 
@@ -153,7 +158,7 @@ export async function runTidy(): Promise<TidyResult> {
   const [{ windowId, tabs }, prefs] = await Promise.all([getCurrentWindow(), getPrefs()]);
 
   if (tabs.length === 0) {
-    return { moved: 0, grouped: 0, groupsCreated: 0, vanished: 0 };
+    return { moved: 0, grouped: 0, groupsCreated: 0, createdGroups: [], vanished: 0 };
   }
 
   const snapshot = await snapshotWindow(windowId);
@@ -168,10 +173,21 @@ export async function runTidy(): Promise<TidyResult> {
     await saveUndo(windowId, snapshot);
   }
 
+  // Join the keys applyPlan actually created back to the plan's own GroupSpecs.
+  // For tidy the plan-local key IS the domain, and the color was assigned when
+  // the spec was built (planTidy), so this recovers the mutation-time truth of
+  // which groups formed and in what color — no post-hoc re-bucketing.
+  const colorByKey = new Map(plan.groups.map((group) => [group.key, group.color]));
+  const createdGroups = result.createdGroupKeys.map((key) => ({
+    domain: key,
+    color: colorByKey.get(key)!,
+  }));
+
   return {
     moved,
     grouped: result.grouped,
     groupsCreated: result.groupsCreated,
+    createdGroups,
     vanished: result.vanished,
   };
 }

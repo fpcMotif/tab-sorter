@@ -246,7 +246,7 @@ function App() {
     setTidyPending(true);
     void runWithStatus(async () => {
       const result = await runTidy();
-      const next = await loadData();
+      await loadData();
 
       if (result.moved === 0 && result.grouped === 0) {
         dispatch({
@@ -256,13 +256,10 @@ function App() {
         return;
       }
 
-      // TidyResult doesn't carry the colors it just assigned, so derive them
-      // from the refreshed domain groups using the same minGroupSize bucket
-      // rule planTidy applies — a best-effort echo, not a mutation-time fact.
-      const dots = next.domainGroups
-        .filter((group) => group.count >= next.prefs.minGroupSize)
-        .slice(0, result.groupsCreated)
-        .map((group) => assignColor(group.domain));
+      // The exact colors tidy assigned to the groups it just created, carried
+      // back on TidyResult — a mutation-time fact, not a re-derivation from the
+      // refreshed domain groups.
+      const dots = result.createdGroups.map((group) => group.color);
 
       dispatch({
         type: "statusSet",

@@ -224,16 +224,24 @@ async function runUngroup(windowId: number, ungroupIds: number[]): Promise<numbe
 // Reconciles the live groups against `desired` (see planGroupOps) and executes
 // the resulting ops in order. A "create" op's returned groupId is captured by
 // its plan-local key so the "update" op emitted right after it (group-ops.ts's
-// contract) can resolve which live group to stamp metadata onto.
+// contract) can resolve which live group to stamp metadata onto. Returns those
+// same plan-local keys (in op order) as `createdGroupKeys`, so a caller can tell
+// exactly which desired groups were freshly created without re-deriving it — for
+// tidy the key IS the domain, which is what the popup echoes as color dots.
 async function runGroups(
   windowId: number,
   groups: GroupSpec[],
-): Promise<{ grouped: number; groupsCreated: number; vanished: number[] }> {
+): Promise<{
+  grouped: number;
+  groupsCreated: number;
+  createdGroupKeys: string[];
+  vanished: number[];
+}> {
   // A groupless plan — plain sort, dedupe, ungroup-only undo — should not pay
   // for two queries (the live strip and tabGroups.query) it has no use for;
   // bail before either fires, matching sibling phases runUngroup/runClose.
   if (groups.length === 0) {
-    return { grouped: 0, groupsCreated: 0, vanished: [] };
+    return { grouped: 0, groupsCreated: 0, createdGroupKeys: [], vanished: [] };
   }
 
   const [strip, rawGroups] = await Promise.all([
@@ -294,7 +302,9 @@ async function runGroups(
     });
   }
 
-  return { grouped, groupsCreated, vanished };
+  // createdGroupIds was keyed, in op order, by exactly the desired groups that
+  // got a "create" op — its keys ARE the freshly-created groups' plan-local keys.
+  return { grouped, groupsCreated, createdGroupKeys: [...createdGroupIds.keys()], vanished };
 }
 
 // Realizes `plan.order` against the live strip. Skipped entirely by the caller
@@ -372,7 +382,13 @@ async function runClose(
 export async function applyPlan(
   plan: TabPlan,
   windowId: number,
-): Promise<{ grouped: number; groupsCreated: number; closed: number; vanished: number }> {
+): Promise<{
+  grouped: number;
+  groupsCreated: number;
+  createdGroupKeys: string[];
+  closed: number;
+  vanished: number;
+}> {
   const vanished = new Set<number>();
 
   for (const id of await runUngroup(windowId, plan.ungroup)) {
@@ -382,6 +398,7 @@ export async function applyPlan(
   const {
     grouped,
     groupsCreated,
+    createdGroupKeys,
     vanished: groupVanished,
   } = await runGroups(windowId, plan.groups);
   for (const id of groupVanished) {
@@ -399,5 +416,5 @@ export async function applyPlan(
     vanished.add(id);
   }
 
-  return { grouped, groupsCreated, closed, vanished: vanished.size };
+  return { grouped, groupsCreated, createdGroupKeys, closed, vanished: vanished.size };
 }

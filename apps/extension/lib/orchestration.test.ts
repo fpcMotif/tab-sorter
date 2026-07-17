@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { assignColor } from "./domain";
 import {
   getPopupData,
   getSelectedTabs,
@@ -103,7 +104,7 @@ describe("orchestration", () => {
     mocks.snapshotWindow.mockResolvedValue(snapshot(1, "default"));
     mocks.applyPlan.mockImplementation(async () => {
       callOrder.push("apply");
-      return { grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 };
+      return { grouped: 0, groupsCreated: 0, createdGroupKeys: [], closed: 0, vanished: 0 };
     });
     mocks.reopenTabs.mockImplementation(async (urls: string[]) => {
       callOrder.push("reopen");
@@ -260,6 +261,7 @@ describe("orchestration", () => {
         moved: 0,
         grouped: 0,
         groupsCreated: 0,
+        createdGroups: [],
         vanished: 0,
       });
 
@@ -282,6 +284,7 @@ describe("orchestration", () => {
         moved: 0,
         grouped: 0,
         groupsCreated: 0,
+        createdGroups: [],
         vanished: 0,
       });
 
@@ -312,6 +315,7 @@ describe("orchestration", () => {
         moved: 2,
         grouped: 0,
         groupsCreated: 0,
+        createdGroups: [],
         vanished: 0,
       });
 
@@ -327,12 +331,20 @@ describe("orchestration", () => {
       mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: tidyTabs });
       const snap = snapshot(1, "tidy-grouped");
       mocks.snapshotWindow.mockResolvedValue(snap);
-      mocks.applyPlan.mockResolvedValue({ grouped: 2, groupsCreated: 1, closed: 0, vanished: 0 });
+      mocks.applyPlan.mockResolvedValue({
+        grouped: 2,
+        groupsCreated: 1,
+        createdGroupKeys: ["shared.example"],
+        closed: 0,
+        vanished: 0,
+      });
 
       await expect(runTidy()).resolves.toEqual({
         moved: 0,
         grouped: 2,
         groupsCreated: 1,
+        // Joined back to the plan's own GroupSpec: key IS the domain, color as assigned.
+        createdGroups: [{ domain: "shared.example", color: assignColor("shared.example") }],
         vanished: 0,
       });
 
@@ -360,10 +372,51 @@ describe("orchestration", () => {
         moved: 0,
         grouped: 0,
         groupsCreated: 0,
+        createdGroups: [],
         vanished: 0,
       });
 
       expect(mocks.saveUndo).toHaveBeenCalledWith(1, snap);
+    });
+
+    it("carries the freshly-created group's own color (stackoverflow), never the larger pre-existing github group's", async () => {
+      // The refuter's scenario, at the TidyResult seam: a 6-tab github group
+      // already exists; tidy creates ONE new group for the 2 fresh stackoverflow
+      // tabs. The old popup re-derived dots by count-desc bucketing and would
+      // have echoed github's swatch; createdGroups instead carries the color the
+      // plan actually assigned to the group it created.
+      const tidyTabs: TabLite[] = [
+        { id: 1, title: "gh1", url: "https://github.com/a", index: 0, pinned: false, groupId: 42 },
+        { id: 2, title: "gh2", url: "https://github.com/b", index: 1, pinned: false, groupId: 42 },
+        { id: 3, title: "gh3", url: "https://github.com/c", index: 2, pinned: false, groupId: 42 },
+        { id: 4, title: "gh4", url: "https://github.com/d", index: 3, pinned: false, groupId: 42 },
+        { id: 5, title: "gh5", url: "https://github.com/e", index: 4, pinned: false, groupId: 42 },
+        { id: 6, title: "gh6", url: "https://github.com/f", index: 5, pinned: false, groupId: 42 },
+        { id: 7, title: "so1", url: "https://stackoverflow.com/q/1", index: 6, pinned: false },
+        { id: 8, title: "so2", url: "https://stackoverflow.com/q/2", index: 7, pinned: false },
+      ];
+      mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: tidyTabs });
+      mocks.snapshotWindow.mockResolvedValue(snapshot(1, "gh-so"));
+      // What the real runGroups returns for this plan: only stackoverflow.com was
+      // created — github stayed an untouched atomic block, absent from `groups`.
+      mocks.applyPlan.mockResolvedValue({
+        grouped: 2,
+        groupsCreated: 1,
+        createdGroupKeys: ["stackoverflow.com"],
+        closed: 0,
+        vanished: 0,
+      });
+
+      const result = await runTidy();
+
+      expect(result.createdGroups).toEqual([
+        { domain: "stackoverflow.com", color: assignColor("stackoverflow.com") },
+      ]);
+      // Concrete swatch, and provably NOT github's — the exact divergence the old
+      // count-desc re-derivation produced (github is the larger bucket).
+      expect(result.createdGroups[0]!.color).toBe("pink");
+      expect(result.createdGroups.map((group) => group.domain)).not.toContain("github.com");
+      expect(assignColor("stackoverflow.com")).not.toBe(assignColor("github.com"));
     });
   });
 
