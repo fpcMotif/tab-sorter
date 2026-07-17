@@ -26,21 +26,34 @@ export interface ActionResult {
   moved: number;
 }
 
+// runSort/runDefaultSort realize an order through applyPlan, so they surface
+// `vanished` — the count of plan-referenced ids that closed out from under the
+// action before/during realization. Extract is also a "moved" action but never
+// realizes a TabPlan (it goes through moveTabsToNewWindow), so it stays on the
+// bare ActionResult with no vanished signal to report.
+export interface SortResult {
+  moved: number;
+  vanished: number;
+}
+
 export interface TidyResult {
   moved: number;
   grouped: number;
   groupsCreated: number;
+  vanished: number;
 }
 
 export interface DedupeResult {
   duplicates: number;
   closed: number;
+  vanished: number;
 }
 
 export interface UndoResult {
   undone: boolean;
   restored: number;
   reopened: number;
+  vanished: number;
 }
 
 export interface PopupData {
@@ -77,11 +90,11 @@ function resolveMatchedIds(tabs: TabLite[], matcher: ExtractMatcher): number[] {
   return result.ok ? result.ids : [];
 }
 
-export async function runSort(mode: SortMode): Promise<ActionResult> {
+export async function runSort(mode: SortMode): Promise<SortResult> {
   const [{ windowId, tabs }, prefs] = await Promise.all([getCurrentWindow(), getPrefs()]);
 
   if (tabs.length <= 1) {
-    return { moved: 0 };
+    return { moved: 0, vanished: 0 };
   }
 
   const desiredOrder = planWindowOrder(tabs, mode, prefs.ignorePinned);
@@ -91,17 +104,20 @@ export async function runSort(mode: SortMode): Promise<ActionResult> {
   );
 
   if (moved === 0) {
-    return { moved: 0 };
+    return { moved: 0, vanished: 0 };
   }
 
   // Sort predates snapshots and stays cheap: unlike tidy/dedupe it never
   // groups or closes anything, so it deliberately skips saveUndo.
-  await applyPlan({ order: desiredOrder, groups: [], ungroup: [], close: [] }, windowId);
+  const { vanished } = await applyPlan(
+    { order: desiredOrder, groups: [], ungroup: [], close: [] },
+    windowId,
+  );
 
-  return { moved };
+  return { moved, vanished };
 }
 
-export async function runDefaultSort(): Promise<ActionResult> {
+export async function runDefaultSort(): Promise<SortResult> {
   const prefs = await getPrefs();
 
   return runSort(prefs.defaultSort);
@@ -137,7 +153,7 @@ export async function runTidy(): Promise<TidyResult> {
   const [{ windowId, tabs }, prefs] = await Promise.all([getCurrentWindow(), getPrefs()]);
 
   if (tabs.length === 0) {
-    return { moved: 0, grouped: 0, groupsCreated: 0 };
+    return { moved: 0, grouped: 0, groupsCreated: 0, vanished: 0 };
   }
 
   const snapshot = await snapshotWindow(windowId);
@@ -152,7 +168,12 @@ export async function runTidy(): Promise<TidyResult> {
     await saveUndo(windowId, snapshot);
   }
 
-  return { moved, grouped: result.grouped, groupsCreated: result.groupsCreated };
+  return {
+    moved,
+    grouped: result.grouped,
+    groupsCreated: result.groupsCreated,
+    vanished: result.vanished,
+  };
 }
 
 // Preview vs confirm: an unconfirmed call is pure preview (no snapshot, no
@@ -169,14 +190,17 @@ export async function runDedupe(options: { confirm: boolean }): Promise<DedupeRe
   });
 
   if (!options.confirm || close.length === 0) {
-    return { duplicates: close.length, closed: 0 };
+    return { duplicates: close.length, closed: 0, vanished: 0 };
   }
 
   const snapshot = await snapshotWindow(windowId);
-  const { closed } = await applyPlan({ order: [], groups: [], ungroup: [], close }, windowId);
+  const { closed, vanished } = await applyPlan(
+    { order: [], groups: [], ungroup: [], close },
+    windowId,
+  );
   await saveUndo(windowId, snapshot);
 
-  return { duplicates: close.length, closed };
+  return { duplicates: close.length, closed, vanished };
 }
 
 // Reopens closed tabs BEFORE realizing the restored plan — they land as
@@ -195,17 +219,17 @@ export async function runUndo(): Promise<UndoResult> {
   const saved = await loadUndo(windowId);
 
   if (saved === undefined) {
-    return { undone: false, restored: 0, reopened: 0 };
+    return { undone: false, restored: 0, reopened: 0, vanished: 0 };
   }
 
   const snapshotNow = await snapshotWindow(windowId);
   const { plan, reopen } = planUndo(saved, tabs);
 
   const reopened = await reopenTabs(reopen);
-  await applyPlan(plan, windowId);
+  const { vanished } = await applyPlan(plan, windowId);
   await saveUndo(windowId, snapshotNow);
 
-  return { undone: true, restored: plan.order.length, reopened };
+  return { undone: true, restored: plan.order.length, reopened, vanished };
 }
 
 export async function getUndoAvailable(): Promise<boolean> {

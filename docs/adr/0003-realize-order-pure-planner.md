@@ -50,6 +50,13 @@ stays owned by the executor, not the plan. Splitting the phases into the data wo
 - Coupling moved from a behavioral interface to the `RealizeMove` schema. Accepted: the
   vocabulary is two variants, in-repo, and coverage-gated; growing it is a visible schema
   change rather than an invisible behavioral one.
-- Open question (deliberately not taken here): every realize phase silently drops vanished
-  ids — optimistic-lock re-validation with the conflict signal deleted. If conflict
-  visibility is ever wanted, `applyPlan`'s result is the natural place to count drops.
+- ~~Open question~~ Resolved (2026-07-18): every realize phase kept its silent-drop
+  semantics, and `applyPlan` now reports `vanished` — the count of distinct
+  plan-referenced ids a phase's own fresh query no longer saw. This is the *detect*
+  half of optimistic offline locking without the *abort* half. The catalog's
+  pre-validate-then-refuse advice was considered and rejected: it assumes business
+  transactions where partial completion wastes user effort. Here a vanished tab is
+  routinely resolvable (the user closed a tab mid-sort; survivors should still sort),
+  and per-phase re-validation already prevents the corrupted-state cascade that
+  "crash early" guards against. Refusing or aborting would trade a benign, expected
+  event for a hostile one. The popup surfaces the count; nothing halts.

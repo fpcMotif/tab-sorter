@@ -64,6 +64,25 @@ function pluralize(count: number, word: string): string {
   return `${count} ${count === 1 ? word : `${word}s`}`;
 }
 
+// Appends the vanished-count clause to a realizing action's success toast in the
+// tidy toast's middot voice (" · N moved"), so an action that ran while tabs were
+// closing out from under it says so. A trailing period is stripped first, letting
+// a terminated message ("Sorted 5 tabs.") read "Sorted 5 tabs · 2 closed
+// mid-action" instead of doubling punctuation. A zero count returns the message
+// verbatim — the common clean-run toast is byte-for-byte unchanged. Dedupe alone
+// passes its own clause ("gone already"): its messages already end in "closed",
+// and "No duplicates closed · 2 closed mid-action" would use one word with two
+// meanings — a vanished dedupe target is simply a duplicate that's already gone.
+function appendVanished(message: string, vanished: number, clause = "closed mid-action"): string {
+  if (vanished === 0) {
+    return message;
+  }
+
+  const base = message.endsWith(".") ? message.slice(0, -1) : message;
+
+  return `${base} · ${vanished} ${clause}`;
+}
+
 function factsLine(data: PopupData): string {
   const parts = [pluralize(data.totalTabs, "tab"), pluralize(data.domainGroups.length, "site")];
 
@@ -230,7 +249,10 @@ function App() {
       const next = await loadData();
 
       if (result.moved === 0 && result.grouped === 0) {
-        dispatch({ type: "statusSet", status: { message: "Already tidy.", tone: "success" } });
+        dispatch({
+          type: "statusSet",
+          status: { message: appendVanished("Already tidy.", result.vanished), tone: "success" },
+        });
         return;
       }
 
@@ -245,7 +267,10 @@ function App() {
       dispatch({
         type: "statusSet",
         status: {
-          message: `Grouped ${result.grouped} tabs into ${result.groupsCreated} groups · ${result.moved} moved`,
+          message: appendVanished(
+            `Grouped ${result.grouped} tabs into ${result.groupsCreated} groups · ${result.moved} moved`,
+            result.vanished,
+          ),
           tone: "success",
           dots,
         },
@@ -261,7 +286,10 @@ function App() {
       dispatch({
         type: "statusSet",
         status: {
-          message: result.moved === 0 ? "Already sorted." : `Sorted ${result.moved} tabs.`,
+          message: appendVanished(
+            result.moved === 0 ? "Already sorted." : `Sorted ${result.moved} tabs.`,
+            result.vanished,
+          ),
           tone: "success",
         },
       });
@@ -284,10 +312,13 @@ function App() {
       dispatch({
         type: "statusSet",
         status: {
-          message:
+          message: appendVanished(
             result.closed === 0
               ? "No duplicates closed."
               : `Closed ${pluralize(result.closed, "duplicate")}.`,
+            result.vanished,
+            "gone already",
+          ),
           tone: "success",
         },
       });
@@ -307,10 +338,12 @@ function App() {
       dispatch({
         type: "statusSet",
         status: {
-          message:
+          message: appendVanished(
             result.reopened > 0
               ? `Restored ${result.restored} tabs, reopened ${result.reopened}.`
               : `Restored ${result.restored} tabs.`,
+            result.vanished,
+          ),
           tone: "success",
         },
       });

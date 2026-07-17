@@ -196,13 +196,19 @@ function asNonEmpty(ids: number[]): [number, ...number[]] {
 
 // Surviving `ungroupIds` that are currently grouped, pulled out with one batch
 // call. Vanished ids and already-ungrouped ids alike read as TAB_GROUP_NONE via
-// the `??` fallback, so both are silently dropped rather than special-cased.
-async function runUngroup(windowId: number, ungroupIds: number[]): Promise<void> {
+// the `??` fallback, so both are silently dropped from the ungroup call rather
+// than special-cased — but they are NOT the same signal: an already-ungrouped id
+// is present in the live strip (just group-less), a vanished one is absent from
+// it entirely. Returns the vanished subset (the `liveIds` set is what tells the
+// two apart) so applyPlan can count planned ids that disappeared; the ids passed
+// to browser.tabs.ungroup are unchanged.
+async function runUngroup(windowId: number, ungroupIds: number[]): Promise<number[]> {
   if (ungroupIds.length === 0) {
-    return;
+    return [];
   }
 
   const live = await getLiveStrip(windowId);
+  const liveIds = new Set(live.map((tab) => tab.id));
   const liveGroupId = new Map(live.map((tab) => [tab.id, tab.groupId]));
   const grouped = ungroupIds.filter(
     (id) => (liveGroupId.get(id) ?? TAB_GROUP_NONE) !== TAB_GROUP_NONE,
@@ -211,6 +217,8 @@ async function runUngroup(windowId: number, ungroupIds: number[]): Promise<void>
   if (grouped.length > 0) {
     await browser.tabs.ungroup(asNonEmpty(grouped));
   }
+
+  return ungroupIds.filter((id) => !liveIds.has(id));
 }
 
 // Reconciles the live groups against `desired` (see planGroupOps) and executes
@@ -220,12 +228,12 @@ async function runUngroup(windowId: number, ungroupIds: number[]): Promise<void>
 async function runGroups(
   windowId: number,
   groups: GroupSpec[],
-): Promise<{ grouped: number; groupsCreated: number }> {
+): Promise<{ grouped: number; groupsCreated: number; vanished: number[] }> {
   // A groupless plan — plain sort, dedupe, ungroup-only undo — should not pay
   // for two queries (the live strip and tabGroups.query) it has no use for;
   // bail before either fires, matching sibling phases runUngroup/runClose.
   if (groups.length === 0) {
-    return { grouped: 0, groupsCreated: 0 };
+    return { grouped: 0, groupsCreated: 0, vanished: [] };
   }
 
   const [strip, rawGroups] = await Promise.all([
@@ -247,6 +255,10 @@ async function runGroups(
   // which would revert the user's just-issued pin. Re-check against this fresh
   // strip query, the same source survivorIds comes from.
   const pinnedIds = new Set(strip.filter((tab) => tab.pinned).map((tab) => tab.id));
+  // A plan-referenced id absent from this fresh strip vanished before GROUPS
+  // ran. An id dropped only by the pinnedIds check below did NOT vanish —
+  // pinned exclusion is deliberate policy, so only non-survivors are counted.
+  const vanished = groups.flatMap((group) => group.tabIds.filter((id) => !survivorIds.has(id)));
   const desired = groups
     .map((group) => ({
       ...group,
@@ -282,21 +294,26 @@ async function runGroups(
     });
   }
 
-  return { grouped, groupsCreated };
+  return { grouped, groupsCreated, vanished };
 }
 
 // Realizes `plan.order` against the live strip. Skipped entirely by the caller
-// when `plan.order` is empty (the dedupe case: leave positions alone).
-async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
+// when `plan.order` is empty (the dedupe case: leave positions alone). Returns
+// the plan.order ids absent from this phase's own strip (vanished), computed up
+// front so the fast path can report them without threading a count through
+// applyOrder (whose void signature and self-re-query semantics stay unchanged).
+async function runOrder(windowId: number, plan: TabPlan): Promise<number[]> {
   const strip = await getLiveStrip(windowId);
   const hasLiveGroups = strip.some((tab) => tab.groupId !== TAB_GROUP_NONE);
+  const liveIds = new Set(strip.map((tab) => tab.id));
+  const vanished = plan.order.filter((id) => !liveIds.has(id));
 
   // FAST PATH: nothing here or upstream touches groups, so the general block
   // model degenerates to a plain reorder — hand it to the proven minimal-moves
   // path instead of re-deriving the same result the slow way.
   if (plan.groups.length === 0 && plan.ungroup.length === 0 && !hasLiveGroups) {
     await applyOrder(plan.order, windowId);
-    return;
+    return vanished;
   }
 
   // planBlockMoves already simulated the whole sequence against the strip; issue
@@ -310,13 +327,20 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
       await browser.tabGroups.move(move.groupId, { index: move.index });
     }
   }
+
+  return vanished;
 }
 
 // Surviving `plan.close` ids, removed with one batch call; already-vanished
-// ids are silently dropped rather than special-cased.
-async function runClose(windowId: number, closeIds: number[]): Promise<number> {
+// ids are silently dropped rather than special-cased. Returns both the closed
+// count and the vanished subset (plan.close ids absent from the live query) so
+// applyPlan can fold the latter into its cross-phase vanished total.
+async function runClose(
+  windowId: number,
+  closeIds: number[],
+): Promise<{ closed: number; vanished: number[] }> {
   if (closeIds.length === 0) {
-    return 0;
+    return { closed: 0, vanished: [] };
   }
 
   const live = await getLiveStrip(windowId);
@@ -327,7 +351,7 @@ async function runClose(windowId: number, closeIds: number[]): Promise<number> {
     await browser.tabs.remove(surviving);
   }
 
-  return surviving.length;
+  return { closed: surviving.length, vanished: closeIds.filter((id) => !liveIds.has(id)) };
 }
 
 // Realizes a TabPlan against `windowId` in four phases — UNGROUP, GROUPS,
@@ -339,18 +363,41 @@ async function runClose(windowId: number, closeIds: number[]): Promise<number> {
 // span. `windowId` is the caller's job to resolve (once, ambiently) — every
 // query here is scoped to it explicitly, never to `{ currentWindow: true }`,
 // so a focus change after the caller resolved it can't retarget these calls.
+//
+// `vanished` reports how many DISTINCT plan-referenced ids the phases found
+// missing from their own fresh queries — the same silent drops described above,
+// now counted. Each phase returns the ids it saw vanish and applyPlan unions
+// them, so an id gone for two phases counts once. Detection only: no phase's
+// browser-call sequence changes, and a vanished id is still dropped, never chased.
 export async function applyPlan(
   plan: TabPlan,
   windowId: number,
-): Promise<{ grouped: number; groupsCreated: number; closed: number }> {
-  await runUngroup(windowId, plan.ungroup);
-  const { grouped, groupsCreated } = await runGroups(windowId, plan.groups);
+): Promise<{ grouped: number; groupsCreated: number; closed: number; vanished: number }> {
+  const vanished = new Set<number>();
 
-  if (plan.order.length > 0) {
-    await runOrder(windowId, plan);
+  for (const id of await runUngroup(windowId, plan.ungroup)) {
+    vanished.add(id);
   }
 
-  const closed = await runClose(windowId, plan.close);
+  const {
+    grouped,
+    groupsCreated,
+    vanished: groupVanished,
+  } = await runGroups(windowId, plan.groups);
+  for (const id of groupVanished) {
+    vanished.add(id);
+  }
 
-  return { grouped, groupsCreated, closed };
+  if (plan.order.length > 0) {
+    for (const id of await runOrder(windowId, plan)) {
+      vanished.add(id);
+    }
+  }
+
+  const { closed, vanished: closeVanished } = await runClose(windowId, plan.close);
+  for (const id of closeVanished) {
+    vanished.add(id);
+  }
+
+  return { grouped, groupsCreated, closed, vanished: vanished.size };
 }

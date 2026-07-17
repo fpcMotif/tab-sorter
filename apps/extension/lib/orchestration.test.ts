@@ -103,7 +103,7 @@ describe("orchestration", () => {
     mocks.snapshotWindow.mockResolvedValue(snapshot(1, "default"));
     mocks.applyPlan.mockImplementation(async () => {
       callOrder.push("apply");
-      return { grouped: 0, groupsCreated: 0, closed: 0 };
+      return { grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 };
     });
     mocks.reopenTabs.mockImplementation(async (urls: string[]) => {
       callOrder.push("reopen");
@@ -123,7 +123,7 @@ describe("orchestration", () => {
   });
 
   it("sorts unpinned tabs after the pinned block", async () => {
-    await expect(runSort("title")).resolves.toEqual({ moved: 2 });
+    await expect(runSort("title")).resolves.toEqual({ moved: 2, vanished: 0 });
 
     expect(mocks.applyPlan).toHaveBeenCalledWith(
       {
@@ -139,7 +139,7 @@ describe("orchestration", () => {
   it("does nothing for a window with a single tab", async () => {
     mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: [tabs[0]] });
 
-    await expect(runSort("title")).resolves.toEqual({ moved: 0 });
+    await expect(runSort("title")).resolves.toEqual({ moved: 0, vanished: 0 });
 
     expect(mocks.applyPlan).not.toHaveBeenCalled();
   });
@@ -147,7 +147,7 @@ describe("orchestration", () => {
   it("does not apply an already sorted order", async () => {
     mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: [tabs[0], tabs[2], tabs[1]] });
 
-    await expect(runSort("title")).resolves.toEqual({ moved: 0 });
+    await expect(runSort("title")).resolves.toEqual({ moved: 0, vanished: 0 });
 
     expect(mocks.applyPlan).not.toHaveBeenCalled();
   });
@@ -155,7 +155,7 @@ describe("orchestration", () => {
   it("runs the default sort preference", async () => {
     mocks.getPrefs.mockResolvedValue({ ...prefs, defaultSort: "domain" });
 
-    await expect(runDefaultSort()).resolves.toEqual({ moved: 2 });
+    await expect(runDefaultSort()).resolves.toEqual({ moved: 2, vanished: 0 });
 
     expect(mocks.applyPlan).toHaveBeenCalledWith(
       {
@@ -256,7 +256,12 @@ describe("orchestration", () => {
     it("returns zeros without snapshotting or mutating an empty window", async () => {
       mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: [] });
 
-      await expect(runTidy()).resolves.toEqual({ moved: 0, grouped: 0, groupsCreated: 0 });
+      await expect(runTidy()).resolves.toEqual({
+        moved: 0,
+        grouped: 0,
+        groupsCreated: 0,
+        vanished: 0,
+      });
 
       expect(mocks.snapshotWindow).not.toHaveBeenCalled();
       expect(mocks.applyPlan).not.toHaveBeenCalled();
@@ -273,7 +278,12 @@ describe("orchestration", () => {
       const snap = snapshot(1, "tidy-noop");
       mocks.snapshotWindow.mockResolvedValue(snap);
 
-      await expect(runTidy()).resolves.toEqual({ moved: 0, grouped: 0, groupsCreated: 0 });
+      await expect(runTidy()).resolves.toEqual({
+        moved: 0,
+        grouped: 0,
+        groupsCreated: 0,
+        vanished: 0,
+      });
 
       expect(mocks.snapshotWindow).toHaveBeenCalledWith(1);
       expect(mocks.applyPlan).toHaveBeenCalledWith(
@@ -298,7 +308,12 @@ describe("orchestration", () => {
       const snap = snapshot(1, "tidy-moved");
       mocks.snapshotWindow.mockResolvedValue(snap);
 
-      await expect(runTidy()).resolves.toEqual({ moved: 2, grouped: 0, groupsCreated: 0 });
+      await expect(runTidy()).resolves.toEqual({
+        moved: 2,
+        grouped: 0,
+        groupsCreated: 0,
+        vanished: 0,
+      });
 
       expect(mocks.saveUndo).toHaveBeenCalledWith(1, snap);
     });
@@ -312,9 +327,14 @@ describe("orchestration", () => {
       mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: tidyTabs });
       const snap = snapshot(1, "tidy-grouped");
       mocks.snapshotWindow.mockResolvedValue(snap);
-      mocks.applyPlan.mockResolvedValue({ grouped: 2, groupsCreated: 1, closed: 0 });
+      mocks.applyPlan.mockResolvedValue({ grouped: 2, groupsCreated: 1, closed: 0, vanished: 0 });
 
-      await expect(runTidy()).resolves.toEqual({ moved: 0, grouped: 2, groupsCreated: 1 });
+      await expect(runTidy()).resolves.toEqual({
+        moved: 0,
+        grouped: 2,
+        groupsCreated: 1,
+        vanished: 0,
+      });
 
       expect(mocks.saveUndo).toHaveBeenCalledWith(1, snap);
     });
@@ -336,7 +356,12 @@ describe("orchestration", () => {
       const snap = snapshot(1, "tidy-ungroup");
       mocks.snapshotWindow.mockResolvedValue(snap);
 
-      await expect(runTidy()).resolves.toEqual({ moved: 0, grouped: 0, groupsCreated: 0 });
+      await expect(runTidy()).resolves.toEqual({
+        moved: 0,
+        grouped: 0,
+        groupsCreated: 0,
+        vanished: 0,
+      });
 
       expect(mocks.saveUndo).toHaveBeenCalledWith(1, snap);
     });
@@ -351,7 +376,11 @@ describe("orchestration", () => {
     it("previews without mutating when confirm is false", async () => {
       mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: dupeTabs });
 
-      await expect(runDedupe({ confirm: false })).resolves.toEqual({ duplicates: 1, closed: 0 });
+      await expect(runDedupe({ confirm: false })).resolves.toEqual({
+        duplicates: 1,
+        closed: 0,
+        vanished: 0,
+      });
 
       expect(mocks.snapshotWindow).not.toHaveBeenCalled();
       expect(mocks.applyPlan).not.toHaveBeenCalled();
@@ -359,7 +388,11 @@ describe("orchestration", () => {
     });
 
     it("does nothing when confirmed but there are no duplicates", async () => {
-      await expect(runDedupe({ confirm: true })).resolves.toEqual({ duplicates: 0, closed: 0 });
+      await expect(runDedupe({ confirm: true })).resolves.toEqual({
+        duplicates: 0,
+        closed: 0,
+        vanished: 0,
+      });
 
       expect(mocks.snapshotWindow).not.toHaveBeenCalled();
       expect(mocks.applyPlan).not.toHaveBeenCalled();
@@ -370,9 +403,13 @@ describe("orchestration", () => {
       mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: dupeTabs });
       const snap = snapshot(1, "dedupe");
       mocks.snapshotWindow.mockResolvedValue(snap);
-      mocks.applyPlan.mockResolvedValue({ grouped: 0, groupsCreated: 0, closed: 1 });
+      mocks.applyPlan.mockResolvedValue({ grouped: 0, groupsCreated: 0, closed: 1, vanished: 0 });
 
-      await expect(runDedupe({ confirm: true })).resolves.toEqual({ duplicates: 1, closed: 1 });
+      await expect(runDedupe({ confirm: true })).resolves.toEqual({
+        duplicates: 1,
+        closed: 1,
+        vanished: 0,
+      });
 
       expect(mocks.applyPlan).toHaveBeenCalledWith(
         {
@@ -394,7 +431,11 @@ describe("orchestration", () => {
       mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: queryTabs });
       mocks.getPrefs.mockResolvedValue({ ...prefs, dedupeIgnoreQuery: true });
 
-      await expect(runDedupe({ confirm: false })).resolves.toEqual({ duplicates: 1, closed: 0 });
+      await expect(runDedupe({ confirm: false })).resolves.toEqual({
+        duplicates: 1,
+        closed: 0,
+        vanished: 0,
+      });
     });
   });
 
@@ -402,7 +443,12 @@ describe("orchestration", () => {
     it("reports undone: false with no side effects when there is no saved snapshot", async () => {
       mocks.loadUndo.mockResolvedValue(undefined);
 
-      await expect(runUndo()).resolves.toEqual({ undone: false, restored: 0, reopened: 0 });
+      await expect(runUndo()).resolves.toEqual({
+        undone: false,
+        restored: 0,
+        reopened: 0,
+        vanished: 0,
+      });
 
       expect(mocks.snapshotWindow).not.toHaveBeenCalled();
       expect(mocks.reopenTabs).not.toHaveBeenCalled();
@@ -436,7 +482,12 @@ describe("orchestration", () => {
       mocks.getCurrentWindow.mockResolvedValue({ windowId: 1, tabs: currentTabs });
       mocks.snapshotWindow.mockResolvedValue(snapshotNow);
 
-      await expect(runUndo()).resolves.toEqual({ undone: true, restored: 2, reopened: 1 });
+      await expect(runUndo()).resolves.toEqual({
+        undone: true,
+        restored: 2,
+        reopened: 1,
+        vanished: 0,
+      });
 
       expect(mocks.reopenTabs).toHaveBeenCalledWith(["https://gone.example"]);
       expect(mocks.applyPlan).toHaveBeenCalledWith(

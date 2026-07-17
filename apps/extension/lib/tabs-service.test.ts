@@ -335,7 +335,7 @@ describe("applyPlan — group-aware realize", () => {
     const result = await applyPlan(plan, 1);
 
     expect(stripIds(fake.strip)).toEqual([100, 101, 22, 24, 23, 25, 26]);
-    expect(result).toEqual({ grouped: 4, groupsCreated: 2, closed: 0 });
+    expect(result).toEqual({ grouped: 4, groupsCreated: 2, closed: 0, vanished: 0 });
 
     const groupA = fake.strip.find((tab) => tab.id === 22)!.groupId;
     const groupB = fake.strip.find((tab) => tab.id === 23)!.groupId;
@@ -374,7 +374,7 @@ describe("applyPlan — group-aware realize", () => {
     expect(fake.group).not.toHaveBeenCalled();
     expect(fake.tabGroupsUpdate).not.toHaveBeenCalled();
     expect(fake.tabGroupsMove).not.toHaveBeenCalled();
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
   });
 
   it("forces the block model when a live group exists even though the plan touches none, drifting the excluded survivor to the end", async () => {
@@ -403,7 +403,7 @@ describe("applyPlan — group-aware realize", () => {
     expect(fake.tabGroupsMove).toHaveBeenCalledTimes(1);
     expect(fake.tabGroupsMove).toHaveBeenCalledWith(42, { index: 3 });
     expect(fake.group).not.toHaveBeenCalled();
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
   });
 
   it("keeps a live group's members as one contiguous block when plan.order interleaves an unrelated id between them", async () => {
@@ -430,7 +430,7 @@ describe("applyPlan — group-aware realize", () => {
     const groupPositions = fake.strip.flatMap((tab, index) => (tab.groupId === 42 ? [index] : []));
     expect(groupPositions).toEqual([0, 1]);
     expect(stripIds(fake.strip)).toEqual([1, 3, 2]);
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
   });
 
   it("relocates an interleaved live group as its full-width span, not just the order-mentioned member count", async () => {
@@ -454,7 +454,7 @@ describe("applyPlan — group-aware realize", () => {
     const groupPositions = fake.strip.flatMap((tab, index) => (tab.groupId === 42 ? [index] : []));
     expect(groupPositions).toEqual([0, 1]);
     expect(stripIds(fake.strip)).toEqual([1, 3, 2]);
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
   });
 
   it("is a full no-op when live groups and order already match the plan exactly", async () => {
@@ -481,7 +481,7 @@ describe("applyPlan — group-aware realize", () => {
     expect(fake.group).not.toHaveBeenCalled();
     expect(fake.tabGroupsUpdate).not.toHaveBeenCalled();
     expect(fake.tabGroupsMove).not.toHaveBeenCalled();
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
   });
 
   it("adds a missing member to a matched live group and updates it by its live groupId", async () => {
@@ -511,7 +511,7 @@ describe("applyPlan — group-aware realize", () => {
       collapsed: true,
     });
     expect(fake.strip.find((tab) => tab.id === 51)!.groupId).toBe(888);
-    expect(result).toEqual({ grouped: 1, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 1, groupsCreated: 0, closed: 0, vanished: 0 });
   });
 
   it("excludes a currently-pinned id from tabs.group even though the plan still lists it", async () => {
@@ -536,7 +536,9 @@ describe("applyPlan — group-aware realize", () => {
     expect(fake.group).toHaveBeenCalledWith({ tabIds: [8] });
     expect(fake.strip.find((tab) => tab.id === 7)!.groupId).toBe(TAB_GROUP_NONE);
     expect(fake.strip.find((tab) => tab.id === 7)!.pinned).toBe(true);
-    expect(result).toEqual({ grouped: 1, groupsCreated: 1, closed: 0 });
+    // Tab 7 is a live survivor merely excluded by pinned policy, so it is NOT
+    // counted as vanished — only truly-absent plan ids are.
+    expect(result).toEqual({ grouped: 1, groupsCreated: 1, closed: 0, vanished: 0 });
   });
 
   it("drops a GroupSpec entirely when every listed id is currently pinned", async () => {
@@ -552,7 +554,7 @@ describe("applyPlan — group-aware realize", () => {
     const result = await applyPlan(plan, 1);
 
     expect(fake.group).not.toHaveBeenCalled();
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
   });
 
   it("drops a fully-vanished GroupSpec and filters a partially-vanished one to its survivors", async () => {
@@ -572,7 +574,9 @@ describe("applyPlan — group-aware realize", () => {
 
     expect(fake.group).toHaveBeenCalledTimes(1);
     expect(fake.group).toHaveBeenCalledWith({ tabIds: [60] });
-    expect(result).toEqual({ grouped: 1, groupsCreated: 1, closed: 0 });
+    // 9001 (fully-vanished group) and 9002 (partially-vanished group) are both
+    // absent from the live strip — two distinct non-survivors counted as vanished.
+    expect(result).toEqual({ grouped: 1, groupsCreated: 1, closed: 0, vanished: 2 });
 
     const gid = fake.strip.find((tab) => tab.id === 60)!.groupId;
     expect(fake.tabGroupsUpdate).toHaveBeenCalledWith(gid, {
@@ -609,7 +613,7 @@ describe("applyPlan — group-aware realize", () => {
     expect(fake.move).toHaveBeenCalledTimes(1);
     expect(fake.move).toHaveBeenCalledWith(41, { index: 0 });
     expect(stripIds(fake.strip)).toEqual([41, 42, 9]);
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
   });
 
   it("ungroups only the surviving currently-grouped ids in one batch call", async () => {
@@ -678,7 +682,7 @@ describe("applyPlan — group-aware realize", () => {
 
     const result = await applyPlan({ order: [2, 1], groups: [], ungroup: [], close: [] }, 1);
 
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
     expect(rawMove).toHaveBeenCalledTimes(1);
     expect(rawMove).toHaveBeenCalledWith(2, { index: 0 });
   });
@@ -703,7 +707,7 @@ describe("applyPlan — group-aware realize", () => {
     };
     const result = await applyPlan(plan, 1);
 
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
     expect(tabGroupsUpdate).toHaveBeenCalledWith(5, {
       title: "New",
       color: "blue",
@@ -723,7 +727,7 @@ describe("applyPlan — group-aware realize", () => {
     expect(fake.tabGroupsMove).not.toHaveBeenCalled();
     expect(fake.group).not.toHaveBeenCalled();
     expect(stripIds(fake.strip)).toEqual([5, 3, 1, 2, 4]);
-    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0 });
+    expect(result).toEqual({ grouped: 0, groupsCreated: 0, closed: 0, vanished: 0 });
   });
 });
 

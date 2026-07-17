@@ -162,6 +162,21 @@ this file names the **domain**.
   member) or an ungrouped singleton (`tabs.move`) — into place. **Fast path**: when nothing in
   the plan or the live window touches groups, this degenerates to plain `applyOrder`/`planMoves`
   (above) instead of re-deriving the same result the slow way.
+- **vanished (count)** — the number of DISTINCT plan-referenced ids `applyPlan` observed missing
+  from a phase's *own* fresh live query: a tab the plan named that had already closed out from
+  under the action before that phase ran. Each phase returns the ids it saw absent (UNGROUP: ids
+  gone from the strip, distinct from *already-ungrouped* survivors it also skips; GROUPS: ids
+  filtered out as non-survivors — a **pinned** id excluded by policy is *not* vanished, the
+  grouping-unpins exclusion is deliberate, not a disappearance; ORDER: `order` ids absent from the
+  strip, counted on the fast path too; CLOSE: `close` ids absent from the live query) and
+  `applyPlan` **unions** them, so an id gone for two phases counts once. Detection only — the same
+  silent drops the four phases already make, now *counted*: no browser-call sequence changes and a
+  vanished id is still dropped, never chased. Threaded into each realizing action's result
+  (`SortResult`/`TidyResult`/`DedupeResult`/`UndoResult`) and appended to that action's success
+  toast (" · N closed mid-action") when non-zero — except dedupe, whose clause is " · N gone
+  already": its messages already end in "closed", and a vanished dedupe target is simply a
+  duplicate that's already gone. `runExtract` never realizes a plan, so it carries no vanished
+  count. Deliberately **not** surfaced by `background.ts` (hotkey/menu actions have no toast).
 
 ## Dedupe
 
