@@ -20,7 +20,7 @@ const MAX_PRESETS = 50;
 const MAX_PRESET_SOURCE_LENGTH = 500;
 const MAX_PRESET_LABEL_LENGTH = 60;
 
-function validatePreset(draft: PresetDraft, existingCount: number): string {
+function validatePreset(draft: PresetDraft, existing: readonly RegexPreset[]): string {
   if (draft.label.trim().length === 0) {
     return "Preset label is required.";
   }
@@ -37,8 +37,21 @@ function validatePreset(draft: PresetDraft, existingCount: number): string {
     return `Pattern is too long (max ${MAX_PRESET_SOURCE_LENGTH} characters).`;
   }
 
-  if (existingCount >= MAX_PRESETS) {
+  if (existing.length >= MAX_PRESETS) {
     return `Preset limit reached (${MAX_PRESETS}). Delete one to add another.`;
+  }
+
+  // Compare against the trimmed label — that's what handleAddPreset stores,
+  // and the label/source/flags triple is what the list keys are built from.
+  const label = draft.label.trim();
+
+  if (
+    existing.some(
+      (preset) =>
+        preset.label === label && preset.source === draft.source && preset.flags === draft.flags,
+    )
+  ) {
+    return "That preset already exists.";
   }
 
   const verdict = validatePattern(draft.source, draft.flags);
@@ -362,7 +375,7 @@ function App() {
   }
 
   function handleAddPreset() {
-    const validationError = validatePreset(draft, prefs.regexPresets.length);
+    const validationError = validatePreset(draft, prefs.regexPresets);
 
     if (validationError.length > 0) {
       dispatch({ type: "validationFailed", error: validationError });
