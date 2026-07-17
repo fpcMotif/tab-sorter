@@ -74,7 +74,8 @@ export async function applyOrder(orderedIds: number[], windowId: number): Promis
 
   const currentTabs = (await browser.tabs.query({ windowId })) as RawTab[];
   const liveOrder = currentTabs.flatMap((tab) => (typeof tab.id === "number" ? [tab.id] : []));
-  const survivors = new Set(orderedIds.filter((id) => liveOrder.includes(id)));
+  const liveIds = new Set(liveOrder);
+  const survivors = new Set(orderedIds.filter((id) => liveIds.has(id)));
   const currentOrder = liveOrder.filter((id) => survivors.has(id));
   const targetOrder = orderedIds.filter((id) => survivors.has(id));
 
