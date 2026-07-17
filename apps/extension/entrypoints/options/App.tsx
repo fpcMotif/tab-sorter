@@ -1,5 +1,6 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState, type RefObject } from "react";
 
+import { IconCheck, IconSparkle, IconTrash, IconWarning } from "@/components/icons";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { reasonToString, validatePattern } from "@/lib/match";
 import { getPrefs, onPrefsChanged, setPrefs } from "@/lib/storage";
@@ -99,67 +100,6 @@ const GROUP_ORDER_OPTIONS: readonly { label: string; value: GroupOrder }[] = [
   { label: "Largest first", value: "sizeDesc" },
 ];
 
-function IconSparkle() {
-  return (
-    <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M11 3.2l1.9 5.3 5.3 1.9-5.3 1.9L11 17.6l-1.9-5.3L3.8 10.4l5.3-1.9L11 3.2z" />
-      <path d="M18.3 2.6l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z" />
-    </svg>
-  );
-}
-
-function IconCheck() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2.4"
-      viewBox="0 0 24 24"
-    >
-      <polyline points="5 12.5 9.5 17 19 7" />
-    </svg>
-  );
-}
-
-function IconWarning() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="M12 3.3 22 20H2z" />
-      <line x1="12" x2="12" y1="9.5" y2="14.5" />
-      <circle cx="12" cy="17.3" fill="currentColor" r=".9" stroke="none" />
-    </svg>
-  );
-}
-
-function IconTrash() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      viewBox="0 0 24 24"
-    >
-      <path d="M4 7h16" />
-      <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
-      <path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" />
-    </svg>
-  );
-}
-
 interface SegmentedOption<T extends string> {
   label: string;
   value: T;
@@ -223,6 +163,430 @@ function Switch({
       />
       <span aria-hidden="true" className="track" />
     </label>
+  );
+}
+
+function SortingSection({
+  pending,
+  defaultSort,
+  ignorePinned,
+  onDefaultSortChange,
+  onIgnorePinnedChange,
+}: {
+  pending: boolean;
+  defaultSort: SortMode;
+  ignorePinned: boolean;
+  onDefaultSortChange: (value: SortMode) => void;
+  onIgnorePinnedChange: (value: boolean) => void;
+}) {
+  return (
+    <section aria-labelledby="sorting-h" className="settings-section">
+      <h2 id="sorting-h">Sorting</h2>
+
+      <div className="pref-row">
+        <div className="pref-text">
+          <span className="pref-label" id="lbl-default-sort">
+            Default sort
+          </span>
+          <p className="consequence">
+            Used when you click Sort without choosing A to Z or By domain.
+          </p>
+        </div>
+        <div className="pref-control">
+          <Segmented
+            disabled={pending}
+            labelledBy="lbl-default-sort"
+            onChange={onDefaultSortChange}
+            options={DEFAULT_SORT_OPTIONS}
+            value={defaultSort}
+          />
+        </div>
+      </div>
+
+      <div className="pref-row">
+        <div className="pref-text">
+          <label htmlFor="toggle-pinned" id="lbl-pinned">
+            Keep pinned tabs fixed
+          </label>
+          <p className="consequence">Pinned tabs stay in place and are never moved or grouped.</p>
+        </div>
+        <div className="pref-control">
+          <Switch
+            checked={ignorePinned}
+            disabled={pending}
+            id="toggle-pinned"
+            onChange={onIgnorePinnedChange}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TidySection({
+  pending,
+  collapseAfterTidy,
+  minGroupSize,
+  minGroupSizeDraft,
+  minGroupSizeError,
+  minGroupSizeInputRef,
+  groupOrder,
+  regroupExisting,
+  onCollapseChange,
+  onMinGroupSizeInput,
+  onMinGroupSizeBlur,
+  onMinGroupSizeStep,
+  onGroupOrderChange,
+  onRegroupChange,
+}: {
+  pending: boolean;
+  collapseAfterTidy: boolean;
+  minGroupSize: number;
+  minGroupSizeDraft: string;
+  minGroupSizeError: string;
+  minGroupSizeInputRef: RefObject<HTMLInputElement | null>;
+  groupOrder: GroupOrder;
+  regroupExisting: boolean;
+  onCollapseChange: (value: boolean) => void;
+  onMinGroupSizeInput: (raw: string) => void;
+  onMinGroupSizeBlur: () => void;
+  onMinGroupSizeStep: (delta: number) => void;
+  onGroupOrderChange: (value: GroupOrder) => void;
+  onRegroupChange: (value: boolean) => void;
+}) {
+  return (
+    <section aria-labelledby="tidy-h" className="settings-section">
+      <h2 id="tidy-h">Tidy</h2>
+
+      <div className="pref-row">
+        <div className="pref-text">
+          <label htmlFor="toggle-collapse" id="lbl-collapse">
+            Collapse groups after tidying
+          </label>
+          <p className="consequence">New groups start collapsed so the tab strip stays short.</p>
+        </div>
+        <div className="pref-control">
+          <Switch
+            checked={collapseAfterTidy}
+            disabled={pending}
+            id="toggle-collapse"
+            onChange={onCollapseChange}
+          />
+        </div>
+      </div>
+
+      <div className="pref-row">
+        <div className="pref-text">
+          <label htmlFor="min-group-size" id="lbl-min-size">
+            Minimum tabs to form a group
+          </label>
+          <p className="consequence">
+            Sites with fewer tabs than this stay loose instead of becoming a group.
+          </p>
+        </div>
+        <div className="pref-control">
+          <div
+            aria-labelledby="lbl-min-size"
+            className={`stepper${minGroupSizeError.length > 0 ? " has-error" : ""}`}
+            role="group"
+          >
+            <button
+              aria-label="Decrease"
+              disabled={pending || minGroupSize <= MIN_GROUP_SIZE_FLOOR}
+              onClick={() => onMinGroupSizeStep(-1)}
+              type="button"
+            >
+              −
+            </button>
+            <input
+              aria-describedby={minGroupSizeError.length > 0 ? "min-group-size-error" : undefined}
+              aria-invalid={minGroupSizeError.length > 0}
+              className={`stepper-input${minGroupSizeError.length > 0 ? " is-invalid" : ""}`}
+              id="min-group-size"
+              inputMode="numeric"
+              onBlur={onMinGroupSizeBlur}
+              onChange={(event) => onMinGroupSizeInput(event.target.value)}
+              ref={minGroupSizeInputRef}
+              type="text"
+              value={minGroupSizeDraft}
+            />
+            <button
+              aria-label="Increase"
+              disabled={pending || minGroupSize >= MIN_GROUP_SIZE_CEIL}
+              onClick={() => onMinGroupSizeStep(1)}
+              type="button"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </div>
+      {minGroupSizeError.length > 0 ? (
+        <p className="field-error" id="min-group-size-error" role="alert">
+          {minGroupSizeError}
+        </p>
+      ) : null}
+
+      <div className="pref-row">
+        <div className="pref-text">
+          <span className="pref-label" id="lbl-group-order">
+            Group order
+          </span>
+          <p className="consequence">
+            Controls left-to-right placement of new groups in the tab strip.
+          </p>
+        </div>
+        <div className="pref-control">
+          <Segmented
+            disabled={pending}
+            labelledBy="lbl-group-order"
+            onChange={onGroupOrderChange}
+            options={GROUP_ORDER_OPTIONS}
+            value={groupOrder}
+          />
+        </div>
+      </div>
+
+      <div className="pref-row no-border">
+        <div className="pref-text">
+          <label htmlFor="toggle-regroup" id="lbl-regroup">
+            Also regroup tabs already in groups
+          </label>
+          <p className="consequence">Off by default so hand-made groups are left alone.</p>
+        </div>
+        <div className="pref-control">
+          <Switch
+            checked={regroupExisting}
+            disabled={pending}
+            id="toggle-regroup"
+            onChange={onRegroupChange}
+          />
+        </div>
+      </div>
+      <div className="warning-note">
+        <IconWarning />
+        <span>
+          Turning this on reshuffles groups you made by hand — Tab Sorter can&rsquo;t tell them
+          apart from its own.
+        </span>
+      </div>
+    </section>
+  );
+}
+
+function DuplicatesSection({
+  pending,
+  dedupeIgnoreHash,
+  dedupeIgnoreQuery,
+  onIgnoreHashChange,
+  onIgnoreQueryChange,
+}: {
+  pending: boolean;
+  dedupeIgnoreHash: boolean;
+  dedupeIgnoreQuery: boolean;
+  onIgnoreHashChange: (value: boolean) => void;
+  onIgnoreQueryChange: (value: boolean) => void;
+}) {
+  return (
+    <section aria-labelledby="dupes-h" className="settings-section">
+      <h2 id="dupes-h">Duplicates</h2>
+
+      <div className="pref-row">
+        <div className="pref-text">
+          <label htmlFor="toggle-fragment" id="lbl-frag">
+            Ignore #fragment when comparing
+          </label>
+          <p className="consequence">
+            example.com/page#top and example.com/page count as duplicates.
+          </p>
+        </div>
+        <div className="pref-control">
+          <Switch
+            checked={dedupeIgnoreHash}
+            disabled={pending}
+            id="toggle-fragment"
+            onChange={onIgnoreHashChange}
+          />
+        </div>
+      </div>
+
+      <div className="pref-row no-border">
+        <div className="pref-text">
+          <label htmlFor="toggle-query" id="lbl-query">
+            Ignore ?query when comparing
+          </label>
+          <p className="consequence">
+            example.com/search?q=a and ?q=b count as duplicates of the same page.
+          </p>
+        </div>
+        <div className="pref-control">
+          <Switch
+            checked={dedupeIgnoreQuery}
+            disabled={pending}
+            id="toggle-query"
+            onChange={onIgnoreQueryChange}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PresetsSection({
+  pending,
+  presets,
+  draft,
+  error,
+  onDraftChange,
+  onAdd,
+  onDelete,
+}: {
+  pending: boolean;
+  presets: readonly RegexPreset[];
+  draft: PresetDraft;
+  error: string;
+  onDraftChange: (patch: Partial<PresetDraft>) => void;
+  onAdd: () => void;
+  onDelete: (index: number) => void;
+}) {
+  return (
+    <section aria-labelledby="presets-h" className="settings-section">
+      <h2 id="presets-h">Regex presets</h2>
+      <p className="section-sub">
+        Saved patterns appear as preset chips in the popup's pattern extractor.
+      </p>
+
+      <div className="preset-form">
+        <div className="form-field">
+          <label htmlFor="pf-label">Label</label>
+          <input
+            disabled={pending}
+            id="pf-label"
+            maxLength={MAX_PRESET_LABEL_LENGTH}
+            onChange={(event) => onDraftChange({ label: event.target.value })}
+            placeholder="Social media"
+            type="text"
+            value={draft.label}
+          />
+        </div>
+        <div className="form-field">
+          <label htmlFor="pf-pattern">Pattern</label>
+          <input
+            className="mono"
+            disabled={pending}
+            id="pf-pattern"
+            maxLength={MAX_PRESET_SOURCE_LENGTH}
+            onChange={(event) => onDraftChange({ source: event.target.value })}
+            placeholder="facebook|twitter|tiktok"
+            type="text"
+            value={draft.source}
+          />
+        </div>
+        <div className="form-field">
+          <label htmlFor="pf-flags">Flags</label>
+          <input
+            className="mono"
+            disabled={pending}
+            id="pf-flags"
+            maxLength={4}
+            onChange={(event) => onDraftChange({ flags: event.target.value })}
+            placeholder="i"
+            type="text"
+            value={draft.flags}
+          />
+        </div>
+        <button className="btn-filled" disabled={pending} onClick={onAdd} type="button">
+          Add preset
+        </button>
+        <p className="form-error" hidden={error.length === 0} role="alert">
+          {error}
+        </p>
+      </div>
+
+      {presets.length === 0 ? (
+        <p className="empty-presets">No presets yet.</p>
+      ) : (
+        <ul className="preset-list">
+          {presets.map((preset, index) => (
+            <li className="preset-row" key={`${preset.label}:${preset.source}:${preset.flags}`}>
+              <span
+                className={`preset-dot dot-${PRESET_DOT_COLORS[index % PRESET_DOT_COLORS.length]}`}
+              />
+              <span className="preset-label">{preset.label}</span>
+              <code className="preset-pattern">{preset.source}</code>
+              <span className="preset-flags">{preset.flags.length > 0 ? preset.flags : "—"}</span>
+              <button
+                aria-label={`Delete ${preset.label} preset`}
+                className="icon-btn"
+                disabled={pending}
+                onClick={() => onDelete(index)}
+                type="button"
+              >
+                <IconTrash />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function ShortcutsSection() {
+  return (
+    <section aria-labelledby="shortcuts-h" className="settings-section">
+      <h2 id="shortcuts-h">Keyboard shortcuts</h2>
+      <p className="section-sub">
+        Read-only reference. Change these in chrome://extensions/shortcuts.
+      </p>
+
+      <ul className="shortcut-list">
+        <li className="shortcut-row">
+          <span className="shortcut-name">Tidy this window</span>
+          <span className="kbd-group">
+            <kbd>Alt</kbd>
+            <span className="kbd-plus">+</span>
+            <kbd>Shift</kbd>
+            <span className="kbd-plus">+</span>
+            <kbd>Space</kbd>
+          </span>
+        </li>
+        <li className="shortcut-row">
+          <span className="shortcut-name">Undo</span>
+          <span className="kbd-group">
+            <kbd>Alt</kbd>
+            <span className="kbd-plus">+</span>
+            <kbd>Shift</kbd>
+            <span className="kbd-plus">+</span>
+            <kbd>Z</kbd>
+          </span>
+        </li>
+        <li className="shortcut-row">
+          <span className="shortcut-name">Sort A to Z</span>
+          <span className="kbd-group">
+            <kbd>Alt</kbd>
+            <span className="kbd-plus">+</span>
+            <kbd>Shift</kbd>
+            <span className="kbd-plus">+</span>
+            <kbd>T</kbd>
+          </span>
+        </li>
+        <li className="shortcut-row">
+          <span className="shortcut-name">Default sort</span>
+          <span className="kbd-group">
+            <kbd>Alt</kbd>
+            <span className="kbd-plus">+</span>
+            <kbd>Shift</kbd>
+            <span className="kbd-plus">+</span>
+            <kbd>S</kbd>
+          </span>
+        </li>
+      </ul>
+      <p className="shortcuts-note">
+        Shortcuts are global to Chrome and may be reassigned by other extensions. Manage all of them
+        at <code>chrome://extensions/shortcuts</code>.
+      </p>
+    </section>
   );
 }
 
@@ -486,345 +850,50 @@ function App() {
         </span>
       </div>
 
-      <section aria-labelledby="sorting-h" className="settings-section">
-        <h2 id="sorting-h">Sorting</h2>
+      <SortingSection
+        defaultSort={prefs.defaultSort}
+        ignorePinned={prefs.ignorePinned}
+        onDefaultSortChange={handleDefaultSortChange}
+        onIgnorePinnedChange={handleIgnorePinnedChange}
+        pending={pending}
+      />
 
-        <div className="pref-row">
-          <div className="pref-text">
-            <span className="pref-label" id="lbl-default-sort">
-              Default sort
-            </span>
-            <p className="consequence">
-              Used when you click Sort without choosing A to Z or By domain.
-            </p>
-          </div>
-          <div className="pref-control">
-            <Segmented
-              disabled={pending}
-              labelledBy="lbl-default-sort"
-              onChange={handleDefaultSortChange}
-              options={DEFAULT_SORT_OPTIONS}
-              value={prefs.defaultSort}
-            />
-          </div>
-        </div>
+      <TidySection
+        collapseAfterTidy={prefs.collapseAfterTidy}
+        groupOrder={prefs.groupOrder}
+        minGroupSize={prefs.minGroupSize}
+        minGroupSizeDraft={minGroupSizeDraft}
+        minGroupSizeError={minGroupSizeError}
+        minGroupSizeInputRef={minGroupSizeInputRef}
+        onCollapseChange={handleCollapseAfterTidyChange}
+        onGroupOrderChange={handleGroupOrderChange}
+        onMinGroupSizeBlur={handleMinGroupSizeBlur}
+        onMinGroupSizeInput={handleMinGroupSizeInput}
+        onMinGroupSizeStep={handleMinGroupSizeStep}
+        onRegroupChange={handleRegroupExistingChange}
+        pending={pending}
+        regroupExisting={prefs.regroupExisting}
+      />
 
-        <div className="pref-row">
-          <div className="pref-text">
-            <label htmlFor="toggle-pinned" id="lbl-pinned">
-              Keep pinned tabs fixed
-            </label>
-            <p className="consequence">Pinned tabs stay in place and are never moved or grouped.</p>
-          </div>
-          <div className="pref-control">
-            <Switch
-              checked={prefs.ignorePinned}
-              disabled={pending}
-              id="toggle-pinned"
-              onChange={handleIgnorePinnedChange}
-            />
-          </div>
-        </div>
-      </section>
+      <DuplicatesSection
+        dedupeIgnoreHash={prefs.dedupeIgnoreHash}
+        dedupeIgnoreQuery={prefs.dedupeIgnoreQuery}
+        onIgnoreHashChange={handleDedupeIgnoreHashChange}
+        onIgnoreQueryChange={handleDedupeIgnoreQueryChange}
+        pending={pending}
+      />
 
-      <section aria-labelledby="tidy-h" className="settings-section">
-        <h2 id="tidy-h">Tidy</h2>
+      <PresetsSection
+        draft={draft}
+        error={error}
+        onAdd={handleAddPreset}
+        onDelete={handleDeletePreset}
+        onDraftChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
+        pending={pending}
+        presets={prefs.regexPresets}
+      />
 
-        <div className="pref-row">
-          <div className="pref-text">
-            <label htmlFor="toggle-collapse" id="lbl-collapse">
-              Collapse groups after tidying
-            </label>
-            <p className="consequence">New groups start collapsed so the tab strip stays short.</p>
-          </div>
-          <div className="pref-control">
-            <Switch
-              checked={prefs.collapseAfterTidy}
-              disabled={pending}
-              id="toggle-collapse"
-              onChange={handleCollapseAfterTidyChange}
-            />
-          </div>
-        </div>
-
-        <div className="pref-row">
-          <div className="pref-text">
-            <label htmlFor="min-group-size" id="lbl-min-size">
-              Minimum tabs to form a group
-            </label>
-            <p className="consequence">
-              Sites with fewer tabs than this stay loose instead of becoming a group.
-            </p>
-          </div>
-          <div className="pref-control">
-            <div
-              aria-labelledby="lbl-min-size"
-              className={`stepper${minGroupSizeError.length > 0 ? " has-error" : ""}`}
-              role="group"
-            >
-              <button
-                aria-label="Decrease"
-                disabled={pending || prefs.minGroupSize <= MIN_GROUP_SIZE_FLOOR}
-                onClick={() => handleMinGroupSizeStep(-1)}
-                type="button"
-              >
-                −
-              </button>
-              <input
-                aria-describedby={minGroupSizeError.length > 0 ? "min-group-size-error" : undefined}
-                aria-invalid={minGroupSizeError.length > 0}
-                className={`stepper-input${minGroupSizeError.length > 0 ? " is-invalid" : ""}`}
-                id="min-group-size"
-                inputMode="numeric"
-                onBlur={handleMinGroupSizeBlur}
-                onChange={(event) => handleMinGroupSizeInput(event.target.value)}
-                ref={minGroupSizeInputRef}
-                type="text"
-                value={minGroupSizeDraft}
-              />
-              <button
-                aria-label="Increase"
-                disabled={pending || prefs.minGroupSize >= MIN_GROUP_SIZE_CEIL}
-                onClick={() => handleMinGroupSizeStep(1)}
-                type="button"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        </div>
-        {minGroupSizeError.length > 0 ? (
-          <p className="field-error" id="min-group-size-error" role="alert">
-            {minGroupSizeError}
-          </p>
-        ) : null}
-
-        <div className="pref-row">
-          <div className="pref-text">
-            <span className="pref-label" id="lbl-group-order">
-              Group order
-            </span>
-            <p className="consequence">
-              Controls left-to-right placement of new groups in the tab strip.
-            </p>
-          </div>
-          <div className="pref-control">
-            <Segmented
-              disabled={pending}
-              labelledBy="lbl-group-order"
-              onChange={handleGroupOrderChange}
-              options={GROUP_ORDER_OPTIONS}
-              value={prefs.groupOrder}
-            />
-          </div>
-        </div>
-
-        <div className="pref-row no-border">
-          <div className="pref-text">
-            <label htmlFor="toggle-regroup" id="lbl-regroup">
-              Also regroup tabs already in groups
-            </label>
-            <p className="consequence">Off by default so hand-made groups are left alone.</p>
-          </div>
-          <div className="pref-control">
-            <Switch
-              checked={prefs.regroupExisting}
-              disabled={pending}
-              id="toggle-regroup"
-              onChange={handleRegroupExistingChange}
-            />
-          </div>
-        </div>
-        <div className="warning-note">
-          <IconWarning />
-          <span>
-            Turning this on reshuffles groups you made by hand — Tab Sorter can&rsquo;t tell them
-            apart from its own.
-          </span>
-        </div>
-      </section>
-
-      <section aria-labelledby="dupes-h" className="settings-section">
-        <h2 id="dupes-h">Duplicates</h2>
-
-        <div className="pref-row">
-          <div className="pref-text">
-            <label htmlFor="toggle-fragment" id="lbl-frag">
-              Ignore #fragment when comparing
-            </label>
-            <p className="consequence">
-              example.com/page#top and example.com/page count as duplicates.
-            </p>
-          </div>
-          <div className="pref-control">
-            <Switch
-              checked={prefs.dedupeIgnoreHash}
-              disabled={pending}
-              id="toggle-fragment"
-              onChange={handleDedupeIgnoreHashChange}
-            />
-          </div>
-        </div>
-
-        <div className="pref-row no-border">
-          <div className="pref-text">
-            <label htmlFor="toggle-query" id="lbl-query">
-              Ignore ?query when comparing
-            </label>
-            <p className="consequence">
-              example.com/search?q=a and ?q=b count as duplicates of the same page.
-            </p>
-          </div>
-          <div className="pref-control">
-            <Switch
-              checked={prefs.dedupeIgnoreQuery}
-              disabled={pending}
-              id="toggle-query"
-              onChange={handleDedupeIgnoreQueryChange}
-            />
-          </div>
-        </div>
-      </section>
-
-      <section aria-labelledby="presets-h" className="settings-section">
-        <h2 id="presets-h">Regex presets</h2>
-        <p className="section-sub">
-          Saved patterns appear as preset chips in the popup's pattern extractor.
-        </p>
-
-        <div className="preset-form">
-          <div className="form-field">
-            <label htmlFor="pf-label">Label</label>
-            <input
-              disabled={pending}
-              id="pf-label"
-              maxLength={MAX_PRESET_LABEL_LENGTH}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, label: event.target.value }))
-              }
-              placeholder="Social media"
-              type="text"
-              value={draft.label}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="pf-pattern">Pattern</label>
-            <input
-              className="mono"
-              disabled={pending}
-              id="pf-pattern"
-              maxLength={MAX_PRESET_SOURCE_LENGTH}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, source: event.target.value }))
-              }
-              placeholder="facebook|twitter|tiktok"
-              type="text"
-              value={draft.source}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="pf-flags">Flags</label>
-            <input
-              className="mono"
-              disabled={pending}
-              id="pf-flags"
-              maxLength={4}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, flags: event.target.value }))
-              }
-              placeholder="i"
-              type="text"
-              value={draft.flags}
-            />
-          </div>
-          <button className="btn-filled" disabled={pending} onClick={handleAddPreset} type="button">
-            Add preset
-          </button>
-          <p className="form-error" hidden={error.length === 0} role="alert">
-            {error}
-          </p>
-        </div>
-
-        {prefs.regexPresets.length === 0 ? (
-          <p className="empty-presets">No presets yet.</p>
-        ) : (
-          <ul className="preset-list">
-            {prefs.regexPresets.map((preset, index) => (
-              <li className="preset-row" key={`${preset.label}:${preset.source}:${preset.flags}`}>
-                <span
-                  className={`preset-dot dot-${PRESET_DOT_COLORS[index % PRESET_DOT_COLORS.length]}`}
-                />
-                <span className="preset-label">{preset.label}</span>
-                <code className="preset-pattern">{preset.source}</code>
-                <span className="preset-flags">{preset.flags.length > 0 ? preset.flags : "—"}</span>
-                <button
-                  aria-label={`Delete ${preset.label} preset`}
-                  className="icon-btn"
-                  disabled={pending}
-                  onClick={() => handleDeletePreset(index)}
-                  type="button"
-                >
-                  <IconTrash />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section aria-labelledby="shortcuts-h" className="settings-section">
-        <h2 id="shortcuts-h">Keyboard shortcuts</h2>
-        <p className="section-sub">
-          Read-only reference. Change these in chrome://extensions/shortcuts.
-        </p>
-
-        <ul className="shortcut-list">
-          <li className="shortcut-row">
-            <span className="shortcut-name">Tidy this window</span>
-            <span className="kbd-group">
-              <kbd>Alt</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Shift</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Space</kbd>
-            </span>
-          </li>
-          <li className="shortcut-row">
-            <span className="shortcut-name">Undo</span>
-            <span className="kbd-group">
-              <kbd>Alt</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Shift</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Z</kbd>
-            </span>
-          </li>
-          <li className="shortcut-row">
-            <span className="shortcut-name">Sort A to Z</span>
-            <span className="kbd-group">
-              <kbd>Alt</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Shift</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>T</kbd>
-            </span>
-          </li>
-          <li className="shortcut-row">
-            <span className="shortcut-name">Default sort</span>
-            <span className="kbd-group">
-              <kbd>Alt</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Shift</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>S</kbd>
-            </span>
-          </li>
-        </ul>
-        <p className="shortcuts-note">
-          Shortcuts are global to Chrome and may be reassigned by other extensions. Manage all of
-          them at <code>chrome://extensions/shortcuts</code>.
-        </p>
-      </section>
+      <ShortcutsSection />
 
       <p className="footer-mark">Tab Sorter</p>
     </main>

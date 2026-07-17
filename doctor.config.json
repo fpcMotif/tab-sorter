@@ -8,7 +8,7 @@
     "files": ["**/.output/**", "**/.wxt/**"],
     "overrides": [
       {
-        "files": ["entrypoints/**", "hooks/**"],
+        "files": ["components/**", "entrypoints/**", "hooks/**"],
         "rules": ["deslop/unused-file"]
       }
     ],
