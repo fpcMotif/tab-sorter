@@ -125,13 +125,17 @@ this file names the **domain**.
 - **planGroupOps** (`lib/group-ops.ts`) — the minimal-diff GROUP reconciler; `group-ops`'
   sibling to `planMoves`' philosophy, but for the GROUP axis. Turns the live `LiveGroup[]`
   Chrome already has into the ops needed to reach a desired `GroupSpec[]`, touching as little
-  as possible. Each desired group is matched to **at most one** unclaimed live group by
-  **overlap matching** — the live group sharing the most members with the desired group's
-  `tabIds` (zero overlap never counts as a match, or an empty live group would "win" every
-  comparison; ties break on lowest `groupId`) — so a perfect match emits **zero** ops, and a
-  matched group only gets the members it's missing plus a metadata `update` if
-  title/color/collapsed actually differs. An unmatched desired group gets a `create` then an
-  `update` right after (a brand-new group has none of the desired metadata yet).
+  as possible. Matching has **two tiers**. Tier 1, **overlap matching**: each desired group
+  claims the unclaimed live group sharing the most members with its `tabIds` (zero overlap
+  never counts as a match *in this tier*, or an empty live group would "win" every
+  comparison; ties break on lowest `groupId`). Tier 2, **exact-title fallback**: a desired
+  group with zero overlap everywhere still reuses an unclaimed live group whose title
+  exactly equals `desired.title` (lowest `groupId` on ties) — the re-tidy path that avoids
+  spawning a duplicate same-title group. A perfect match emits **zero** ops; a matched
+  group only gets the members it's missing plus a metadata `update` if
+  title/color/collapsed actually differs. A desired group unmatched by *both* tiers gets a
+  `create` then an `update` right after (a brand-new group has none of the desired
+  metadata yet).
 - **never-emits-ungroup invariant** — `planGroupOps` never produces an "ungroup" op.
   `TabPlan.ungroup` is the **only** owner of tabs that must end ungrouped; a tab leaving its
   matched live group is implicitly pulled out by whichever *other* desired group's `group` op
