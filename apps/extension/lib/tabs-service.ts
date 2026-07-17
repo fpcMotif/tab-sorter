@@ -1,6 +1,7 @@
 import { planGroupOps } from "./group-ops";
 import type { LiveGroup } from "./group-ops";
-import { planMoves } from "./tab-moves";
+import { planBlockMoves, planFlatMoves } from "./realize-order";
+import type { StripTab } from "./realize-order";
 import { TAB_GROUP_NONE } from "./types";
 import type {
   GroupSpec,
@@ -61,12 +62,15 @@ export function getHighlightedTabs(): Promise<TabLite[]> {
 // `orderedIds` is the desired absolute order of every tab in the window (pinned
 // block first, then unpinned). Re-queries a fresh snapshot so ids that vanished
 // mid-operation are dropped, then issues only the moves needed to reach that
-// order (see planMoves) — tabs already in place are left untouched, which keeps
-// flicker down. Positioning relative to the live strip keeps pinned/unpinned in
-// their Chrome-enforced regions and is immune to a stale pinned-count boundary.
-// Takes `windowId` explicitly rather than querying `{ currentWindow: true }` —
-// the caller (orchestration's run*) already resolved it once; re-resolving
-// here would let a focus change mid-action retarget this call.
+// order (see planFlatMoves) — tabs already in place are left untouched, which
+// keeps flicker down. Positioning relative to the live strip keeps
+// pinned/unpinned in their Chrome-enforced regions and is immune to a stale
+// pinned-count boundary. Takes `windowId` explicitly rather than querying
+// `{ currentWindow: true }` — the caller (orchestration's run*) already resolved
+// it once; re-resolving here would let a focus change mid-action retarget this
+// call. Sequential (not Promise.all): planFlatMoves's absolute indices assume
+// each move lands before the next, so the moves must be replayed strictly in
+// order.
 export async function applyOrder(orderedIds: number[], windowId: number): Promise<void> {
   if (orderedIds.length <= 1) {
     return;
@@ -74,29 +78,9 @@ export async function applyOrder(orderedIds: number[], windowId: number): Promis
 
   const currentTabs = (await browser.tabs.query({ windowId })) as RawTab[];
   const liveOrder = currentTabs.flatMap((tab) => (typeof tab.id === "number" ? [tab.id] : []));
-  const survivors = new Set(orderedIds.filter((id) => liveOrder.includes(id)));
-  const currentOrder = liveOrder.filter((id) => survivors.has(id));
-  const targetOrder = orderedIds.filter((id) => survivors.has(id));
 
-  // planMoves works in survivor-strip coordinates, but browser.tabs.move takes an
-  // ABSOLUTE window index. A tab opened between the sort snapshot and this
-  // re-query is a non-survivor still sitting in the live window, so a raw replay
-  // would shift survivors by however many such tabs precede each move. Translate
-  // each survivor-strip index to its absolute slot — the position of the index-th
-  // surviving tab (or the window end) — against a simulation of the full strip.
-  // Sequential (not Promise.all): each move shifts live indices, so the moves
-  // must be replayed strictly in order.
-  const strip = [...liveOrder];
-
-  for (const { id, index } of planMoves(currentOrder, targetOrder)) {
-    strip.splice(strip.indexOf(id), 1);
-    const survivorPositions = strip.flatMap((tabId, position) =>
-      survivors.has(tabId) ? [position] : [],
-    );
-    const absoluteIndex =
-      index < survivorPositions.length ? survivorPositions[index]! : strip.length;
-    strip.splice(absoluteIndex, 0, id);
-    await browser.tabs.move(id, { index: absoluteIndex });
+  for (const { id, index } of planFlatMoves(liveOrder, orderedIds)) {
+    await browser.tabs.move(id, { index });
   }
 }
 
@@ -194,15 +178,6 @@ export async function reopenTabs(urls: string[]): Promise<number> {
   return urls.length;
 }
 
-// The live strip's realize-layer view: just enough per-tab state (id, pinned,
-// group membership) to drive the ORDER phase's block model. Distinct from
-// TabLite — the pure layer's shape — because this is browser-boundary-only data.
-interface StripTab {
-  id: number;
-  pinned: boolean;
-  groupId: number;
-}
-
 async function getLiveStrip(windowId: number): Promise<StripTab[]> {
   const tabs = (await browser.tabs.query({ windowId })) as RawTab[];
 
@@ -217,18 +192,6 @@ async function getLiveStrip(windowId: number): Promise<StripTab[]> {
 // call site below only reaches this after confirming the list is non-empty.
 function asNonEmpty(ids: number[]): [number, ...number[]] {
   return ids as [number, ...number[]];
-}
-
-// Removes `id` from wherever it sits in `sim` and reinserts it at the absolute
-// `index`, mirroring the single browser.tabs.move call just issued so every
-// later phase reasons about the live strip's CURRENT layout, not a stale one.
-function simMove(sim: StripTab[], id: number, index: number): void {
-  const from = sim.findIndex((tab) => tab.id === id);
-  // Callers only sim-move an id that just moved in the live strip, so it is present.
-  const tab = sim[from]!;
-
-  sim.splice(from, 1);
-  sim.splice(index, 0, tab);
 }
 
 // Surviving `ungroupIds` that are currently grouped, pulled out with one batch
@@ -315,13 +278,11 @@ async function runGroups(
   return { grouped, groupsCreated };
 }
 
-type OrderBlock = { id: number } | { groupId: number };
-
 // Realizes `plan.order` against the live strip. Skipped entirely by the caller
 // when `plan.order` is empty (the dedupe case: leave positions alone).
 async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
-  const sim = await getLiveStrip(windowId);
-  const hasLiveGroups = sim.some((tab) => tab.groupId !== TAB_GROUP_NONE);
+  const strip = await getLiveStrip(windowId);
+  const hasLiveGroups = strip.some((tab) => tab.groupId !== TAB_GROUP_NONE);
 
   // FAST PATH: nothing here or upstream touches groups, so the general block
   // model degenerates to a plain reorder — hand it to the proven minimal-moves
@@ -331,105 +292,16 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
     return;
   }
 
-  const survivorIds = new Set(sim.map((tab) => tab.id));
-  const desiredSurvivors = plan.order.filter((id) => survivorIds.has(id));
-  const pinnedIds = new Set(sim.filter((tab) => tab.pinned).map((tab) => tab.id));
-  const idToGroup = new Map(sim.map((tab) => [tab.id, tab.groupId]));
-
-  // (a) Pinned region: pinned tabs are always the window's contiguous front
-  // block, so the region-relative index planMoves returns IS the absolute one.
-  const currentPinned = sim.filter((tab) => tab.pinned).map((tab) => tab.id);
-  const desiredPinned = desiredSurvivors.filter((id) => pinnedIds.has(id));
-
-  for (const move of planMoves(currentPinned, desiredPinned)) {
-    await browser.tabs.move(move.id, { index: move.index });
-    simMove(sim, move.id, move.index);
-  }
-
-  // (b) Within each live group, fix member order before relocating the group
-  // as a whole in (c) — tabGroups.move carries members along in their current
-  // relative order, so getting that order right first means the group only
-  // ever needs the one relocating move.
-  const reordered = new Set<number>();
-  for (const id of desiredSurvivors) {
-    const groupId = idToGroup.get(id)!;
-    if (groupId === TAB_GROUP_NONE || reordered.has(groupId)) {
-      continue;
+  // planBlockMoves already simulated the whole sequence against the strip; issue
+  // each emitted move against the live window. Sequential (not Promise.all):
+  // every move shifts live indices, so the planner's absolute indices only hold
+  // if they land strictly in order.
+  for (const move of planBlockMoves(strip, plan.order)) {
+    if (move.kind === "tab") {
+      await browser.tabs.move(move.id, { index: move.index });
+    } else {
+      await browser.tabGroups.move(move.groupId, { index: move.index });
     }
-    reordered.add(groupId);
-
-    const currentMembers = sim.filter((tab) => tab.groupId === groupId).map((tab) => tab.id);
-    const desiredMembers = desiredSurvivors.filter(
-      (memberId) => idToGroup.get(memberId) === groupId,
-    );
-    const spanStart = sim.findIndex((tab) => tab.groupId === groupId);
-
-    for (const move of planMoves(currentMembers, desiredMembers)) {
-      const absoluteIndex = spanStart + move.index;
-      await browser.tabs.move(move.id, { index: absoluteIndex });
-      simMove(sim, move.id, absoluteIndex);
-    }
-  }
-
-  // (c) Top-level blocks: walk the desired unpinned sequence left to right,
-  // relocating each group (as one contiguous span, via tabGroups.move) or
-  // ungrouped singleton (via tabs.move) into place. A live tab absent from
-  // `plan.order` is never a target, so it just keeps its slot and drifts
-  // toward the end as blocks get inserted ahead of it.
-  //
-  // A live group's members can appear non-contiguously in `desiredSurvivors`
-  // (e.g. a plain group-agnostic sort like planWindowOrder interleaves an
-  // unrelated id between them) even though Chrome enforces contiguity for
-  // every live group. Emit exactly one block per live groupId, at its first
-  // member's position — a second sighting is skipped rather than opening a
-  // rival block for the same real group, which would otherwise undercount
-  // the span and let a later move land inside it.
-  const blocks: OrderBlock[] = [];
-  const seenGroups = new Set<number>();
-
-  for (const id of desiredSurvivors) {
-    if (pinnedIds.has(id)) {
-      continue;
-    }
-
-    const groupId = idToGroup.get(id)!;
-    if (groupId === TAB_GROUP_NONE) {
-      blocks.push({ id });
-      continue;
-    }
-
-    if (seenGroups.has(groupId)) {
-      continue;
-    }
-    seenGroups.add(groupId);
-    blocks.push({ groupId });
-  }
-
-  let cursor = pinnedIds.size;
-  for (const block of blocks) {
-    if ("id" in block) {
-      // cursor walks sim slot-by-slot as blocks are placed; an id block always
-      // addresses an existing slot, so sim[cursor] is defined.
-      if (sim[cursor]!.id !== block.id) {
-        await browser.tabs.move(block.id, { index: cursor });
-        simMove(sim, block.id, cursor);
-      }
-      cursor += 1;
-      continue;
-    }
-
-    // tabGroups.move relocates the group's full live membership — which may
-    // include ids `plan.order` never mentions — so the span width comes from
-    // the live strip, not from however many of its members `desiredSurvivors`
-    // happened to name.
-    const spanStart = sim.findIndex((tab) => tab.groupId === block.groupId);
-    const spanWidth = sim.filter((tab) => tab.groupId === block.groupId).length;
-    if (spanStart !== cursor) {
-      await browser.tabGroups.move(block.groupId, { index: cursor });
-      const span = sim.splice(spanStart, spanWidth);
-      sim.splice(cursor, 0, ...span);
-    }
-    cursor += spanWidth;
   }
 }
 

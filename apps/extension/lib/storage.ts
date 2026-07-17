@@ -1,6 +1,8 @@
 import {
   DEFAULT_PREFS,
   type GroupOrder,
+  MIN_GROUP_SIZE_CEIL,
+  MIN_GROUP_SIZE_FLOOR,
   type Prefs,
   type RegexPreset,
   type SortMode,
@@ -9,14 +11,6 @@ import {
 const PREFS_KEY = "prefs";
 const SORT_MODES = new Set<SortMode>(["title", "domain"]);
 const GROUP_ORDERS = new Set<GroupOrder>(["alpha", "sizeDesc"]);
-
-// Bounds a stored minGroupSize so a corrupt value can't make every domain a
-// group (a floor of 1 would form a "group" of one — the exact noise
-// DEFAULT_PREFS.minGroupSize's own doc comment says this pref exists to
-// prevent; DESIGN-SPEC's stepper floor is 2) or make grouping unreachable
-// (huge).
-const MIN_GROUP_SIZE_FLOOR = 2;
-const MIN_GROUP_SIZE_CEIL = 99;
 
 function isSortMode(value: unknown): value is SortMode {
   return SORT_MODES.has(value as SortMode);

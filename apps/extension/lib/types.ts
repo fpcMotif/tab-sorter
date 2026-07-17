@@ -123,6 +123,15 @@ export const DEFAULT_PREFS: Prefs = {
   dedupeIgnoreQuery: false,
 };
 
+// Bounds a stored/entered minGroupSize so a corrupt value can't make every
+// domain a group (a floor of 1 would form a "group" of one — the exact noise
+// DEFAULT_PREFS.minGroupSize's own doc comment says this pref exists to
+// prevent; DESIGN-SPEC's stepper floor is 2) or make grouping unreachable
+// (huge). Shared by lib/storage.ts' normalization and the options page's
+// input validation so both enforce the same range.
+export const MIN_GROUP_SIZE_FLOOR = 2;
+export const MIN_GROUP_SIZE_CEIL = 99;
+
 export interface DomainGroup {
   domain: string;
   count: number;
