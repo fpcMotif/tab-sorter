@@ -431,18 +431,25 @@ function App() {
   // Defer the heavy match computation off the keystroke so a slow pattern never
   // blocks typing; matchPattern owns the safety cap that bounds backtracking cost.
   const deferredSource = useDeferredValue(regexSource);
+  const deferredFlags = useDeferredValue(regexFlags);
 
   const regexPreview = useMemo(() => {
     if (data === null || deferredSource.trim().length === 0) {
       return { count: 0, error: "" };
     }
 
-    const result = matchPattern(data.tabs, deferredSource, regexFlags);
+    const result = matchPattern(data.tabs, deferredSource, deferredFlags);
 
     return result.ok
       ? { count: result.ids.length, error: "" }
       : { count: 0, error: reasonToString(result.reason) };
-  }, [data, regexFlags, deferredSource]);
+  }, [data, deferredFlags, deferredSource]);
+
+  // The preview lags the live pattern by design; the move button must never act
+  // on a pattern the preview hasn't validated yet. Extract has no undo
+  // (runExtract never snapshots), so a stale "Move 4 tabs" enabling a click
+  // against a live "github|" — which matches every tab — would be unrecoverable.
+  const previewStale = deferredSource !== regexSource || deferredFlags !== regexFlags;
 
   function runWithStatus(action: () => Promise<void>): Promise<void> {
     disarmDedupe();
@@ -658,7 +665,7 @@ function App() {
   const isEmpty = data !== null && data.totalTabs <= 1;
   const isErrorTone = status.tone === "error";
   const moveLabel =
-    regexPreview.error.length === 0 && regexPreview.count > 0
+    !previewStale && regexPreview.error.length === 0 && regexPreview.count > 0
       ? `Move ${pluralize(regexPreview.count, "tab")} to new window`
       : "Move to new window";
 
@@ -936,7 +943,12 @@ function App() {
               </div>
               <button
                 className="move-btn"
-                disabled={pending || regexPreview.error.length > 0 || regexPreview.count === 0}
+                disabled={
+                  pending ||
+                  previewStale ||
+                  regexPreview.error.length > 0 ||
+                  regexPreview.count === 0
+                }
                 onClick={handleRegexExtract}
                 type="button"
               >
