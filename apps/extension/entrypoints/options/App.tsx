@@ -317,6 +317,9 @@ function App() {
   // fades back out on its own 1.6s timer, independent of whatever triggered it.
   useEffect(() => {
     if (status.length === 0) {
+      // saveStarted cleared the status — retract the chip too, so a failed save
+      // can't strand a stale "Saved" next to its own error message.
+      setSaveVisible(false);
       return;
     }
 
