@@ -115,10 +115,11 @@ describe("tabs service", () => {
     expect(query).toHaveBeenCalledWith({ windowType: "normal" });
   });
 
-  it("counts open windows", async () => {
+  it("counts only the normal windows", async () => {
     getAll.mockResolvedValue([{ id: 1 }, { id: 2 }, { id: 3 }]);
 
     await expect(getWindowCount()).resolves.toBe(3);
+    expect(getAll).toHaveBeenCalledWith({ windowTypes: ["normal"] });
   });
 });
 

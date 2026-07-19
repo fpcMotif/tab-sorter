@@ -46,7 +46,7 @@ export function getAllWindowsTabs(): Promise<TabLite[]> {
 }
 
 export async function getWindowCount(): Promise<number> {
-  const windows = await browser.windows.getAll();
+  const windows = await browser.windows.getAll({ windowTypes: ["normal"] });
 
   return windows.length;
 }

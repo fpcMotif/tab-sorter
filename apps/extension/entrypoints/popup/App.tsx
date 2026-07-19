@@ -19,6 +19,7 @@ import {
 } from "@/lib/export";
 import { assignColor } from "@/lib/domain";
 import { MATCH_SAFETY_CAP, matchPattern, reasonToString } from "@/lib/match";
+import type { ExtractMatcher, ExtractScope } from "@/lib/mutation";
 import { requestMutation } from "@/lib/runtime";
 import type { ClipboardFormat, DomainGroup, ExportFormat, GroupColor, SortMode } from "@/lib/types";
 import {
@@ -28,12 +29,6 @@ import {
   type AllWindowsExtract,
   type PopupData,
 } from "@/lib/window-queries";
-
-type ExtractScope = "window" | "all";
-
-type ExtractMatcher =
-  | { type: "domain"; domain: string }
-  | { type: "regex"; source: string; flags?: string };
 
 // Esc, any other action, or this timeout disarms the two-step dedupe confirm
 // (DESIGN-SPEC §4.3's armed state: a 4-second timer).

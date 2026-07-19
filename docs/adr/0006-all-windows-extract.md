@@ -55,8 +55,9 @@ ever wanted, is a separate change applied to both paths.
 
 The popup **augments** rather than replaces: today's domain rows and pattern panel are untouched;
 a "This window / All windows" toggle re-scopes both, shown only when more than one window is open.
-`windowCount` is added to `PopupData` eagerly (cheap `windows.getAll()`); cross-window counts load
-lazily on first flip, so popup-open cost is unchanged. Default scope is the current window, auto-
+`windowCount` is added to `PopupData` eagerly (`windows.getAll({ windowTypes: ["normal"] })`, so it
+counts the same windows the sweep touches); cross-window counts load lazily on first flip, so
+popup-open cost is unchanged. Default scope is the current window, auto-
 switching to all windows when the current window has ≤1 tab and more than one window is open. The
 new window opens unfocused so the popup survives to show the summary and a "Show new window"
 button. A sibling context-menu item, "Extract this site from all windows," ships alongside.

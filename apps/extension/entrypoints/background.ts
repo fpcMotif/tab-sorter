@@ -107,39 +107,39 @@ async function handleCommand(command: string): Promise<void> {
   await executeMenuMutation(command, windowId);
 }
 
+async function dispatchSiteExtract(
+  url: string | undefined,
+  windowId: number,
+  scope: "all" | undefined,
+): Promise<void> {
+  if (url === undefined) {
+    return;
+  }
+
+  const result = await executeMutation({
+    type: "extract",
+    windowId,
+    matcher: { type: "domain", domain: getDomain(url) },
+    scope,
+  });
+
+  // No popup to survive an all-windows sweep, so bring the new window forward.
+  if (scope === "all" && typeof result.newWindowId === "number") {
+    await browser.windows.update(result.newWindowId, { focused: true });
+  }
+}
+
 async function handleContextMenu(info: MenuClickInfo, tab: ClickedTab | undefined): Promise<void> {
   const windowId = typeof tab?.windowId === "number" ? tab.windowId : await getCurrentWindowId();
 
   if (info.menuItemId === MENU_IDS.extractSite) {
-    const url = tab?.url ?? info.pageUrl;
-
-    if (url !== undefined) {
-      await executeMutation({
-        type: "extract",
-        windowId,
-        matcher: { type: "domain", domain: getDomain(url) },
-      });
-    }
+    await dispatchSiteExtract(tab?.url ?? info.pageUrl, windowId, undefined);
 
     return;
   }
 
   if (info.menuItemId === MENU_IDS.extractSiteAll) {
-    const url = tab?.url ?? info.pageUrl;
-
-    if (url !== undefined) {
-      const result = await executeMutation({
-        type: "extract",
-        windowId,
-        matcher: { type: "domain", domain: getDomain(url) },
-        scope: "all",
-      });
-
-      // No popup to survive here, so bring the consolidated window forward.
-      if (typeof result.newWindowId === "number") {
-        await browser.windows.update(result.newWindowId, { focused: true });
-      }
-    }
+    await dispatchSiteExtract(tab?.url ?? info.pageUrl, windowId, "all");
 
     return;
   }
