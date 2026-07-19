@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { applyOrder } from "./tabs-service";
+import { realizePlan } from "./mutation-realize";
 
 // The realize layer is where the subtle bugs live: planMoves speaks in
 // survivor-strip coordinates, but `browser.tabs.move` takes an ABSOLUTE window
@@ -54,11 +54,14 @@ const move = vi.fn();
 const isSurvivor = (id: number): boolean => id < 1000;
 const isForeign = (id: number): boolean => id >= 1000 && id < 5000;
 
-describe("applyOrder — realize-layer fuzz", () => {
+describe("realizePlan — order fuzz", () => {
   beforeEach(() => {
     query.mockReset();
     move.mockReset();
-    vi.stubGlobal("browser", { tabs: { query, move } });
+    vi.stubGlobal("browser", {
+      tabs: { query, move },
+      tabGroups: { query: vi.fn().mockResolvedValue([]) },
+    });
   });
 
   it("drives survivors to their target order despite foreign and vanished tabs, with minimal moves", async () => {
@@ -92,7 +95,7 @@ describe("applyOrder — realize-layer fuzz", () => {
         return Promise.resolve();
       });
 
-      await applyOrder(orderedIds, 1);
+      await realizePlan({ order: orderedIds, groups: [], ungroup: [], close: [] }, 1);
 
       // Survivors land in exactly the requested relative order...
       expect(liveWindow.filter(isSurvivor)).toEqual(targetSurvivors);

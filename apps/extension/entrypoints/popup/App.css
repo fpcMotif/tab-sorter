@@ -166,8 +166,12 @@ ol {
 
 /* ---- Sort chips ---- */
 .sort-row {
+  border: 0;
   display: flex;
   gap: 8px;
+  margin: 0;
+  min-inline-size: 0;
+  padding: 0;
 }
 .chip-btn {
   align-items: center;
@@ -510,7 +514,10 @@ hr.rule {
   border-radius: 16px;
   display: flex;
   flex: 1;
+  margin: 0;
+  min-inline-size: 0;
   overflow: hidden;
+  padding: 0;
 }
 .format-chip {
   background: transparent;
@@ -535,6 +542,36 @@ hr.rule {
   color: var(--on-primary-container);
 }
 .format-chip:focus-visible {
+  outline-offset: -2px;
+}
+.scope-toggle {
+  border: 1px solid var(--outline-variant);
+  border-radius: 16px;
+  display: flex;
+  margin: 0 0 12px;
+  overflow: hidden;
+  padding: 0;
+}
+.scope-chip {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--outline-variant);
+  box-shadow: none;
+  color: var(--on-surface-variant);
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 0;
+}
+.scope-chip:last-child {
+  border-right: none;
+}
+.scope-chip.is-selected {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+.scope-chip:focus-visible {
   outline-offset: -2px;
 }
 .copy-btn {

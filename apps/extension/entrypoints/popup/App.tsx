@@ -17,19 +17,23 @@ import {
   COPY_FORMATS,
   DOWNLOAD_FORMATS,
 } from "@/lib/export";
+import { assignColor } from "@/lib/domain";
 import { MATCH_SAFETY_CAP, matchPattern, reasonToString } from "@/lib/match";
+import { requestMutation } from "@/lib/runtime";
+import type { ClipboardFormat, DomainGroup, ExportFormat, GroupColor, SortMode } from "@/lib/types";
 import {
+  getAllWindowsExtract,
   getPopupData,
   getSelectedTabs,
-  runDedupe,
-  runExtract,
-  runSort,
-  runTidy,
-  runUndo,
+  type AllWindowsExtract,
   type PopupData,
-} from "@/lib/orchestration";
-import { assignColor } from "@/lib/domain";
-import type { ClipboardFormat, DomainGroup, ExportFormat, GroupColor, SortMode } from "@/lib/types";
+} from "@/lib/window-queries";
+
+type ExtractScope = "window" | "all";
+
+type ExtractMatcher =
+  | { type: "domain"; domain: string }
+  | { type: "regex"; source: string; flags?: string };
 
 // Esc, any other action, or this timeout disarms the two-step dedupe confirm
 // (DESIGN-SPEC §4.3's armed state: a 4-second timer).
@@ -319,6 +323,10 @@ interface Status {
 
 interface State {
   data: PopupData | null;
+  extractScope: ExtractScope;
+  // Cross-window tabs + domain groups, fetched lazily the first time the user
+  // flips to "All windows" so popup-open stays a single-window read.
+  allWindows: AllWindowsExtract | null;
   regexSource: string;
   regexFlags: string;
   patternOpen: boolean;
@@ -329,6 +337,9 @@ interface State {
 
 type Action =
   | { type: "dataLoaded"; data: PopupData }
+  | { type: "scopeChanged"; scope: ExtractScope }
+  | { type: "allWindowsLoaded"; data: AllWindowsExtract }
+  | { type: "allWindowsInvalidated" }
   | { type: "regexSourceChanged"; source: string }
   | { type: "caseFlagToggled" }
   | { type: "presetApplied"; source: string; flags: string }
@@ -340,8 +351,29 @@ type Action =
 
 const IDLE_STATUS: Status = { message: "", tone: "idle" };
 
+function extractErrorStatus(error: unknown): Status {
+  // A cross-window extract blocked by a mid-recovery window arrives as a
+  // RECOVERY_REQUIRED protocol error whose message already names the window.
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { code?: unknown }).code === "RECOVERY_REQUIRED"
+  ) {
+    const message = (error as { message?: unknown }).message;
+
+    return {
+      message: typeof message === "string" ? message : "A window needs recovery first.",
+      tone: "error",
+    };
+  }
+
+  return { message: "Couldn't complete that action.", tone: "error" };
+}
+
 const initialState: State = {
   data: null,
+  extractScope: "window",
+  allWindows: null,
   regexSource: "",
   regexFlags: "i",
   patternOpen: false,
@@ -352,8 +384,20 @@ const initialState: State = {
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case "dataLoaded":
-      return { ...state, data: action.data };
+    case "dataLoaded": {
+      // On the very first load, default to the wide scope when the current
+      // window is trivial but other windows are open — the consolidation case.
+      const autoAll =
+        state.data === null && action.data.totalTabs <= 1 && action.data.windowCount > 1;
+
+      return { ...state, data: action.data, extractScope: autoAll ? "all" : state.extractScope };
+    }
+    case "scopeChanged":
+      return { ...state, extractScope: action.scope };
+    case "allWindowsLoaded":
+      return { ...state, allWindows: action.data };
+    case "allWindowsInvalidated":
+      return { ...state, allWindows: null };
     case "regexSourceChanged":
       return { ...state, regexSource: action.source };
     case "caseFlagToggled":
@@ -382,9 +426,22 @@ function reducer(state: State, action: Action): State {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { data, regexSource, regexFlags, patternOpen, dedupeArmed, copyFormat, status } = state;
+  const {
+    data,
+    extractScope,
+    allWindows,
+    regexSource,
+    regexFlags,
+    patternOpen,
+    dedupeArmed,
+    copyFormat,
+    status,
+  } = state;
   const { pending, run } = useAsyncAction();
   const [tidyPending, setTidyPending] = useState(false);
+  // The consolidated window from the last successful all-windows extract, so
+  // the popup can offer a "Show new window" jump instead of auto-closing.
+  const [newWindowId, setNewWindowId] = useState<number | undefined>(undefined);
   const [copyDone, setCopyDone] = useState(false);
   // Copy's own sr-only announcement (DESIGN-SPEC §4.6's #copyAnnounce) — kept
   // out of `status`/the shared toast slot so Copy never clobbers whatever
@@ -428,21 +485,54 @@ function App() {
 
   useEffect(() => () => window.clearTimeout(dedupeTimerRef.current), []);
 
+  // Fetch the cross-window set the first time it's needed (and after an extract
+  // invalidates it), never on popup open.
+  useEffect(() => {
+    if (extractScope !== "all" || allWindows !== null) {
+      return;
+    }
+
+    let cancelled = false;
+    void getAllWindowsExtract()
+      .then((next) => {
+        if (!cancelled) {
+          dispatch({ type: "allWindowsLoaded", data: next });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          dispatch({
+            type: "statusSet",
+            status: { message: "Couldn't read your other windows.", tone: "error" },
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [extractScope, allWindows]);
+
   // Defer the heavy match computation off the keystroke so a slow pattern never
   // blocks typing; matchPattern owns the safety cap that bounds backtracking cost.
   const deferredSource = useDeferredValue(regexSource);
+
+  const scopeTabs = useMemo(
+    () => (extractScope === "all" ? (allWindows?.tabs ?? []) : (data?.tabs ?? [])),
+    [extractScope, allWindows, data],
+  );
 
   const regexPreview = useMemo(() => {
     if (data === null || deferredSource.trim().length === 0) {
       return { count: 0, error: "" };
     }
 
-    const result = matchPattern(data.tabs, deferredSource, regexFlags);
+    const result = matchPattern(scopeTabs, deferredSource, regexFlags);
 
     return result.ok
       ? { count: result.ids.length, error: "" }
       : { count: 0, error: reasonToString(result.reason) };
-  }, [data, regexFlags, deferredSource]);
+  }, [data, scopeTabs, regexFlags, deferredSource]);
 
   function runWithStatus(action: () => Promise<void>): Promise<void> {
     disarmDedupe();
@@ -457,38 +547,38 @@ function App() {
   }
 
   function handleTidy() {
+    if (data === null) {
+      return;
+    }
+
     setTidyPending(true);
     void runWithStatus(async () => {
-      const result = await runTidy();
-      const next = await loadData();
+      const result = await requestMutation({ type: "tidy", windowId: data.windowId });
+      await loadData();
 
-      if (result.moved === 0 && result.grouped === 0) {
+      if (!result.changed) {
         dispatch({ type: "statusSet", status: { message: "Already tidy.", tone: "success" } });
         return;
       }
-
-      // TidyResult doesn't carry the colors it just assigned, so derive them
-      // from the refreshed domain groups using the same minGroupSize bucket
-      // rule planTidy applies — a best-effort echo, not a mutation-time fact.
-      const dots = next.domainGroups
-        .filter((group) => group.count >= next.prefs.minGroupSize)
-        .slice(0, result.groupsCreated)
-        .map((group) => assignColor(group.domain));
 
       dispatch({
         type: "statusSet",
         status: {
           message: `Grouped ${result.grouped} tabs into ${result.groupsCreated} groups · ${result.moved} moved`,
           tone: "success",
-          dots,
+          dots: result.createdGroups.map((group) => group.color),
         },
       });
     }).finally(() => setTidyPending(false));
   }
 
   function handleSort(mode: SortMode) {
+    if (data === null) {
+      return;
+    }
+
     void runWithStatus(async () => {
-      const result = await runSort(mode);
+      const result = await requestMutation({ type: "sort", windowId: data.windowId, mode });
       await loadData();
 
       dispatch({
@@ -502,6 +592,10 @@ function App() {
   }
 
   function handleDedupeClick() {
+    if (data === null) {
+      return;
+    }
+
     if (!dedupeArmed) {
       dispatch({ type: "dedupeArmed" });
       window.clearTimeout(dedupeTimerRef.current);
@@ -511,7 +605,7 @@ function App() {
 
     disarmDedupe();
     void runWithStatus(async () => {
-      const result = await runDedupe({ confirm: true });
+      const result = await requestMutation({ type: "dedupe", windowId: data.windowId });
       await loadData();
 
       dispatch({
@@ -528,8 +622,12 @@ function App() {
   }
 
   function handleUndo() {
+    if (data === null) {
+      return;
+    }
+
     void runWithStatus(async () => {
-      const result = await runUndo();
+      const result = await requestMutation({ type: "undo", windowId: data.windowId });
       await loadData();
 
       if (!result.undone) {
@@ -550,18 +648,62 @@ function App() {
     });
   }
 
-  function handleDomainExtract(group: DomainGroup) {
+  function runExtract(matcher: ExtractMatcher, emptyMessage: string) {
+    if (data === null) {
+      return;
+    }
+
+    const scope = extractScope;
     void runWithStatus(async () => {
-      const result = await runExtract({ type: "domain", domain: group.domain });
+      setNewWindowId(undefined);
+
+      const result = await requestMutation({
+        type: "extract",
+        windowId: data.windowId,
+        matcher,
+        scope: scope === "all" ? "all" : undefined,
+      }).catch((error: unknown) => {
+        dispatch({ type: "statusSet", status: extractErrorStatus(error) });
+
+        return null;
+      });
+      if (result === null) {
+        return;
+      }
+
+      // Tabs moved, so any cached cross-window set is now stale.
+      dispatch({ type: "allWindowsInvalidated" });
       await loadData();
+
+      if (scope === "all") {
+        if (result.moved === 0) {
+          dispatch({
+            type: "statusSet",
+            status: { message: "No tabs match across your windows.", tone: "success" },
+          });
+          return;
+        }
+
+        // Keep the popup open with a jump to the (unfocused) new window.
+        setNewWindowId(result.newWindowId);
+        dispatch({
+          type: "statusSet",
+          status: {
+            message: `Moved ${pluralize(result.moved, "tab")} from ${pluralize(
+              result.windowsAffected ?? 0,
+              "window",
+            )} into a new window.`,
+            tone: "success",
+          },
+        });
+        return;
+      }
 
       dispatch({
         type: "statusSet",
         status: {
           message:
-            result.moved === 0
-              ? "No tabs match that domain."
-              : `Moved ${result.moved} tabs to a new window.`,
+            result.moved === 0 ? emptyMessage : `Moved ${result.moved} tabs to a new window.`,
           tone: "success",
         },
       });
@@ -570,6 +712,10 @@ function App() {
         window.setTimeout(() => window.close(), 300);
       }
     });
+  }
+
+  function handleDomainExtract(group: DomainGroup) {
+    runExtract({ type: "domain", domain: group.domain }, "No tabs match that domain.");
   }
 
   function handleRegexExtract() {
@@ -581,25 +727,10 @@ function App() {
       return;
     }
 
-    void runWithStatus(async () => {
-      const result = await runExtract({ type: "regex", source: regexSource, flags: regexFlags });
-      await loadData();
-
-      dispatch({
-        type: "statusSet",
-        status: {
-          message:
-            result.moved === 0
-              ? "No tabs match that pattern."
-              : `Moved ${result.moved} tabs to a new window.`,
-          tone: "success",
-        },
-      });
-
-      if (result.moved > 0) {
-        window.setTimeout(() => window.close(), 300);
-      }
-    });
+    runExtract(
+      { type: "regex", source: regexSource, flags: regexFlags },
+      "No tabs match that pattern.",
+    );
   }
 
   function handleCopy() {
@@ -655,11 +786,20 @@ function App() {
     );
   }
 
-  const isEmpty = data !== null && data.totalTabs <= 1;
+  // A trivial current window still gets the full UI when other windows are open,
+  // so the All-windows toggle (and auto-switch) can offer consolidation.
+  const isEmpty = data !== null && data.totalTabs <= 1 && !data.canUndo && data.windowCount <= 1;
+  const mutationDisabled = pending || data?.recoveryRequired === true;
   const isErrorTone = status.tone === "error";
+  const showScopeToggle = data !== null && data.windowCount > 1;
+  const scopeGroups =
+    extractScope === "all" ? (allWindows?.domainGroups ?? []) : (data?.domainGroups ?? []);
+  const scopeScanning = extractScope === "all" && allWindows === null;
   const moveLabel =
     regexPreview.error.length === 0 && regexPreview.count > 0
-      ? `Move ${pluralize(regexPreview.count, "tab")} to new window`
+      ? extractScope === "all"
+        ? `Move ${pluralize(regexPreview.count, "tab")} from all windows`
+        : `Move ${pluralize(regexPreview.count, "tab")} to new window`
       : "Move to new window";
 
   return (
@@ -748,20 +888,34 @@ function App() {
                   <IconClose />
                 </button>
               </div>
+            ) : data.recoveryRequired ? (
+              <div className="toast is-error">
+                <IconWarning />
+                <span className="toast-body">An interrupted change needs recovery.</span>
+              </div>
             ) : null}
             {data.canUndo ? (
               <button className="undo-pill" disabled={pending} onClick={handleUndo} type="button">
                 <IconUndo />
-                Undo
+                {data.recoveryRequired ? "Recover" : "Undo"}
                 <kbd>⌥⇧Z</kbd>
+              </button>
+            ) : null}
+            {newWindowId !== undefined ? (
+              <button
+                className="undo-pill"
+                onClick={() => void browser.windows.update(newWindowId, { focused: true })}
+                type="button"
+              >
+                <IconWindow />
+                Show new window
               </button>
             ) : null}
           </div>
 
           <button
-            autoFocus
             className="hero-tidy"
-            disabled={pending}
+            disabled={mutationDisabled}
             onClick={handleTidy}
             type="button"
           >
@@ -783,10 +937,10 @@ function App() {
             </span>
           </button>
 
-          <div aria-label="Sort tabs" className="sort-row" role="group">
+          <fieldset aria-label="Sort tabs" className="sort-row">
             <button
               className="chip-btn"
-              disabled={pending}
+              disabled={mutationDisabled}
               onClick={() => handleSort("title")}
               type="button"
             >
@@ -795,14 +949,14 @@ function App() {
             </button>
             <button
               className="chip-btn"
-              disabled={pending}
+              disabled={mutationDisabled}
               onClick={() => handleSort("domain")}
               type="button"
             >
               <IconDomain />
               By domain
             </button>
-          </div>
+          </fieldset>
 
           {data.duplicateCount > 0 ? (
             <div>
@@ -813,7 +967,7 @@ function App() {
                 <span className="dedupe-text num">{data.duplicateCount} duplicates found</span>
                 <button
                   className={dedupeArmed ? "btn-danger-armed" : "btn-outline"}
-                  disabled={pending}
+                  disabled={mutationDisabled}
                   onClick={handleDedupeClick}
                   type="button"
                 >
@@ -828,17 +982,42 @@ function App() {
 
           <hr className="rule" />
 
+          {showScopeToggle ? (
+            <fieldset aria-label="Extract scope" className="scope-toggle">
+              <button
+                aria-pressed={extractScope === "window"}
+                className={`scope-chip${extractScope === "window" ? " is-selected" : ""}`}
+                disabled={pending}
+                onClick={() => dispatch({ type: "scopeChanged", scope: "window" })}
+                type="button"
+              >
+                This window
+              </button>
+              <button
+                aria-pressed={extractScope === "all"}
+                className={`scope-chip${extractScope === "all" ? " is-selected" : ""}`}
+                disabled={pending}
+                onClick={() => dispatch({ type: "scopeChanged", scope: "all" })}
+                type="button"
+              >
+                All windows
+              </button>
+            </fieldset>
+          ) : null}
+
           <div>
             <h3 className="section-label">Extract a domain</h3>
-            {data.domainGroups.length === 0 ? (
+            {scopeScanning ? (
+              <p className="empty-sub">Scanning all windows…</p>
+            ) : scopeGroups.length === 0 ? (
               <p className="empty-sub">No movable tabs found.</p>
             ) : (
               <ul className="domain-list">
-                {data.domainGroups.map((group) => (
+                {scopeGroups.map((group) => (
                   <li key={group.domain}>
                     <button
                       className="domain-row"
-                      disabled={pending}
+                      disabled={mutationDisabled}
                       onClick={() => handleDomainExtract(group)}
                       type="button"
                     >
@@ -913,7 +1092,11 @@ function App() {
                   ? regexPreview.error
                   : regexSource.trim().length === 0
                     ? "Enter a pattern to preview matches."
-                    : `Matches ${regexPreview.count} of ${data.tabs.length} tabs`}
+                    : `Matches ${regexPreview.count} of ${scopeTabs.length} tabs${
+                        extractScope === "all"
+                          ? ` across ${pluralize(data.windowCount, "window")}`
+                          : ""
+                      }`}
               </p>
               <div className="preset-chips">
                 {data.prefs.regexPresets.map((preset) => (
@@ -936,7 +1119,9 @@ function App() {
               </div>
               <button
                 className="move-btn"
-                disabled={pending || regexPreview.error.length > 0 || regexPreview.count === 0}
+                disabled={
+                  mutationDisabled || regexPreview.error.length > 0 || regexPreview.count === 0
+                }
                 onClick={handleRegexExtract}
                 type="button"
               >
@@ -947,7 +1132,7 @@ function App() {
 
           <div className="copy-row">
             <span className="copy-label">Copy tabs</span>
-            <div aria-label="Copy format" className="format-group" role="group">
+            <fieldset aria-label="Copy format" className="format-group">
               {COPY_FORMATS.map((option) => (
                 <button
                   className={`format-chip${copyFormat === option.format ? " is-selected" : ""}`}
@@ -959,7 +1144,7 @@ function App() {
                   {FORMAT_SHORT_LABELS[option.format]}
                 </button>
               ))}
-            </div>
+            </fieldset>
             <button
               aria-label="Copy tabs"
               className={`icon-btn copy-btn${copyDone ? " is-copied" : ""}`}
@@ -976,7 +1161,7 @@ function App() {
 
           <div className="copy-row">
             <span className="copy-label">Download tabs</span>
-            <div aria-label="Download format" className="format-group" role="group">
+            <fieldset aria-label="Download format" className="format-group">
               {DOWNLOAD_FORMATS.map((option) => (
                 <button
                   className="format-chip"
@@ -988,7 +1173,7 @@ function App() {
                   {option.label}
                 </button>
               ))}
-            </div>
+            </fieldset>
           </div>
         </div>
       )}

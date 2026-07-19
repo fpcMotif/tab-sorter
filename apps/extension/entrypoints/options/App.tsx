@@ -2,7 +2,8 @@ import { useEffect, useReducer, useRef, useState } from "react";
 
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { reasonToString, validatePattern } from "@/lib/match";
-import { getPrefs, onPrefsChanged, setPrefs } from "@/lib/storage";
+import { requestPrefsPatch } from "@/lib/runtime";
+import { getPrefs, onPrefsChanged } from "@/lib/storage";
 import type { GroupColor, GroupOrder, Prefs, RegexPreset, SortMode } from "@/lib/types";
 import { DEFAULT_PREFS } from "@/lib/types";
 
@@ -167,7 +168,7 @@ function Segmented<T extends string>({
   value: T;
 }) {
   return (
-    <div aria-labelledby={labelledBy} className="segmented" role="group">
+    <fieldset aria-labelledby={labelledBy} className="segmented">
       {options.map((option) => (
         <button
           className={option.value === value ? "is-selected" : undefined}
@@ -179,28 +180,30 @@ function Segmented<T extends string>({
           {option.label}
         </button>
       ))}
-    </div>
+    </fieldset>
   );
 }
 
 // A real <input type="checkbox"> wearing a track (DESIGN-SPEC §4.9) rather
 // than a hand-rolled `<button role="switch">`, so Space toggles it for free
-// and its accessible name comes from the sibling `<label for>` in each
-// pref-row, not a duplicated aria-label here.
+// and its accessible name comes from the linked visible label in each row.
 function Switch({
   checked,
   disabled,
   id,
+  labelledBy,
   onChange,
 }: {
   checked: boolean;
   disabled: boolean;
   id: string;
+  labelledBy: string;
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="switch">
+    <span className="switch">
       <input
+        aria-labelledby={labelledBy}
         checked={checked}
         disabled={disabled}
         id={id}
@@ -208,7 +211,7 @@ function Switch({
         type="checkbox"
       />
       <span aria-hidden="true" className="track" />
-    </label>
+    </span>
   );
 }
 
@@ -299,7 +302,7 @@ function App() {
 
     return run(
       async () => {
-        const nextPrefs = await setPrefs(patch);
+        const nextPrefs = await requestPrefsPatch(patch);
         dispatch({ type: "saveSucceeded", prefs: nextPrefs });
       },
       () => {
@@ -399,14 +402,10 @@ function App() {
             </p>
           </div>
         </div>
-        <span
-          aria-live="polite"
-          className={`save-indicator${saveVisible ? " is-visible" : ""}`}
-          role="status"
-        >
+        <output aria-live="polite" className={`save-indicator${saveVisible ? " is-visible" : ""}`}>
           <IconCheck />
           Saved
-        </span>
+        </output>
       </div>
 
       <section aria-labelledby="sorting-h" className="settings-section">
@@ -414,7 +413,7 @@ function App() {
 
         <div className="pref-row">
           <div className="pref-text">
-            <label id="lbl-default-sort">Default sort</label>
+            <span id="lbl-default-sort">Default sort</span>
             <p className="consequence">
               Used when you click Sort without choosing A to Z or By domain.
             </p>
@@ -442,6 +441,7 @@ function App() {
               checked={prefs.ignorePinned}
               disabled={pending}
               id="toggle-pinned"
+              labelledBy="lbl-pinned"
               onChange={handleIgnorePinnedChange}
             />
           </div>
@@ -463,6 +463,7 @@ function App() {
               checked={prefs.collapseAfterTidy}
               disabled={pending}
               id="toggle-collapse"
+              labelledBy="lbl-collapse"
               onChange={handleCollapseAfterTidyChange}
             />
           </div>
@@ -470,16 +471,15 @@ function App() {
 
         <div className="pref-row">
           <div className="pref-text">
-            <label id="lbl-min-size">Minimum tabs to form a group</label>
+            <span id="lbl-min-size">Minimum tabs to form a group</span>
             <p className="consequence">
               Sites with fewer tabs than this stay loose instead of becoming a group.
             </p>
           </div>
           <div className="pref-control">
-            <div
+            <fieldset
               aria-labelledby="lbl-min-size"
               className={`stepper${minGroupSizeError.length > 0 ? " has-error" : ""}`}
-              role="group"
             >
               <button
                 aria-label="Decrease"
@@ -508,7 +508,7 @@ function App() {
               >
                 +
               </button>
-            </div>
+            </fieldset>
           </div>
         </div>
         {minGroupSizeError.length > 0 ? (
@@ -519,7 +519,7 @@ function App() {
 
         <div className="pref-row">
           <div className="pref-text">
-            <label id="lbl-group-order">Group order</label>
+            <span id="lbl-group-order">Group order</span>
             <p className="consequence">
               Controls left-to-right placement of new groups in the tab strip.
             </p>
@@ -547,6 +547,7 @@ function App() {
               checked={prefs.regroupExisting}
               disabled={pending}
               id="toggle-regroup"
+              labelledBy="lbl-regroup"
               onChange={handleRegroupExistingChange}
             />
           </div>
@@ -577,6 +578,7 @@ function App() {
               checked={prefs.dedupeIgnoreHash}
               disabled={pending}
               id="toggle-fragment"
+              labelledBy="lbl-frag"
               onChange={handleDedupeIgnoreHashChange}
             />
           </div>
@@ -596,6 +598,7 @@ function App() {
               checked={prefs.dedupeIgnoreQuery}
               disabled={pending}
               id="toggle-query"
+              labelledBy="lbl-query"
               onChange={handleDedupeIgnoreQueryChange}
             />
           </div>

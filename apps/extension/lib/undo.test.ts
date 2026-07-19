@@ -44,7 +44,7 @@ describe("planUndo", () => {
       ctab(4, 3, false),
     ];
 
-    const { plan, reopen } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan).toEqual({
       order: [1, 2, 3, 4],
@@ -52,7 +52,6 @@ describe("planUndo", () => {
       ungroup: [],
       close: [],
     });
-    expect(reopen).toEqual([]);
   });
 
   it("drops vanished ids from both order and group membership", () => {
@@ -63,7 +62,7 @@ describe("planUndo", () => {
     // Tab 2 vanished — only tab 3 survives in group 10.
     const current = [ctab(1, 0), ctab(3, 2, false, 10), ctab(4, 3, false)];
 
-    const { plan } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan.order).toEqual([1, 3, 4]);
     expect(plan.groups).toEqual([
@@ -71,7 +70,7 @@ describe("planUndo", () => {
     ]);
   });
 
-  it("emits reopen urls for tabs missing from current, skipping an empty url", () => {
+  it("drops missing tabs; the transaction owns reopening", () => {
     const snap = snapshot([
       stab(1, 0),
       stab(2, 1, false, TAB_GROUP_NONE, ""),
@@ -79,10 +78,9 @@ describe("planUndo", () => {
     ]);
     const current = [ctab(1, 0)];
 
-    const { plan, reopen } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan.order).toEqual([1]);
-    expect(reopen).toEqual(["https://gone.example"]);
   });
 
   it("excludes a snapshot-group member that is currently pinned from its GroupSpec", () => {
@@ -90,7 +88,7 @@ describe("planUndo", () => {
     // Tab 1 got pinned since the snapshot; it must leave the group but stay in order.
     const current = [ctab(1, 0, true), ctab(2, 1, false, 10)];
 
-    const { plan } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan.order).toEqual([1, 2]);
     expect(plan.groups).toEqual([
@@ -102,18 +100,17 @@ describe("planUndo", () => {
     const snap = snapshot([stab(1, 0, false, 10), stab(2, 1, false, 10)], [sgroup(10, "Group A")]);
     const current: TabLite[] = [];
 
-    const { plan, reopen } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan.order).toEqual([]);
     expect(plan.groups).toEqual([]);
-    expect(reopen).toEqual(["https://s.example/1", "https://s.example/2"]);
   });
 
   it("still emits a singleton GroupSpec — undo has no minGroupSize floor", () => {
     const snap = snapshot([stab(1, 0, false, 10)], [sgroup(10, "Solo")]);
     const current = [ctab(1, 0, false, 10)];
 
-    const { plan } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan.groups).toEqual([
       { key: "g10", title: "Solo", color: "blue", collapsed: false, tabIds: [1] },
@@ -132,7 +129,7 @@ describe("planUndo", () => {
       ctab(3, 2, false, 10),
     ];
 
-    const { plan } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan.ungroup).toEqual([1]);
   });
@@ -142,7 +139,7 @@ describe("planUndo", () => {
     // 1 was pinned, now isn't; 2 wasn't, now is — they swap partitions.
     const current = [ctab(1, 0, false), ctab(2, 1, true)];
 
-    const { plan } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan.order).toEqual([2, 1]);
   });
@@ -151,16 +148,15 @@ describe("planUndo", () => {
     const snap = snapshot([stab(5, 2), stab(6, 0), stab(7, 1)]);
     const current = [ctab(7, 1), ctab(5, 2), ctab(6, 0)];
 
-    const { plan } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan.order).toEqual([6, 7, 5]);
   });
 
-  it("returns an empty plan and no reopen hints for an empty snapshot", () => {
-    const { plan, reopen } = planUndo(snapshot([]), []);
+  it("returns an empty plan for an empty snapshot", () => {
+    const plan = planUndo(snapshot([]), []);
 
     expect(plan).toEqual({ order: [], groups: [], ungroup: [], close: [] });
-    expect(reopen).toEqual([]);
   });
 
   it("never restores pinned state itself — only CURRENT pinned flags decide the front partition", () => {
@@ -168,7 +164,7 @@ describe("planUndo", () => {
     const snap = snapshot([stab(1, 0, true), stab(2, 1, true)]);
     const current = [ctab(1, 0, false), ctab(2, 1, false)];
 
-    const { plan } = planUndo(snap, current);
+    const plan = planUndo(snap, current);
 
     expect(plan.order).toEqual([1, 2]);
   });
@@ -250,7 +246,7 @@ describe("planUndo — contiguity invariant", () => {
       const snap = randomSnapshot(rng, ids);
       const current = randomCurrent(rng, ids);
 
-      const { plan } = planUndo(snap, current);
+      const plan = planUndo(snap, current);
 
       for (const group of plan.groups) {
         expect(group.tabIds.length).toBeGreaterThan(0);

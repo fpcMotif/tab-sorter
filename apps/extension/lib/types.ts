@@ -78,8 +78,8 @@ export interface SnapshotGroup {
   collapsed: boolean;
 }
 
-// Captured before any mutation; the undo source of truth, one per window,
-// stored in chrome.storage.session (see lib/session-store.ts).
+// Captured by the mutation transaction. MutationHistory stores it inside a
+// RestorePoint in browser.storage.session.
 export interface WindowSnapshot {
   windowId: number;
   tabs: SnapshotTab[];

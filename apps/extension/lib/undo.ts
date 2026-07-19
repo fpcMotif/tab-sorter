@@ -13,10 +13,7 @@ function byIndex(a: { index: number }, b: { index: number }): number {
 // pinned-first to preserve the pinned-front invariant (CONTEXT.md). A tab
 // whose pin state flipped since the snapshot just migrates to the other
 // partition, still landing at its old relative position within it.
-export function planUndo(
-  snapshot: WindowSnapshot,
-  current: TabLite[],
-): { plan: TabPlan; reopen: string[] } {
+export function planUndo(snapshot: WindowSnapshot, current: TabLite[]): TabPlan {
   const currentById = new Map(current.map((tab) => [tab.id, tab]));
   const survivors = snapshot.tabs.filter((tab) => currentById.has(tab.id));
 
@@ -61,9 +58,5 @@ export function planUndo(
     .filter((tab) => (currentById.get(tab.id)!.groupId ?? TAB_GROUP_NONE) !== TAB_GROUP_NONE)
     .map((tab) => tab.id);
 
-  const reopen = snapshot.tabs
-    .filter((tab) => !currentById.has(tab.id) && tab.url !== "")
-    .map((tab) => tab.url);
-
-  return { plan: { order, groups, ungroup, close: [] }, reopen };
+  return { order, groups, ungroup, close: [] };
 }
