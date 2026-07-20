@@ -4,21 +4,25 @@ import type { TabLite } from "@tab-sorter/core/types";
 interface RawTab {
   id?: number;
   url?: string;
+  pendingUrl?: string;
   title?: string;
   index?: number;
   pinned?: boolean;
   groupId?: number;
 }
 
-function toTabLite(tab: RawTab): TabLite | undefined {
+// A still-loading tab reports an empty url; pendingUrl carries its real
+// destination, so fall back to it for both url and title. Otherwise domain
+// extraction/sort/match would file the tab in the empty-domain bucket.
+export function toTabLite(tab: RawTab): TabLite | undefined {
   if (typeof tab.id !== "number") {
     return undefined;
   }
 
   return {
     id: tab.id,
-    url: tab.url ?? "",
-    title: tab.title ?? tab.url ?? "",
+    url: tab.pendingUrl ?? tab.url ?? "",
+    title: tab.title ?? tab.pendingUrl ?? tab.url ?? "",
     index: tab.index ?? 0,
     pinned: tab.pinned ?? false,
     groupId: tab.groupId ?? TAB_GROUP_NONE,

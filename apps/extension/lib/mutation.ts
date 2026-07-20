@@ -13,7 +13,7 @@ import { realizePlan } from "./mutation-realize";
 import { planWindowOrder } from "@tab-sorter/core/plan";
 import { protocolError } from "@tab-sorter/core/protocol-error";
 import { getPrefs } from "./storage";
-import { moveTabsToNewWindow } from "./tabs-service";
+import { moveTabsToNewWindow, toTabLite } from "./tabs-service";
 import { planTidy } from "@tab-sorter/core/tidy";
 import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
 import type {
@@ -172,21 +172,6 @@ export function isMutationIntent(value: unknown): value is MutationIntent {
     isExtractMatcher(value.matcher) &&
     (value.scope === undefined || value.scope === "window" || value.scope === "all")
   );
-}
-
-function toTabLite(tab: RawTab): TabLite | undefined {
-  if (typeof tab.id !== "number") {
-    return undefined;
-  }
-
-  return {
-    id: tab.id,
-    url: tab.pendingUrl ?? tab.url ?? "",
-    title: tab.title ?? tab.pendingUrl ?? tab.url ?? "",
-    index: tab.index ?? 0,
-    pinned: tab.pinned ?? false,
-    groupId: tab.groupId ?? TAB_GROUP_NONE,
-  };
 }
 
 async function captureWindow(windowId: number): Promise<CapturedWindow> {
