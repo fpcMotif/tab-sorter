@@ -11,13 +11,13 @@ import {
 import "./App.css";
 
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { assignColor } from "@tab-sorter/core/domain";
 import {
   buildClipboardContent,
   buildUrlExport,
   COPY_FORMATS,
   DOWNLOAD_FORMATS,
-} from "@/lib/export";
-import { assignColor } from "@tab-sorter/core/domain";
+} from "@tab-sorter/core/export";
 import { MATCH_SAFETY_CAP, matchPattern, reasonToString } from "@tab-sorter/core/match";
 import type { ExtractMatcher, ExtractScope } from "@/lib/mutation";
 import { requestMutation } from "@/lib/runtime";

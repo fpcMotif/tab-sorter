@@ -1,7 +1,11 @@
 import type { Browser } from "wxt/browser";
 
 import type { MutationIntent, MutationResult } from "./mutation";
-import { isProtocolErrorCode, protocolError, type ProtocolErrorCode } from "./protocol-error";
+import {
+  isProtocolErrorCode,
+  protocolError,
+  type ProtocolErrorCode,
+} from "@tab-sorter/core/protocol-error";
 import type { Prefs } from "@tab-sorter/core/types";
 
 export type BackgroundRequest =

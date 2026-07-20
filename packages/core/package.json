@@ -14,7 +14,9 @@
     "./domain-groups": "./domain-groups.ts",
     "./tidy": "./tidy.ts",
     "./undo": "./undo.ts",
-    "./tab-moves": "./tab-moves.ts"
+    "./tab-moves": "./tab-moves.ts",
+    "./protocol-error": "./protocol-error.ts",
+    "./export": "./export.ts"
   },
   "scripts": {
     "check-types": "bunx tsgo -config tsconfig.json",

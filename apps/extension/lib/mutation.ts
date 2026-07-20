@@ -11,7 +11,7 @@ import {
 } from "./mutation-history";
 import { realizePlan } from "./mutation-realize";
 import { planWindowOrder } from "@tab-sorter/core/plan";
-import { protocolError } from "./protocol-error";
+import { protocolError } from "@tab-sorter/core/protocol-error";
 import { getPrefs } from "./storage";
 import { moveTabsToNewWindow } from "./tabs-service";
 import { planTidy } from "@tab-sorter/core/tidy";

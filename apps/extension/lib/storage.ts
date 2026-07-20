@@ -1,4 +1,4 @@
-import { protocolError } from "./protocol-error";
+import { protocolError } from "@tab-sorter/core/protocol-error";
 import {
   DEFAULT_PREFS,
   type GroupOrder,

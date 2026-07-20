@@ -6,8 +6,8 @@ import {
   buildUrlExport,
   COPY_FORMATS,
   DOWNLOAD_FORMATS,
-} from "./export";
-import type { TabLite } from "@tab-sorter/core/types";
+} from "../export";
+import type { TabLite } from "../types";
 
 function makeTabs(
   items: Array<Partial<TabLite> & { id: number; title: string; url: string }>,
