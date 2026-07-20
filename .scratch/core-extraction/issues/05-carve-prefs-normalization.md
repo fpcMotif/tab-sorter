@@ -6,6 +6,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] Normalization + bounds exported from core; storage adapter consumes them
-- [ ] Round-trip assertion lives in core tests; temporary app-side copy removed
-- [ ] All gates green; prefs behavior byte-identical
+- [x] Normalization + bounds exported from core; storage adapter consumes them
+- [x] Round-trip assertion lives in core tests; temporary app-side copy removed
+- [x] All gates green; prefs behavior byte-identical

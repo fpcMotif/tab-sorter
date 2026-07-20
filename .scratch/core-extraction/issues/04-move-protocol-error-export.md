@@ -6,6 +6,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] Both modules in core as root entry points; imports rewritten (storage/runtime consume protocol-error from core)
-- [ ] Protocol-error direct tests added; core coverage gate still 100%
-- [ ] All gates green
+- [x] Both modules in core as root entry points; imports rewritten (storage/runtime consume protocol-error from core)
+- [x] Protocol-error direct tests added; core coverage gate still 100%
+- [x] All gates green

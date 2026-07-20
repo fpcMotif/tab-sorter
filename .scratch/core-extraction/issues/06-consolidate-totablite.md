@@ -6,6 +6,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] One mapping, one home; both former call sites consume it
-- [ ] Fallback semantics decision recorded in the commit message
-- [ ] All gates green; existing mutation/tabs-service suites unchanged and passing
+- [x] One mapping, one home; both former call sites consume it
+- [x] Fallback semantics decision recorded in the commit message
+- [x] All gates green; existing mutation/tabs-service suites unchanged and passing

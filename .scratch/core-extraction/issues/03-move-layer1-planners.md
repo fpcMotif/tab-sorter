@@ -6,5 +6,5 @@
 
 **Status:** ready-for-agent
 
-- [ ] tidy, undo, tab-moves + their tests + invariants suite in core; imports rewritten
-- [ ] All gates green; zero behavior change
+- [x] tidy, undo, tab-moves + their tests + invariants suite in core; imports rewritten
+- [x] All gates green; zero behavior change

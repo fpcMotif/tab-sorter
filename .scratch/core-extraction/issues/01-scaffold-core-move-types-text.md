@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] `bun run check-types`, `bun run test`, `bun run lint` (incl. boundaries), `bun run build` all green
-- [ ] Depcruise output shows real-path edges from extension files to core entry points
-- [ ] A deliberate deep import fails the boundary check (then reverted); resolution behavior for specifier deep imports reported
-- [ ] Prefs round-trip assertion relocated app-side (temporary home until ticket 05)
-- [ ] Text comparison has direct tests; core coverage gate at 100%
+- [x] `bun run check-types`, `bun run test`, `bun run lint` (incl. boundaries), `bun run build` all green
+- [x] Depcruise output shows real-path edges from extension files to core entry points
+- [x] A deliberate deep import fails the boundary check (then reverted); resolution behavior for specifier deep imports reported
+- [x] Prefs round-trip assertion relocated app-side (temporary home until ticket 05)
+- [x] Text comparison has direct tests; core coverage gate at 100%

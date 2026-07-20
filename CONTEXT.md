@@ -13,7 +13,7 @@ This file names the **domain**.
   browser tab shapes stay inside `tabs-service` and the mutation adapter.
 - **SortMode** — `"title"` (A→Z by page title) or `"domain"` (grouped by domain, then title).
 - **DomainGroup** — `{ domain, count, tabIds }`. Feeds the popup's clickable domain list. Built by
-  `groupByDomain` in `@tab-sorter/core/domain-groups` (domain-bucketing of tabs), sibling to `match.ts`'s
+  `groupByDomain` in `@tab-sorter/core/domain-groups` (domain-bucketing of tabs), sibling to `@tab-sorter/core/match`'s
   pattern surface. `matchByDomain` (same module) resolves one bucket's ids for extraction.
 - **Prefs** — `{ defaultSort, ignorePinned, regexPresets }` plus the Layer 1 tidy/dedupe knobs
   (`collapseAfterTidy`, `minGroupSize`, `groupOrder`, `regroupExisting`, `dedupeIgnoreHash`,

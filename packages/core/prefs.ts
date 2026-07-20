@@ -67,8 +67,7 @@ export function normalizePrefs(stored: unknown): Prefs {
 
   return {
     defaultSort: isSortMode(prefs.defaultSort) ? prefs.defaultSort : DEFAULT_PREFS.defaultSort,
-    ignorePinned:
-      typeof prefs.ignorePinned === "boolean" ? prefs.ignorePinned : DEFAULT_PREFS.ignorePinned,
+    ignorePinned: normalizeBoolean(prefs.ignorePinned, DEFAULT_PREFS.ignorePinned),
     regexPresets: Array.isArray(prefs.regexPresets)
       ? prefs.regexPresets.flatMap((preset) => {
           const normalized = normalizePreset(preset);

@@ -6,6 +6,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] Six modules + tests + efficiency suite live in core; all import sites rewritten
-- [ ] All gates green (check-types, test, lint incl. boundaries, build)
-- [ ] No behavior change; no export surface changes
+- [x] Six modules + tests + efficiency suite live in core; all import sites rewritten
+- [x] All gates green (check-types, test, lint incl. boundaries, build)
+- [x] No behavior change; no export surface changes

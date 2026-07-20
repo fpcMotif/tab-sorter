@@ -6,6 +6,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] Options UI imports bounds from core; duplicate constants/parse logic gone
-- [ ] CONTEXT.md module references updated; packages README mentions core
-- [ ] Full suite + typecheck + boundaries + build green from a clean checkout
+- [x] Options UI imports bounds from core; duplicate constants/parse logic gone
+- [x] CONTEXT.md module references updated; packages README mentions core
+- [x] Full suite + typecheck + boundaries + build green from a clean checkout
