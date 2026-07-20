@@ -1,5 +1,5 @@
-import { assignColor, getDomain } from "./domain";
-import { sortByTitle } from "./sort";
+import { assignColor, getDomain } from "@tab-sorter/core/domain";
+import { sortByTitle } from "@tab-sorter/core/sort";
 import { compareText } from "@tab-sorter/core/text";
 import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
 import type { GroupOrder, GroupSpec, Prefs, TabLite, TabPlan } from "@tab-sorter/core/types";

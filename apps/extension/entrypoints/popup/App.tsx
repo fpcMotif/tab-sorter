@@ -17,8 +17,8 @@ import {
   COPY_FORMATS,
   DOWNLOAD_FORMATS,
 } from "@/lib/export";
-import { assignColor } from "@/lib/domain";
-import { MATCH_SAFETY_CAP, matchPattern, reasonToString } from "@/lib/match";
+import { assignColor } from "@tab-sorter/core/domain";
+import { MATCH_SAFETY_CAP, matchPattern, reasonToString } from "@tab-sorter/core/match";
 import type { ExtractMatcher, ExtractScope } from "@/lib/mutation";
 import { requestMutation } from "@/lib/runtime";
 import type {

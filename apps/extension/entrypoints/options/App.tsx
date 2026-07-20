@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 
 import { useAsyncAction } from "@/hooks/use-async-action";
-import { reasonToString, validatePattern } from "@/lib/match";
+import { reasonToString, validatePattern } from "@tab-sorter/core/match";
 import { requestPrefsPatch } from "@/lib/runtime";
 import { getPrefs, onPrefsChanged } from "@/lib/storage";
 import type { GroupColor, GroupOrder, Prefs, RegexPreset, SortMode } from "@tab-sorter/core/types";

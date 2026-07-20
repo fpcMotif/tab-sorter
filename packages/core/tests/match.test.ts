@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { MATCH_SAFETY_CAP, matchPattern, reasonToString, validatePattern } from "./match";
-import type { TabLite } from "@tab-sorter/core/types";
+import { MATCH_SAFETY_CAP, matchPattern, reasonToString, validatePattern } from "../match";
+import type { TabLite } from "../types";
 
 const tabs: TabLite[] = [
   {

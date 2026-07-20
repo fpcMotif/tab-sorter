@@ -1,7 +1,7 @@
-import { planDedupe } from "./dedupe";
-import { getDomain } from "./domain";
-import { matchByDomain } from "./domain-groups";
-import { matchPattern } from "./match";
+import { planDedupe } from "@tab-sorter/core/dedupe";
+import { getDomain } from "@tab-sorter/core/domain";
+import { matchByDomain } from "@tab-sorter/core/domain-groups";
+import { matchPattern } from "@tab-sorter/core/match";
 import {
   loadMutationHistory,
   saveMutationHistory,
@@ -10,7 +10,7 @@ import {
   type RestorePoint,
 } from "./mutation-history";
 import { realizePlan } from "./mutation-realize";
-import { planWindowOrder } from "./plan";
+import { planWindowOrder } from "@tab-sorter/core/plan";
 import { protocolError } from "./protocol-error";
 import { getPrefs } from "./storage";
 import { moveTabsToNewWindow } from "./tabs-service";

@@ -1,4 +1,4 @@
-import { getDomain } from "@/lib/domain";
+import { getDomain } from "@tab-sorter/core/domain";
 import { executeMutation } from "@/lib/mutation";
 import { createBackgroundDispatcher, createBackgroundListener } from "@/lib/runtime";
 import { commitPrefsPatch } from "@/lib/storage";

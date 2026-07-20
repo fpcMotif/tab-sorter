@@ -5,16 +5,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // the same tab inside a comparator is pure wasted work that scales with
 // comparisons (~n log n) instead of tabs (n). These tests pin the work at one
 // resolution per tab and fail the moment a refactor reintroduces inline parsing.
-vi.mock("./domain", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./domain")>();
+vi.mock("../domain", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../domain")>();
 
   return { getDomain: vi.fn(actual.getDomain) };
 });
 
-import { getDomain } from "./domain";
-import { groupByDomain, matchByDomain } from "./domain-groups";
-import { sortByDomain } from "./sort";
-import type { TabLite } from "@tab-sorter/core/types";
+import { getDomain } from "../domain";
+import { groupByDomain, matchByDomain } from "../domain-groups";
+import { sortByDomain } from "../sort";
+import type { TabLite } from "../types";
 
 const getDomainSpy = vi.mocked(getDomain);
 

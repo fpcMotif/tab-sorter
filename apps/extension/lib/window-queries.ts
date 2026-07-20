@@ -1,5 +1,5 @@
-import { planDedupe } from "./dedupe";
-import { groupByDomain } from "./domain-groups";
+import { planDedupe } from "@tab-sorter/core/dedupe";
+import { groupByDomain } from "@tab-sorter/core/domain-groups";
 import { getMutationState } from "./mutation";
 import { getPrefs } from "./storage";
 import {

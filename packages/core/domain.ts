@@ -1,5 +1,5 @@
-import { GROUP_COLORS } from "@tab-sorter/core/types";
-import type { GroupColor } from "@tab-sorter/core/types";
+import { GROUP_COLORS } from "./types";
+import type { GroupColor } from "./types";
 
 const SPECIAL_SCHEME_BUCKETS = new Map([
   ["about:", "(about)"],

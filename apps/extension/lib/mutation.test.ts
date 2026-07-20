@@ -1,7 +1,7 @@
 import { fakeBrowser } from "@webext-core/fake-browser";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { assignColor } from "./domain";
+import { assignColor } from "@tab-sorter/core/domain";
 import { saveMutationHistory } from "./mutation-history";
 import { executeMutation, getMutationState, isMutationIntent } from "./mutation";
 import { commitPrefsPatch } from "./storage";

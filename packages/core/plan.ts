@@ -1,5 +1,5 @@
 import { sortByDomain, sortByTitle } from "./sort";
-import type { SortMode, TabLite } from "@tab-sorter/core/types";
+import type { SortMode, TabLite } from "./types";
 
 // `planWindowOrder` is the one pinned-AWARE ordering rule. Chrome keeps pinned
 // tabs as a contiguous block at the front of the window and silently clamps any

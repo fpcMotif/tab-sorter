@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { sortByDomain, sortByTitle } from "./sort";
-import type { TabLite } from "@tab-sorter/core/types";
+import { sortByDomain, sortByTitle } from "../sort";
+import type { TabLite } from "../types";
 
 const tabs: TabLite[] = [
   {

@@ -5,7 +5,13 @@
   "type": "module",
   "exports": {
     "./types": "./types.ts",
-    "./text": "./text.ts"
+    "./text": "./text.ts",
+    "./domain": "./domain.ts",
+    "./sort": "./sort.ts",
+    "./plan": "./plan.ts",
+    "./match": "./match.ts",
+    "./dedupe": "./dedupe.ts",
+    "./domain-groups": "./domain-groups.ts"
   },
   "scripts": {
     "check-types": "bunx tsgo -config tsconfig.json",

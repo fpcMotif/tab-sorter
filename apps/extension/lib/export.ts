@@ -1,4 +1,4 @@
-import { getDomain } from "./domain";
+import { getDomain } from "@tab-sorter/core/domain";
 import type { ClipboardFormat, ExportEntry, ExportFormat, TabLite } from "@tab-sorter/core/types";
 
 // A raw line break is not representable in a real URL, yet a malformed tab URL

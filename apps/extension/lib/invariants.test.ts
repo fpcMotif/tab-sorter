@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { getDomain } from "./domain";
-import { groupByDomain } from "./domain-groups";
-import { planWindowOrder } from "./plan";
-import { sortByDomain, sortByTitle } from "./sort";
+import { getDomain } from "@tab-sorter/core/domain";
+import { groupByDomain } from "@tab-sorter/core/domain-groups";
+import { planWindowOrder } from "@tab-sorter/core/plan";
+import { sortByDomain, sortByTitle } from "@tab-sorter/core/sort";
 import { planMoves, type TabMove } from "./tab-moves";
 import type { SortMode, TabLite } from "@tab-sorter/core/types";
 
