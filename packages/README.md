@@ -22,6 +22,10 @@ Run `bun run lint:boundaries` to enforce entry-point and cycle rules via depende
 
 Don't re-export a whole subtree through one `index.ts` that just forwards everything from `lib/`. Barrels erase the entry-point boundary they're meant to enforce and make it too easy to import something that should stay private. Prefer several small, purposeful entry points — `index.ts`, `client.ts`, `server.ts`, … — each importing only what it needs from `lib/` directly.
 
+## First real package: @tab-sorter/core
+
+`packages/core` is the first real package under this regime — the chrome-free planning layer: the TabLite/TabPlan vocabulary and the planners that operate on it (sort, tidy, dedupe, undo, and friends), each behind its own entry point (`./types`, `./plan`, `./tidy`, …) rather than one barrel. Raw browser tab shapes never enter it; callers convert to `TabLite` before crossing in.
+
 ## Copy-me template
 
 `packages/example/` is a template to copy for a new package:

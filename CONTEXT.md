@@ -6,14 +6,14 @@ This file names the **domain**.
 
 ## Core nouns
 
-- **TabLite** (`lib/types.ts`) — the trimmed tab the pure layer reasons about:
+- **TabLite** (`@tab-sorter/core/types`) — the trimmed tab the pure layer reasons about:
   `{ id, url, title, index, pinned }` plus optional `groupId` (live tab-group id;
   `TAB_GROUP_NONE` when ungrouped; optional so plain-array test fixtures stay terse).
   It is the only shape `domain`/`sort`/`match`/`plan`/`tidy`/`dedupe`/`undo` see. Raw
   browser tab shapes stay inside `tabs-service` and the mutation adapter.
 - **SortMode** — `"title"` (A→Z by page title) or `"domain"` (grouped by domain, then title).
 - **DomainGroup** — `{ domain, count, tabIds }`. Feeds the popup's clickable domain list. Built by
-  `groupByDomain` in `lib/domain-groups.ts` (domain-bucketing of tabs), sibling to `match.ts`'s
+  `groupByDomain` in `@tab-sorter/core/domain-groups` (domain-bucketing of tabs), sibling to `match.ts`'s
   pattern surface. `matchByDomain` (same module) resolves one bucket's ids for extraction.
 - **Prefs** — `{ defaultSort, ignorePinned, regexPresets }` plus the Layer 1 tidy/dedupe knobs
   (`collapseAfterTidy`, `minGroupSize`, `groupOrder`, `regroupExisting`, `dedupeIgnoreHash`,
@@ -26,23 +26,23 @@ This file names the **domain**.
   a permutation of `tabs.map(t => t.id)`. This bare `number[]` is the seam between pure
   planning and the side-effect adapter — today the `order` field of a `TabPlan` (below),
   anchored at index 0.
-- **planWindowOrder** (`lib/plan.ts`) — the one **pinned-aware** ordering rule, built on
-  the pinned-agnostic primitives in `lib/sort.ts`. Owns the pinned-front invariant. Its
-  interface is the test surface (`lib/plan.test.ts`, plain arrays, no browser mock).
+- **planWindowOrder** (`@tab-sorter/core/plan`) — the one **pinned-aware** ordering rule, built on
+  the pinned-agnostic primitives in `@tab-sorter/core/sort`. Owns the pinned-front invariant. Its
+  interface is the test surface (`packages/core/tests/plan.test.ts`, plain arrays, no browser mock).
 - **pinned-front invariant** — Chrome keeps pinned tabs as a contiguous block at the window
   front. It **silently clamps** any move that crosses that boundary: no throw, no unpin, just
   a wrong permutation. Verified HIGH-confidence against the `chrome.tabs` contract.
 - **never-interleave construction** — `[...pinnedOrder, ...sortFn(unpinned)]`: sort each
   region separately, concatenate pinned-first. A comparator can never float a pinned id into
   the unpinned region, so the clamp bug is structurally unrepresentable. **Must stay split
-  forever**: one comparator over all tabs reintroduces the bug. `lib/plan.test.ts` guards the
+  forever**: one comparator over all tabs reintroduces the bug. `packages/core/tests/plan.test.ts` guards the
   regression.
 - **ignorePinned** — when set, the pinned block keeps its current order (frozen); otherwise
   pinned tabs sort among themselves. Either way, pinned ids precede unpinned ids.
 
 ## Matching patterns
 
-- **the pattern surface** (`lib/match.ts`) — the one public home for judging and running a
+- **the pattern surface** (`@tab-sorter/core/match`) — the one public home for judging and running a
   user-supplied regex. Three **non-throwing** entry points, so validity is one rule everywhere:
   - **validatePattern** (`source`, `flags`) → **PatternVerdict** (`{ ok: true; regex }` |
     `{ ok: false; reason }`). Enforces the **match safety cap**, then compiles. The tabs-less
@@ -70,7 +70,7 @@ This file names the **domain**.
   re-queries the explicit target window, drops vanished ids, and issues only the needed moves
   via `planMoves` and single-id `browser.tabs.move` calls. Not a public mutation seam.
   `realizePlan` uses it when neither the plan nor the live window touches groups.
-- **planMoves / minimal-moves diff** (`lib/tab-moves.ts`) — pure internal helper of the realize
+- **planMoves / minimal-moves diff** (`@tab-sorter/core/tab-moves`) — pure internal helper of the realize
   layer (not on `applyOrder`'s interface). Keeps the longest already-in-order run (the LIS by
   target rank) fixed and relocates only the rest, so an almost-sorted window flickers a handful
   of tabs, not all N. Proven correct and minimal (`moves == n − LIS`) over every permutation up
@@ -81,7 +81,7 @@ This file names the **domain**.
 
 ## The TabPlan IR
 
-- **TabPlan** (`lib/types.ts`) — the widened seam: `{ order, groups, ungroup, close }`.
+- **TabPlan** (`@tab-sorter/core/types`) — the widened seam: `{ order, groups, ungroup, close }`.
   **order** is a permutation of the live unclosed tab ids, pinned-first (Window order,
   generalized); **empty `order` means "leave positions alone"** — dedupe only sets `close`,
   never touches position. **groups** is the desired `GroupSpec[]` (below). **ungroup** lists
@@ -91,12 +91,12 @@ This file names the **domain**.
   the degenerate case — `{ order: desiredOrder, groups: [], ungroup: [], close: [] }` — so sort,
   tidy, dedupe, and undo all compile to this IR inside `executeMutation`, and the private
   realizer consumes it. See `docs/adr/0002-tabplan-realize.md`.
-- **GroupSpec** (`lib/types.ts`) — `{ key, title, color, collapsed, tabIds }`. `tabIds` is a
+- **GroupSpec** (`@tab-sorter/core/types`) — `{ key, title, color, collapsed, tabIds }`. `tabIds` is a
   contiguous slice of `order` with no pinned ids (grouping silently unpins — the fact-checked
   gotcha below). `key` is the plan-local identity a producer picks: `planTidy` uses the domain,
   `planUndo` uses `g${groupId}`. The group reconciler (below) never needs a live `groupId` from
   a producer, only this stable key.
-- **planTidy** (`lib/tidy.ts`) — the one producer that builds both `order` and `groups` from a
+- **planTidy** (`@tab-sorter/core/tidy`) — the one producer that builds both `order` and `groups` from a
   bare tab list. Buckets ungrouped, unpinned tabs by `getDomain`. Buckets below `minGroupSize`
   stay ungrouped leftovers. Each surviving bucket sorts by title (`sortByTitle`); the buckets
   themselves order alpha or size-desc (`GroupOrder`). With `regroupExisting` off (default), an
@@ -104,7 +104,7 @@ This file names the **domain**.
   region, and `ungroup` stays empty — tidy claims only *ungrouped* unpinned tabs. With it on,
   every unpinned tab is reclaimed and rebucketed by domain, dissolving old groups; a
   previously-grouped tab that lands as a leftover singleton is reported in `ungroup` (one
-  absorbed into a *new* group needs no entry). **assignColor** (`lib/domain.ts` — the domain
+  absorbed into a *new* group needs no entry). **assignColor** (`@tab-sorter/core/domain` — the domain
   vocabulary: name + color) is a deterministic djb2-hash → 9-color palette lookup, so a domain
   always gets the same swatch. Collisions across >9 domains are expected and accepted; the title
   disambiguates.
@@ -164,7 +164,7 @@ This file names the **domain**.
 
 ## Dedupe
 
-- **planDedupe** (`lib/dedupe.ts`) — buckets tabs by `normalizeUrl` (protocol + lower-cased
+- **planDedupe** (`@tab-sorter/core/dedupe`) — buckets tabs by `normalizeUrl` (protocol + lower-cased
   host + trailing-slash-trimmed path; hash/query stripped per `dedupeIgnoreHash` /
   `dedupeIgnoreQuery`). A bucket of size 1 is never a duplicate. **pinned-keeper rule**: within
   a duplicate bucket, the keeper is the lowest-index *pinned* tab if any pinned tab exists, else
@@ -177,7 +177,7 @@ This file names the **domain**.
 
 ## Undo
 
-- **planUndo** (`lib/undo.ts`) — turns a captured `WindowSnapshot` back into a `TabPlan`
+- **planUndo** (`@tab-sorter/core/undo`) — turns a captured `WindowSnapshot` back into a `TabPlan`
   against whatever the window looks like NOW. Survivors partition by their **current** pinned
   flag, never the snapshot's, respecting any pin change since the snapshot. Each partition orders
   by snapshot index, concatenated pinned-first. A tab whose pin state flipped migrates to the

@@ -6,6 +6,7 @@ import { requestPrefsPatch } from "@/lib/runtime";
 import { getPrefs, onPrefsChanged } from "@/lib/storage";
 import type { GroupColor, GroupOrder, Prefs, RegexPreset, SortMode } from "@tab-sorter/core/types";
 import { DEFAULT_PREFS } from "@tab-sorter/core/types";
+import { MIN_GROUP_SIZE_CEIL, MIN_GROUP_SIZE_FLOOR } from "@tab-sorter/core/prefs";
 
 import "./App.css";
 
@@ -51,13 +52,6 @@ function validatePreset(draft: PresetDraft, existingCount: number): string {
   return "";
 }
 
-// Mirrors storage.ts' normalizeMinGroupSize bounds — a value outside this
-// range would just be clamped back to DEFAULT_PREFS on the next load, so the
-// input rejects it up front instead of silently persisting a value that
-// won't stick. Floor is 2, not 1: a "group" of one tab is the exact noise
-// this pref exists to prevent (DESIGN-SPEC's stepper floor agrees).
-const MIN_GROUP_SIZE_FLOOR = 2;
-const MIN_GROUP_SIZE_CEIL = 99;
 const MIN_GROUP_SIZE_ERROR = `Enter a whole number from ${MIN_GROUP_SIZE_FLOOR} to ${MIN_GROUP_SIZE_CEIL}.`;
 
 function parseMinGroupSize(raw: string): number | undefined {
