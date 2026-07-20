@@ -5,7 +5,7 @@ import {
   type Prefs,
   type RegexPreset,
   type SortMode,
-} from "./types";
+} from "@tab-sorter/core/types";
 
 const PREFS_KEY = "prefs";
 const SORT_MODES = new Set<SortMode>(["title", "domain"]);

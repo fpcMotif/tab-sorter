@@ -1,6 +1,6 @@
 import { planMoves } from "./tab-moves";
-import { TAB_GROUP_NONE } from "./types";
-import type { GroupSpec, TabPlan } from "./types";
+import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
+import type { GroupSpec, TabPlan } from "@tab-sorter/core/types";
 
 interface RawTab {
   id?: number;

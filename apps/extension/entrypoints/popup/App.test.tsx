@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DEFAULT_PREFS } from "@/lib/types";
+import { DEFAULT_PREFS } from "@tab-sorter/core/types";
 
 import App from "./App";
 

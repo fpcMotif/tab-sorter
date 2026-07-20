@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { normalizeUrl, planDedupe, type DedupeOptions } from "./dedupe";
-import type { TabLite } from "./types";
+import type { TabLite } from "@tab-sorter/core/types";
 
 function tab(id: number, url: string, index = id, pinned = false): TabLite {
   return { id, title: `T${id}`, url, index, pinned };

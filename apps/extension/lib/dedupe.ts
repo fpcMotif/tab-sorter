@@ -1,4 +1,4 @@
-import type { TabLite } from "./types";
+import type { TabLite } from "@tab-sorter/core/types";
 
 export interface DedupeOptions {
   ignoreHash: boolean;

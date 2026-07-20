@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { realizePlan } from "./mutation-realize";
-import { TAB_GROUP_NONE } from "./types";
-import type { GroupColor, TabPlan } from "./types";
+import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
+import type { GroupColor, TabPlan } from "@tab-sorter/core/types";
 
 interface FakeStripTab {
   id: number;

@@ -15,7 +15,7 @@ import { protocolError } from "./protocol-error";
 import { getPrefs } from "./storage";
 import { moveTabsToNewWindow } from "./tabs-service";
 import { planTidy } from "./tidy";
-import { TAB_GROUP_NONE } from "./types";
+import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
 import type {
   GroupColor,
   SnapshotGroup,
@@ -24,7 +24,7 @@ import type {
   TabLite,
   TabPlan,
   WindowSnapshot,
-} from "./types";
+} from "@tab-sorter/core/types";
 import { planUndo } from "./undo";
 
 export type ExtractMatcher =

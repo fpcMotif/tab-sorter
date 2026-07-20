@@ -4,8 +4,8 @@ import { useAsyncAction } from "@/hooks/use-async-action";
 import { reasonToString, validatePattern } from "@/lib/match";
 import { requestPrefsPatch } from "@/lib/runtime";
 import { getPrefs, onPrefsChanged } from "@/lib/storage";
-import type { GroupColor, GroupOrder, Prefs, RegexPreset, SortMode } from "@/lib/types";
-import { DEFAULT_PREFS } from "@/lib/types";
+import type { GroupColor, GroupOrder, Prefs, RegexPreset, SortMode } from "@tab-sorter/core/types";
+import { DEFAULT_PREFS } from "@tab-sorter/core/types";
 
 import "./App.css";
 

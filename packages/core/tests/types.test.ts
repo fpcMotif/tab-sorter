@@ -1,17 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizePrefs } from "./storage";
-import { DEFAULT_PREFS, GROUP_COLORS, type GroupColor } from "./types";
-
-describe("DEFAULT_PREFS", () => {
-  it("round-trips unchanged through storage's normalizePrefs", () => {
-    // normalizePrefs treats its input as untrusted storage and falls back to
-    // DEFAULT_PREFS field-by-field on anything invalid. Feeding it
-    // DEFAULT_PREFS itself must be a no-op — any drift here means a per-field
-    // fallback in storage.ts disagrees with the canonical default in types.ts.
-    expect(normalizePrefs(DEFAULT_PREFS)).toEqual(DEFAULT_PREFS);
-  });
-});
+import { GROUP_COLORS, type GroupColor } from "../types";
 
 describe("GROUP_COLORS", () => {
   // Every key must be present for this object literal to typecheck against

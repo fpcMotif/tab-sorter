@@ -2,7 +2,7 @@ import { fakeBrowser } from "@webext-core/fake-browser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { loadMutationHistory, saveMutationHistory } from "./mutation-history";
-import type { WindowSnapshot } from "./types";
+import type { WindowSnapshot } from "@tab-sorter/core/types";
 
 function snapshot(windowId = 7): WindowSnapshot {
   return {

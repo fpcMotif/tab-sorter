@@ -1,6 +1,6 @@
 import { getDomain } from "./domain";
-import { compareText } from "./text";
-import type { TabLite } from "./types";
+import { compareText } from "@tab-sorter/core/text";
+import type { TabLite } from "@tab-sorter/core/types";
 
 function compareByTitle(left: TabLite, right: TabLite): number {
   return (

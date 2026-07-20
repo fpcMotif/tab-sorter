@@ -1,6 +1,6 @@
 import { getDomain } from "./domain";
-import { compareText } from "./text";
-import type { DomainGroup, TabLite } from "./types";
+import { compareText } from "@tab-sorter/core/text";
+import type { DomainGroup, TabLite } from "@tab-sorter/core/types";
 
 export function groupByDomain(tabs: TabLite[]): DomainGroup[] {
   const groups = new Map<string, DomainGroup>();

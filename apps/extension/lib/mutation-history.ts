@@ -1,5 +1,5 @@
-import { GROUP_COLORS } from "./types";
-import type { SnapshotGroup, SnapshotTab, WindowSnapshot } from "./types";
+import { GROUP_COLORS } from "@tab-sorter/core/types";
+import type { SnapshotGroup, SnapshotTab, WindowSnapshot } from "@tab-sorter/core/types";
 
 export interface RestorePoint {
   snapshot: WindowSnapshot;

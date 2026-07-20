@@ -1,0 +1,28 @@
+{
+  "name": "@tab-sorter/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./types": "./types.ts",
+    "./text": "./text.ts"
+  },
+  "scripts": {
+    "check-types": "bunx tsgo -config tsconfig.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "oxlint -c .oxlintrc.json .",
+    "format": "oxfmt --write '**/*.ts'",
+    "format:check": "oxfmt --check '**/*.ts'"
+  },
+  "devDependencies": {
+    "@tab-sorter/config": "*",
+    "@rslint/tsgo": "^0.6.2",
+    "@types/node": "^25.9.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9",
+    "@vitest/coverage-v8": "^4.1.9",
+    "oxlint": "^1.70.0",
+    "oxfmt": "^0.55.0"
+  }
+}

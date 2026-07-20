@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getAllWindowsExtract, getPopupData, getSelectedTabs } from "./window-queries";
-import { DEFAULT_PREFS, type Prefs, type TabLite } from "./types";
+import { DEFAULT_PREFS, type Prefs, type TabLite } from "@tab-sorter/core/types";
 
 const mocks = vi.hoisted(() => ({
   getCurrentWindow: vi.fn(),

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { assignColor, getDomain } from "./domain";
-import { GROUP_COLORS } from "./types";
+import { GROUP_COLORS } from "@tab-sorter/core/types";
 
 describe("getDomain", () => {
   it("normalizes http hosts and strips www", () => {

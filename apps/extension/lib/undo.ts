@@ -1,5 +1,5 @@
-import { TAB_GROUP_NONE } from "./types";
-import type { GroupSpec, TabLite, TabPlan, WindowSnapshot } from "./types";
+import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
+import type { GroupSpec, TabLite, TabPlan, WindowSnapshot } from "@tab-sorter/core/types";
 
 function byIndex(a: { index: number }, b: { index: number }): number {
   return a.index - b.index;

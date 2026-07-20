@@ -9,7 +9,7 @@ import {
   requestPrefsPatch,
   type BackgroundRequest,
 } from "./runtime";
-import { DEFAULT_PREFS } from "./types";
+import { DEFAULT_PREFS } from "@tab-sorter/core/types";
 
 const request = {
   v: 1,

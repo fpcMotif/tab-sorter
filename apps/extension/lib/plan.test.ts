@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { planWindowOrder } from "./plan";
-import type { TabLite } from "./types";
+import type { TabLite } from "@tab-sorter/core/types";
 
 function tab(id: number, title: string, url: string, pinned = false): TabLite {
   return { id, title, url, index: id, pinned };

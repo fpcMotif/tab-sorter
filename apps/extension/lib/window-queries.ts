@@ -8,7 +8,7 @@ import {
   getHighlightedTabs,
   getWindowCount,
 } from "./tabs-service";
-import type { DomainGroup, Prefs, TabLite } from "./types";
+import type { DomainGroup, Prefs, TabLite } from "@tab-sorter/core/types";
 
 export interface PopupData {
   windowId: number;

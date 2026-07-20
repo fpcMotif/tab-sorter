@@ -21,7 +21,13 @@ import { assignColor } from "@/lib/domain";
 import { MATCH_SAFETY_CAP, matchPattern, reasonToString } from "@/lib/match";
 import type { ExtractMatcher, ExtractScope } from "@/lib/mutation";
 import { requestMutation } from "@/lib/runtime";
-import type { ClipboardFormat, DomainGroup, ExportFormat, GroupColor, SortMode } from "@/lib/types";
+import type {
+  ClipboardFormat,
+  DomainGroup,
+  ExportFormat,
+  GroupColor,
+  SortMode,
+} from "@tab-sorter/core/types";
 import {
   getAllWindowsExtract,
   getPopupData,

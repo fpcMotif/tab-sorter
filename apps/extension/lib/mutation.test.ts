@@ -5,8 +5,8 @@ import { assignColor } from "./domain";
 import { saveMutationHistory } from "./mutation-history";
 import { executeMutation, getMutationState, isMutationIntent } from "./mutation";
 import { commitPrefsPatch } from "./storage";
-import { TAB_GROUP_NONE } from "./types";
-import type { GroupColor, WindowSnapshot } from "./types";
+import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
+import type { GroupColor, WindowSnapshot } from "@tab-sorter/core/types";
 
 interface FakeTab {
   id: number;

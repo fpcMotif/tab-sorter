@@ -7,7 +7,7 @@ import {
   COPY_FORMATS,
   DOWNLOAD_FORMATS,
 } from "./export";
-import type { TabLite } from "./types";
+import type { TabLite } from "@tab-sorter/core/types";
 
 function makeTabs(
   items: Array<Partial<TabLite> & { id: number; title: string; url: string }>,

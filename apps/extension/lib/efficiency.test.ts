@@ -14,7 +14,7 @@ vi.mock("./domain", async (importOriginal) => {
 import { getDomain } from "./domain";
 import { groupByDomain, matchByDomain } from "./domain-groups";
 import { sortByDomain } from "./sort";
-import type { TabLite } from "./types";
+import type { TabLite } from "@tab-sorter/core/types";
 
 const getDomainSpy = vi.mocked(getDomain);
 

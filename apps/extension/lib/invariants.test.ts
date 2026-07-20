@@ -5,7 +5,7 @@ import { groupByDomain } from "./domain-groups";
 import { planWindowOrder } from "./plan";
 import { sortByDomain, sortByTitle } from "./sort";
 import { planMoves, type TabMove } from "./tab-moves";
-import type { SortMode, TabLite } from "./types";
+import type { SortMode, TabLite } from "@tab-sorter/core/types";
 
 // Property-based discovery suite. Where the per-module tests pin specific
 // examples, this file fuzzes each pure core against the invariants it must hold
