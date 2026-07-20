@@ -14,7 +14,7 @@ import { planWindowOrder } from "@tab-sorter/core/plan";
 import { protocolError } from "./protocol-error";
 import { getPrefs } from "./storage";
 import { moveTabsToNewWindow } from "./tabs-service";
-import { planTidy } from "./tidy";
+import { planTidy } from "@tab-sorter/core/tidy";
 import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
 import type {
   GroupColor,
@@ -25,7 +25,7 @@ import type {
   TabPlan,
   WindowSnapshot,
 } from "@tab-sorter/core/types";
-import { planUndo } from "./undo";
+import { planUndo } from "@tab-sorter/core/undo";
 
 export type ExtractMatcher =
   | { type: "domain"; domain: string }

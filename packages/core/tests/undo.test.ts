@@ -1,14 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { planUndo } from "./undo";
-import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
-import type {
-  GroupColor,
-  SnapshotGroup,
-  SnapshotTab,
-  TabLite,
-  WindowSnapshot,
-} from "@tab-sorter/core/types";
+import { planUndo } from "../undo";
+import { TAB_GROUP_NONE } from "../types";
+import type { GroupColor, SnapshotGroup, SnapshotTab, TabLite, WindowSnapshot } from "../types";
 
 function stab(
   id: number,

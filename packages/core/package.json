@@ -11,7 +11,10 @@
     "./plan": "./plan.ts",
     "./match": "./match.ts",
     "./dedupe": "./dedupe.ts",
-    "./domain-groups": "./domain-groups.ts"
+    "./domain-groups": "./domain-groups.ts",
+    "./tidy": "./tidy.ts",
+    "./undo": "./undo.ts",
+    "./tab-moves": "./tab-moves.ts"
   },
   "scripts": {
     "check-types": "bunx tsgo -config tsconfig.json",

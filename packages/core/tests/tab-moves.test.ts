@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { planMoves, type TabMove } from "./tab-moves";
+import { planMoves, type TabMove } from "../tab-moves";
 
 // Replays moves the way a single-id `browser.tabs.move(id, { index })` does:
 // remove the tab, then reinsert it at the destination index.

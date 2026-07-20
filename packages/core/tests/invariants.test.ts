@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { getDomain } from "@tab-sorter/core/domain";
-import { groupByDomain } from "@tab-sorter/core/domain-groups";
-import { planWindowOrder } from "@tab-sorter/core/plan";
-import { sortByDomain, sortByTitle } from "@tab-sorter/core/sort";
-import { planMoves, type TabMove } from "./tab-moves";
-import type { SortMode, TabLite } from "@tab-sorter/core/types";
+import { getDomain } from "../domain";
+import { groupByDomain } from "../domain-groups";
+import { planWindowOrder } from "../plan";
+import { sortByDomain, sortByTitle } from "../sort";
+import { planMoves, type TabMove } from "../tab-moves";
+import type { SortMode, TabLite } from "../types";
 
 // Property-based discovery suite. Where the per-module tests pin specific
 // examples, this file fuzzes each pure core against the invariants it must hold

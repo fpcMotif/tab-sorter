@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { planTidy } from "./tidy";
-import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
-import type { GroupOrder, Prefs, TabLite } from "@tab-sorter/core/types";
+import { planTidy } from "../tidy";
+import { TAB_GROUP_NONE } from "../types";
+import type { GroupOrder, Prefs, TabLite } from "../types";
 
 type TidyPrefs = Pick<
   Prefs,

@@ -1,4 +1,4 @@
-import { planMoves } from "./tab-moves";
+import { planMoves } from "@tab-sorter/core/tab-moves";
 import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
 import type { GroupSpec, TabPlan } from "@tab-sorter/core/types";
 
