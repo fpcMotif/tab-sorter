@@ -16,7 +16,8 @@
     "./undo": "./undo.ts",
     "./tab-moves": "./tab-moves.ts",
     "./protocol-error": "./protocol-error.ts",
-    "./export": "./export.ts"
+    "./export": "./export.ts",
+    "./prefs": "./prefs.ts"
   },
   "scripts": {
     "check-types": "bunx tsgo -config tsconfig.json",

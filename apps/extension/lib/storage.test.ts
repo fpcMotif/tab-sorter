@@ -1,7 +1,7 @@
 import { fakeBrowser } from "@webext-core/fake-browser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { commitPrefsPatch, getPrefs, normalizePrefs, onPrefsChanged } from "./storage";
+import { commitPrefsPatch, getPrefs, onPrefsChanged } from "./storage";
 import { DEFAULT_PREFS } from "@tab-sorter/core/types";
 
 describe("prefs storage", () => {
@@ -263,16 +263,6 @@ describe("prefs storage", () => {
     await expect(getPrefs()).resolves.toMatchObject({
       dedupeIgnoreQuery: DEFAULT_PREFS.dedupeIgnoreQuery,
     });
-  });
-});
-
-describe("DEFAULT_PREFS", () => {
-  it("round-trips unchanged through storage's normalizePrefs", () => {
-    // normalizePrefs treats its input as untrusted storage and falls back to
-    // DEFAULT_PREFS field-by-field on anything invalid. Feeding it
-    // DEFAULT_PREFS itself must be a no-op — any drift here means a per-field
-    // fallback in storage.ts disagrees with the canonical default in types.ts.
-    expect(normalizePrefs(DEFAULT_PREFS)).toEqual(DEFAULT_PREFS);
   });
 });
 
