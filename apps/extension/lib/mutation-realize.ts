@@ -1,12 +1,7 @@
 import { planMoves } from "@tab-sorter/core/tab-moves";
+import type { RawTab } from "./tabs-service";
 import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
 import type { GroupSpec, TabPlan } from "@tab-sorter/core/types";
-
-interface RawTab {
-  id?: number;
-  pinned?: boolean;
-  groupId?: number;
-}
 
 interface StripTab {
   id: number;

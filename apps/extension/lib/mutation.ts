@@ -13,7 +13,7 @@ import { realizePlan } from "./mutation-realize";
 import { planWindowOrder } from "@tab-sorter/core/plan";
 import { protocolError } from "@tab-sorter/core/protocol-error";
 import { getPrefs } from "./storage";
-import { moveTabsToNewWindow, toTabLite } from "./tabs-service";
+import { moveTabsToNewWindow, toTabLite, type RawTab } from "./tabs-service";
 import { planTidy } from "@tab-sorter/core/tidy";
 import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
 import type {
@@ -77,18 +77,6 @@ export type MutationResult<Intent extends MutationIntent = MutationIntent> =
 export interface MutationState {
   canUndo: boolean;
   recoveryRequired: boolean;
-}
-
-interface RawTab {
-  id?: number;
-  url?: string;
-  pendingUrl?: string;
-  title?: string;
-  index?: number;
-  pinned?: boolean;
-  groupId?: number;
-  windowId?: number;
-  active?: boolean;
 }
 
 interface CapturedWindow {

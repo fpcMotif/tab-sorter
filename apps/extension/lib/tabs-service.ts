@@ -1,7 +1,7 @@
 import { TAB_GROUP_NONE } from "@tab-sorter/core/types";
 import type { TabLite } from "@tab-sorter/core/types";
 
-interface RawTab {
+export interface RawTab {
   id?: number;
   url?: string;
   pendingUrl?: string;
@@ -9,6 +9,8 @@ interface RawTab {
   index?: number;
   pinned?: boolean;
   groupId?: number;
+  windowId?: number;
+  active?: boolean;
 }
 
 // A still-loading tab reports an empty url; pendingUrl carries its real
