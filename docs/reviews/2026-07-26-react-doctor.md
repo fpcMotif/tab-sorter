@@ -36,3 +36,11 @@ Baseline: 72/100. 20 warnings: 18 performance, 2 maintainability.
 Fix the 12 high-confidence performance findings. Preserve the six ordered or
 bounded operations. Leave the two component splits for focused UI work with
 interaction tests.
+
+## Post-fix verification
+
+React Doctor 0.9.1 reports 8 warnings: the six false positives and two deferred
+component splits above. The 12 targeted warnings are gone.
+
+The pinned 0.5.6 blocking gate reports 3 warnings and stays red. Types, lint,
+module boundaries, formatting, 365 tests, and the Chrome build pass.
