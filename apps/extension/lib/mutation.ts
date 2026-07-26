@@ -713,11 +713,13 @@ async function executeExtractAll(
   // Gate on the windows we would actually touch. Running under the exclusive
   // barrier, no live mutation is in flight, so any pending is a crashed journal.
   const sourceWindows = [...new Set(ids.map((id) => originOf.get(id)!))];
+  const histories = await Promise.all(
+    sourceWindows.map((windowId) => loadMutationHistory(windowId)),
+  );
   const pending: number[] = [];
-  for (const windowId of sourceWindows) {
-    const history = await loadMutationHistory(windowId);
+  for (const [index, history] of histories.entries()) {
     if (history.pending !== undefined) {
-      pending.push(windowId);
+      pending.push(sourceWindows[index]!);
     }
   }
   if (pending.length > 0) {
