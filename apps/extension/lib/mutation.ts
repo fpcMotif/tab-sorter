@@ -217,6 +217,7 @@ function measurePlan(
   const beforeTabs = new Map(before.tabs.map((tab) => [tab.id, tab]));
   const afterTabs = new Map(after.tabs.map((tab) => [tab.id, tab]));
   const desiredGroupIds = new Set(plan.groups.flatMap((group) => group.tabIds));
+  const plannedCloseIds = new Set(plan.close);
   const grouped = [...desiredGroupIds].filter((id) => {
     const beforeGroup = beforeTabs.get(id)?.groupId ?? TAB_GROUP_NONE;
     const afterGroup = afterTabs.get(id)?.groupId ?? TAB_GROUP_NONE;
@@ -239,12 +240,15 @@ function measurePlan(
     members.push(tab.id);
     afterMembers.set(tab.groupId, members);
   }
-  const createdGroups = after.groups
-    .filter((group) => !beforeGroups.has(group.groupId))
-    .filter((group) =>
-      (afterMembers.get(group.groupId) ?? []).some((id) => desiredGroupIds.has(id)),
-    )
-    .map(({ title, color }) => ({ title, color }));
+  const createdGroups: PlanReceipt["createdGroups"] = [];
+  for (const group of after.groups) {
+    if (
+      !beforeGroups.has(group.groupId) &&
+      (afterMembers.get(group.groupId) ?? []).some((id) => desiredGroupIds.has(id))
+    ) {
+      createdGroups.push({ title: group.title, color: group.color });
+    }
+  }
   const groupsUpdated = after.groups.filter((group) => {
     const previous = beforeGroups.get(group.groupId);
     const touchesPlan = (afterMembers.get(group.groupId) ?? []).some((id) =>
@@ -262,7 +266,7 @@ function measurePlan(
   const closed = plan.close.filter((id) => beforeTabs.has(id) && !afterTabs.has(id)).length;
   const reopened = [...new Set(reopenedIds)].filter((id) => afterTabs.has(id)).length;
   const vanished = [...scopedIds].filter(
-    (id) => beforeTabs.has(id) && !afterTabs.has(id) && !plan.close.includes(id),
+    (id) => beforeTabs.has(id) && !afterTabs.has(id) && !plannedCloseIds.has(id),
   ).length;
   const orderChanged =
     beforeOrder.length !== afterOrder.length ||
@@ -474,11 +478,13 @@ async function adoptInterruptedReopen(
   const closeIds = new Set(pending.recoverTo.close);
   // Chrome has no atomic create-and-journal call. Recovery can identify only
   // the sole post-baseline tab with the target URL. Multiple matches fail.
-  const candidates = current.tabs
-    .filter((tab) => !baselineIds.has(tab.id))
-    .filter((tab) => !usedIds.has(tab.id))
-    .filter((tab) => !closeIds.has(tab.id))
-    .filter((tab) => tab.url === target.url);
+  const candidates = current.tabs.filter(
+    (tab) =>
+      !baselineIds.has(tab.id) &&
+      !usedIds.has(tab.id) &&
+      !closeIds.has(tab.id) &&
+      tab.url === target.url,
+  );
 
   if (candidates.length === 0) {
     return pending;
