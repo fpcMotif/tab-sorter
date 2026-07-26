@@ -48,7 +48,8 @@ async function applyOrder(orderedIds: number[], windowId: number): Promise<void>
 
   const currentTabs = (await browser.tabs.query({ windowId })) as RawTab[];
   const liveOrder = currentTabs.flatMap((tab) => (typeof tab.id === "number" ? [tab.id] : []));
-  const survivors = new Set(orderedIds.filter((id) => liveOrder.includes(id)));
+  const liveIds = new Set(liveOrder);
+  const survivors = new Set(orderedIds.filter((id) => liveIds.has(id)));
   const currentOrder = liveOrder.filter((id) => survivors.has(id));
   const targetOrder = orderedIds.filter((id) => survivors.has(id));
   const strip = [...liveOrder];
@@ -121,21 +122,35 @@ async function runGroups(windowId: number, groups: GroupSpec[]): Promise<void> {
     browser.tabGroups.query({ windowId }),
   ]);
 
+  const memberIdsByGroup = new Map<number, number[]>();
+  const survivorIds = new Set<number>();
+  const pinnedIds = new Set<number>();
+  for (const tab of strip) {
+    survivorIds.add(tab.id);
+    if (tab.pinned) {
+      pinnedIds.add(tab.id);
+    }
+    if (tab.groupId !== TAB_GROUP_NONE) {
+      const members = memberIdsByGroup.get(tab.groupId) ?? [];
+      members.push(tab.id);
+      memberIdsByGroup.set(tab.groupId, members);
+    }
+  }
+
   const live: LiveGroup[] = rawGroups.map((group) => ({
     groupId: group.id,
     title: group.title ?? "",
     color: group.color,
     collapsed: group.collapsed,
-    tabIds: strip.filter((tab) => tab.groupId === group.id).map((tab) => tab.id),
+    tabIds: memberIdsByGroup.get(group.id) ?? [],
   }));
-  const survivorIds = new Set(strip.map((tab) => tab.id));
-  const pinnedIds = new Set(strip.filter((tab) => tab.pinned).map((tab) => tab.id));
-  const desired = groups
-    .map((group) => ({
-      ...group,
-      tabIds: group.tabIds.filter((id) => survivorIds.has(id) && !pinnedIds.has(id)),
-    }))
-    .filter((group) => group.tabIds.length > 0);
+  const desired: GroupSpec[] = [];
+  for (const group of groups) {
+    const tabIds = group.tabIds.filter((id) => survivorIds.has(id) && !pinnedIds.has(id));
+    if (tabIds.length > 0) {
+      desired.push({ ...group, tabIds });
+    }
+  }
   const claimed = new Set<number>();
 
   for (const spec of desired) {
@@ -186,14 +201,46 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
 
   const survivorIds = new Set(sim.map((tab) => tab.id));
   const desiredSurvivors = plan.order.filter((id) => survivorIds.has(id));
-  const pinnedIds = new Set(sim.filter((tab) => tab.pinned).map((tab) => tab.id));
-  const idToGroup = new Map(sim.map((tab) => [tab.id, tab.groupId]));
-  const currentPinned = sim.filter((tab) => tab.pinned).map((tab) => tab.id);
+  const pinnedIds = new Set<number>();
+  const idToGroup = new Map<number, number>();
+  const currentPinned: number[] = [];
+  for (const tab of sim) {
+    idToGroup.set(tab.id, tab.groupId);
+    if (tab.pinned) {
+      pinnedIds.add(tab.id);
+      currentPinned.push(tab.id);
+    }
+  }
   const desiredPinned = desiredSurvivors.filter((id) => pinnedIds.has(id));
 
   for (const move of planMoves(currentPinned, desiredPinned)) {
     await browser.tabs.move(move.id, { index: move.index });
     simMove(sim, move.id, move.index);
+  }
+
+  const currentMembersByGroup = new Map<number, number[]>();
+  const groupStartById = new Map<number, number>();
+  for (const [index, tab] of sim.entries()) {
+    if (tab.groupId === TAB_GROUP_NONE) {
+      continue;
+    }
+    if (!groupStartById.has(tab.groupId)) {
+      groupStartById.set(tab.groupId, index);
+    }
+    const members = currentMembersByGroup.get(tab.groupId) ?? [];
+    members.push(tab.id);
+    currentMembersByGroup.set(tab.groupId, members);
+  }
+
+  const desiredMembersByGroup = new Map<number, number[]>();
+  for (const id of desiredSurvivors) {
+    const groupId = idToGroup.get(id)!;
+    if (groupId === TAB_GROUP_NONE) {
+      continue;
+    }
+    const members = desiredMembersByGroup.get(groupId) ?? [];
+    members.push(id);
+    desiredMembersByGroup.set(groupId, members);
   }
 
   const reordered = new Set<number>();
@@ -204,11 +251,9 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
     }
     reordered.add(groupId);
 
-    const currentMembers = sim.filter((tab) => tab.groupId === groupId).map((tab) => tab.id);
-    const desiredMembers = desiredSurvivors.filter(
-      (memberId) => idToGroup.get(memberId) === groupId,
-    );
-    const spanStart = sim.findIndex((tab) => tab.groupId === groupId);
+    const currentMembers = currentMembersByGroup.get(groupId) ?? [];
+    const desiredMembers = desiredMembersByGroup.get(groupId) ?? [];
+    const spanStart = groupStartById.get(groupId)!;
 
     for (const move of planMoves(currentMembers, desiredMembers)) {
       const absoluteIndex = spanStart + move.index;
