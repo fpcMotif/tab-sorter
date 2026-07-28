@@ -25,16 +25,24 @@ describe("normalizePrefs", () => {
     expect(normalizePrefs({ ignorePinned: "yes" }).ignorePinned).toBe(DEFAULT_PREFS.ignorePinned);
 
     expect(normalizePrefs({ collapseAfterTidy: true }).collapseAfterTidy).toBe(true);
-    expect(normalizePrefs({ collapseAfterTidy: "no" }).collapseAfterTidy).toBe(DEFAULT_PREFS.collapseAfterTidy);
+    expect(normalizePrefs({ collapseAfterTidy: "no" }).collapseAfterTidy).toBe(
+      DEFAULT_PREFS.collapseAfterTidy,
+    );
 
     expect(normalizePrefs({ regroupExisting: true }).regroupExisting).toBe(true);
-    expect(normalizePrefs({ regroupExisting: 1 }).regroupExisting).toBe(DEFAULT_PREFS.regroupExisting);
+    expect(normalizePrefs({ regroupExisting: 1 }).regroupExisting).toBe(
+      DEFAULT_PREFS.regroupExisting,
+    );
 
     expect(normalizePrefs({ dedupeIgnoreHash: true }).dedupeIgnoreHash).toBe(true);
-    expect(normalizePrefs({ dedupeIgnoreHash: {} }).dedupeIgnoreHash).toBe(DEFAULT_PREFS.dedupeIgnoreHash);
+    expect(normalizePrefs({ dedupeIgnoreHash: {} }).dedupeIgnoreHash).toBe(
+      DEFAULT_PREFS.dedupeIgnoreHash,
+    );
 
     expect(normalizePrefs({ dedupeIgnoreQuery: true }).dedupeIgnoreQuery).toBe(true);
-    expect(normalizePrefs({ dedupeIgnoreQuery: null }).dedupeIgnoreQuery).toBe(DEFAULT_PREFS.dedupeIgnoreQuery);
+    expect(normalizePrefs({ dedupeIgnoreQuery: null }).dedupeIgnoreQuery).toBe(
+      DEFAULT_PREFS.dedupeIgnoreQuery,
+    );
   });
 
   it("preserves valid minGroupSize boundaries and falls back for invalid ones", () => {
@@ -61,17 +69,21 @@ describe("normalizePrefs", () => {
     const validPreset = { label: "Docs", source: "docs", flags: "i" };
     expect(normalizePrefs({ regexPresets: [validPreset] }).regexPresets).toEqual([validPreset]);
 
-    expect(normalizePrefs({
-      regexPresets: [
-        "not-an-object",
-        null,
-        { label: 1, source: "x", flags: "i" }, // label not string
-        { label: "no-flags", source: "x" }, // missing flags
-        validPreset
-      ]
-    }).regexPresets).toEqual([validPreset]);
+    expect(
+      normalizePrefs({
+        regexPresets: [
+          "not-an-object",
+          null,
+          { label: 1, source: "x", flags: "i" }, // label not string
+          { label: "no-flags", source: "x" }, // missing flags
+          validPreset,
+        ],
+      }).regexPresets,
+    ).toEqual([validPreset]);
 
-    expect(normalizePrefs({ regexPresets: "nope" }).regexPresets).toEqual(DEFAULT_PREFS.regexPresets);
+    expect(normalizePrefs({ regexPresets: "nope" }).regexPresets).toEqual(
+      DEFAULT_PREFS.regexPresets,
+    );
   });
 });
 
