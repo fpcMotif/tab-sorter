@@ -88,6 +88,7 @@ export async function applyOrder(orderedIds: number[], windowId: number): Promis
   // must be replayed strictly in order.
   const strip = [...liveOrder];
 
+  const movePromises: Promise<unknown>[] = [];
   for (const { id, index } of planMoves(currentOrder, targetOrder)) {
     strip.splice(strip.indexOf(id), 1);
     const survivorPositions = strip.flatMap((tabId, position) =>
@@ -96,8 +97,9 @@ export async function applyOrder(orderedIds: number[], windowId: number): Promis
     const absoluteIndex =
       index < survivorPositions.length ? survivorPositions[index]! : strip.length;
     strip.splice(absoluteIndex, 0, id);
-    await browser.tabs.move(id, { index: absoluteIndex });
+    movePromises.push(browser.tabs.move(id, { index: absoluteIndex }));
   }
+  await Promise.all(movePromises);
 }
 
 export async function moveTabsToNewWindow(tabIds: number[]): Promise<void> {
@@ -341,10 +343,12 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
   const currentPinned = sim.filter((tab) => tab.pinned).map((tab) => tab.id);
   const desiredPinned = desiredSurvivors.filter((id) => pinnedIds.has(id));
 
+  const pinnedPromises: Promise<unknown>[] = [];
   for (const move of planMoves(currentPinned, desiredPinned)) {
-    await browser.tabs.move(move.id, { index: move.index });
+    pinnedPromises.push(browser.tabs.move(move.id, { index: move.index }));
     simMove(sim, move.id, move.index);
   }
+  await Promise.all(pinnedPromises);
 
   // (b) Within each live group, fix member order before relocating the group
   // as a whole in (c) — tabGroups.move carries members along in their current
@@ -364,11 +368,13 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
     );
     const spanStart = sim.findIndex((tab) => tab.groupId === groupId);
 
+    const groupPromises: Promise<unknown>[] = [];
     for (const move of planMoves(currentMembers, desiredMembers)) {
       const absoluteIndex = spanStart + move.index;
-      await browser.tabs.move(move.id, { index: absoluteIndex });
+      groupPromises.push(browser.tabs.move(move.id, { index: absoluteIndex }));
       simMove(sim, move.id, absoluteIndex);
     }
+    await Promise.all(groupPromises);
   }
 
   // (c) Top-level blocks: walk the desired unpinned sequence left to right,
@@ -406,12 +412,13 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
   }
 
   let cursor = pinnedIds.size;
+  const blockPromises: Promise<unknown>[] = [];
   for (const block of blocks) {
     if ("id" in block) {
       // cursor walks sim slot-by-slot as blocks are placed; an id block always
       // addresses an existing slot, so sim[cursor] is defined.
       if (sim[cursor]!.id !== block.id) {
-        await browser.tabs.move(block.id, { index: cursor });
+        blockPromises.push(browser.tabs.move(block.id, { index: cursor }));
         simMove(sim, block.id, cursor);
       }
       cursor += 1;
@@ -425,12 +432,13 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
     const spanStart = sim.findIndex((tab) => tab.groupId === block.groupId);
     const spanWidth = sim.filter((tab) => tab.groupId === block.groupId).length;
     if (spanStart !== cursor) {
-      await browser.tabGroups.move(block.groupId, { index: cursor });
+      blockPromises.push(browser.tabGroups.move(block.groupId, { index: cursor }));
       const span = sim.splice(spanStart, spanWidth);
       sim.splice(cursor, 0, ...span);
     }
     cursor += spanWidth;
   }
+  await Promise.all(blockPromises);
 }
 
 // Surviving `plan.close` ids, removed with one batch call; already-vanished
