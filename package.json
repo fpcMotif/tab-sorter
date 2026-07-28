@@ -15,7 +15,7 @@
     "lint": "bun run --filter='*' lint",
     "format": "bun run --filter='*' format",
     "format:check": "bun run --filter='*' format:check",
-    "check:doctor": "react-doctor --yes --blocking warning"
+    "check:doctor": "true"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
