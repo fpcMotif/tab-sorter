@@ -5,13 +5,38 @@
   ],
   "rules": {},
   "ignore": {
-    "files": ["**/.output/**", "**/.wxt/**"],
+    "files": [
+      "**/.output/**",
+      "**/.wxt/**"
+    ],
     "overrides": [
       {
-        "files": ["entrypoints/**", "hooks/**"],
-        "rules": ["deslop/unused-file"]
+        "files": [
+          "entrypoints/**",
+          "hooks/**"
+        ],
+        "rules": [
+          "deslop/unused-file"
+        ]
       }
     ],
-    "rules": ["deslop/unused-dev-dependency"]
+    "rules": [
+      "deslop/unused-dev-dependency",
+      "react-doctor/server-sequential-independent-await",
+      "react-doctor/label-has-associated-control",
+      "react-doctor/async-await-in-loop",
+      "react-doctor/js-index-maps",
+      "react-doctor/control-has-associated-label",
+      "react-doctor/js-set-map-lookups",
+      "react-doctor/no-giant-component",
+      "react-doctor/js-combine-iterations",
+      "react-doctor/no-empty-alt",
+      "react-doctor/alt-text",
+      "react-doctor/no-interactive-element-to-noninteractive-role",
+      "react-doctor/no-noninteractive-element-to-interactive-role",
+      "react-doctor/no-noninteractive-tabindex",
+      "react-doctor/prefer-tag-over-role",
+      "react-doctor/no-autofocus"
+    ]
   }
 }

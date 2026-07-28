@@ -1,8 +1,91 @@
 import { fakeBrowser } from "@webext-core/fake-browser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getPrefs, onPrefsChanged, setPrefs } from "./storage";
+import { getPrefs, normalizePrefs, onPrefsChanged, setPrefs } from "./storage";
 import { DEFAULT_PREFS } from "./types";
+
+describe("normalizePrefs", () => {
+  it("returns defaults for empty or invalid inputs", () => {
+    expect(normalizePrefs(undefined)).toEqual(DEFAULT_PREFS);
+    expect(normalizePrefs(null)).toEqual(DEFAULT_PREFS);
+    expect(normalizePrefs("not an object")).toEqual(DEFAULT_PREFS);
+    expect(normalizePrefs(123)).toEqual(DEFAULT_PREFS);
+    expect(normalizePrefs({})).toEqual(DEFAULT_PREFS);
+  });
+
+  it("preserves valid sort modes and falls back for invalid ones", () => {
+    expect(normalizePrefs({ defaultSort: "domain" }).defaultSort).toBe("domain");
+    expect(normalizePrefs({ defaultSort: "title" }).defaultSort).toBe("title");
+    expect(normalizePrefs({ defaultSort: "invalid" }).defaultSort).toBe(DEFAULT_PREFS.defaultSort);
+  });
+
+  it("preserves valid booleans and falls back for invalid ones", () => {
+    expect(normalizePrefs({ ignorePinned: true }).ignorePinned).toBe(true);
+    expect(normalizePrefs({ ignorePinned: false }).ignorePinned).toBe(false);
+    expect(normalizePrefs({ ignorePinned: "yes" }).ignorePinned).toBe(DEFAULT_PREFS.ignorePinned);
+
+    expect(normalizePrefs({ collapseAfterTidy: true }).collapseAfterTidy).toBe(true);
+    expect(normalizePrefs({ collapseAfterTidy: "no" }).collapseAfterTidy).toBe(
+      DEFAULT_PREFS.collapseAfterTidy,
+    );
+
+    expect(normalizePrefs({ regroupExisting: true }).regroupExisting).toBe(true);
+    expect(normalizePrefs({ regroupExisting: 1 }).regroupExisting).toBe(
+      DEFAULT_PREFS.regroupExisting,
+    );
+
+    expect(normalizePrefs({ dedupeIgnoreHash: true }).dedupeIgnoreHash).toBe(true);
+    expect(normalizePrefs({ dedupeIgnoreHash: {} }).dedupeIgnoreHash).toBe(
+      DEFAULT_PREFS.dedupeIgnoreHash,
+    );
+
+    expect(normalizePrefs({ dedupeIgnoreQuery: true }).dedupeIgnoreQuery).toBe(true);
+    expect(normalizePrefs({ dedupeIgnoreQuery: null }).dedupeIgnoreQuery).toBe(
+      DEFAULT_PREFS.dedupeIgnoreQuery,
+    );
+  });
+
+  it("preserves valid minGroupSize boundaries and falls back for invalid ones", () => {
+    expect(normalizePrefs({ minGroupSize: 2 }).minGroupSize).toBe(2);
+    expect(normalizePrefs({ minGroupSize: 99 }).minGroupSize).toBe(99);
+
+    // Invalid values
+    expect(normalizePrefs({ minGroupSize: 1 }).minGroupSize).toBe(DEFAULT_PREFS.minGroupSize);
+    expect(normalizePrefs({ minGroupSize: 0 }).minGroupSize).toBe(DEFAULT_PREFS.minGroupSize);
+    expect(normalizePrefs({ minGroupSize: 100 }).minGroupSize).toBe(DEFAULT_PREFS.minGroupSize);
+    expect(normalizePrefs({ minGroupSize: 2.5 }).minGroupSize).toBe(DEFAULT_PREFS.minGroupSize);
+    expect(normalizePrefs({ minGroupSize: "2" }).minGroupSize).toBe(DEFAULT_PREFS.minGroupSize);
+    expect(normalizePrefs({ minGroupSize: -5 }).minGroupSize).toBe(DEFAULT_PREFS.minGroupSize);
+  });
+
+  it("preserves valid groupOrder and falls back for invalid ones", () => {
+    expect(normalizePrefs({ groupOrder: "alpha" }).groupOrder).toBe("alpha");
+    expect(normalizePrefs({ groupOrder: "sizeDesc" }).groupOrder).toBe("sizeDesc");
+    expect(normalizePrefs({ groupOrder: "invalid" }).groupOrder).toBe(DEFAULT_PREFS.groupOrder);
+    expect(normalizePrefs({ groupOrder: 123 }).groupOrder).toBe(DEFAULT_PREFS.groupOrder);
+  });
+
+  it("validates and filters regexPresets", () => {
+    const validPreset = { label: "Docs", source: "docs", flags: "i" };
+    expect(normalizePrefs({ regexPresets: [validPreset] }).regexPresets).toEqual([validPreset]);
+
+    expect(
+      normalizePrefs({
+        regexPresets: [
+          "not-an-object",
+          null,
+          { label: 1, source: "x", flags: "i" }, // label not string
+          { label: "no-flags", source: "x" }, // missing flags
+          validPreset,
+        ],
+      }).regexPresets,
+    ).toEqual([validPreset]);
+
+    expect(normalizePrefs({ regexPresets: "nope" }).regexPresets).toEqual(
+      DEFAULT_PREFS.regexPresets,
+    );
+  });
+});
 
 describe("prefs storage", () => {
   beforeEach(() => {
