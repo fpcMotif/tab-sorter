@@ -268,7 +268,12 @@ async function runGroups(
     title: group.title ?? "",
     color: group.color,
     collapsed: group.collapsed,
-    tabIds: strip.filter((tab) => tab.groupId === group.id).map((tab) => tab.id),
+    tabIds: strip.reduce<number[]>((acc, tab) => {
+      if (tab.groupId === group.id) {
+        acc.push(tab.id);
+      }
+      return acc;
+    }, []),
   }));
 
   const survivorIds = new Set(strip.map((tab) => tab.id));
