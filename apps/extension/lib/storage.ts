@@ -58,10 +58,7 @@ function normalizePreset(value: unknown): RegexPreset | undefined {
 // rather than handing a malformed `Prefs` (a bad sort mode, a non-array preset
 // list) to the popup, which would sort wrong or crash on `.map`.
 export function normalizePrefs(stored: unknown): Prefs {
-  const prefs = (typeof stored === "object" && stored !== null ? stored : {}) as Record<
-    string,
-    unknown
-  >;
+  const prefs = (typeof stored === "object" && stored !== null ? stored : {}) as Partial<Prefs>;
 
   return {
     defaultSort: isSortMode(prefs.defaultSort) ? prefs.defaultSort : DEFAULT_PREFS.defaultSort,
