@@ -32,13 +32,23 @@ export function planTidy(
   tabs: TabLite[],
   prefs: Pick<Prefs, "minGroupSize" | "groupOrder" | "collapseAfterTidy" | "regroupExisting">,
 ): TabPlan {
-  const pinnedOrder = tabs.filter((tab) => tab.pinned).map((tab) => tab.id);
-  const unpinned = tabs.filter((tab) => !tab.pinned);
-
-  const existingBlockOrder = prefs.regroupExisting
-    ? []
-    : unpinned.filter(isGrouped).map((tab) => tab.id);
-  const claimed = prefs.regroupExisting ? unpinned : unpinned.filter((tab) => !isGrouped(tab));
+  const { pinnedOrder, existingBlockOrder, claimed } = tabs.reduce(
+    (acc, tab) => {
+      if (tab.pinned) {
+        acc.pinnedOrder.push(tab.id);
+      } else if (!prefs.regroupExisting && isGrouped(tab)) {
+        acc.existingBlockOrder.push(tab.id);
+      } else {
+        acc.claimed.push(tab);
+      }
+      return acc;
+    },
+    {
+      pinnedOrder: [] as number[],
+      existingBlockOrder: [] as number[],
+      claimed: [] as TabLite[],
+    },
+  );
 
   const buckets = new Map<string, TabLite[]>();
   for (const tab of claimed) {
