@@ -810,7 +810,7 @@ function App() {
           <IconSparkle />
         </span>
         <div className="brand">
-          <span className="app-name">Tab Sorter</span>
+          <h1 className="app-name">Tab Sorter</h1>
         </div>
         <button
           aria-label="Open settings"
@@ -1007,7 +1007,7 @@ function App() {
           ) : null}
 
           <div>
-            <h3 className="section-label">Extract a domain</h3>
+            <h2 className="section-label">Extract a domain</h2>
             {scopeScanning ? (
               <p className="empty-sub">Scanning all windows…</p>
             ) : scopeGroups.length === 0 ? (
