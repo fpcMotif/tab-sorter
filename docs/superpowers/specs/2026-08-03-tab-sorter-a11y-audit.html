@@ -71,7 +71,7 @@
         <li><strong>App Heading (<code>App.tsx</code>)</strong>: Replaced <code>&lt;span className="app-name"&gt;Tab Sorter&lt;/span&gt;</code> with <code>&lt;h1 className="app-name"&gt;Tab Sorter&lt;/h1&gt;</code>.</li>
         <li><strong>Heading Level Order (<code>App.tsx</code>)</strong>: Replaced <code>&lt;h3 className="section-label"&gt;Extract a domain&lt;/h3&gt;</code> with <code>&lt;h2 className="section-label"&gt;Extract a domain&lt;/h2&gt;</code>.</li>
         <li><strong>Heading Margin (<code>App.css</code>)</strong>: Added <code>margin: 0</code> to <code>.app-name</code> to preserve visual layout geometry.</li>
-        <li><strong>Text Contrast (<code>tokens.css</code>)</strong>: Darkened <code>--hero-kbd-bg</code> overlay to <code>hsl(220 60% 10% / 0.22)</code> to raise 11px <code>&lt;kbd&gt;</code> text contrast ratio to <strong>6.15:1</strong> (exceeding WCAG 1.4.3 Level AA 4.5:1 requirement).</li>
+        <li><strong>Text Contrast (<code>tokens.css</code>)</strong>: Darkened <code>--hero-kbd-bg</code> overlay in light theme to <code>hsl(220 60% 10% / 0.22)</code> to raise 11px <code>&lt;kbd&gt;</code> text contrast ratio to roughly <strong>8.27:1</strong> (exceeding WCAG 1.4.3 Level AA 4.5:1 requirement).</li>
       </ul>
     </div>
 
@@ -103,10 +103,10 @@
     </div>
 
     <div class="card">
-      <h2>5. Verification Summary</h2>
+      <h2>5. Audit Results &amp; Light-Theme Contrast Verification Summary</h2>
       <ul>
-        <li><strong>Popup (<code>popup.html</code>)</strong>: <code>0</code> violations (28 passing rules in tested states). 11px <code>&lt;kbd&gt;</code> contrast ratio is <strong>6.15:1</strong>.</li>
-        <li><strong>Options (<code>options.html</code>)</strong>: <code>0</code> violations (30 passing rules in tested states). Heading contrast ratio is <strong>13.8:1</strong>.</li>
+        <li><strong>Popup (<code>popup.html</code>)</strong>: <code>0</code> violations (28 passing rules in tested states). In light theme, 11px <code>&lt;kbd&gt;</code> contrast ratio against composite <code>#0b47ab</code> is roughly <strong>8.27:1</strong>.</li>
+        <li><strong>Options (<code>options.html</code>)</strong>: <code>0</code> violations (30 passing rules in tested states). Heading contrast ratio in light theme is <strong>13.8:1</strong>.</li>
         <li><strong>Unit Tests</strong>: 365 vitest tests passing (<code>bun run test</code>).</li>
         <li><strong>Type Safety</strong>: 0 diagnostics (<code>bun run check-types &amp;&amp; bun run lint</code>).</li>
       </ul>

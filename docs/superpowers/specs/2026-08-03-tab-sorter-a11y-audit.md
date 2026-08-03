@@ -8,7 +8,7 @@ We completed an accessibility audit for Tab Sorter (`extensionId: ooigmlecjgnbii
 - **App Heading (`App.tsx`)**: Replaced `<span className="app-name">Tab Sorter</span>` with `<h1 className="app-name">Tab Sorter</h1>`.
 - **Heading Level Order (`App.tsx`)**: Replaced `<h3 className="section-label">Extract a domain</h3>` with `<h2 className="section-label">Extract a domain</h2>`.
 - **Heading Margin (`App.css`)**: Added `margin: 0` to `.app-name` to keep identical visual spacing.
-- **Text Contrast (`tokens.css`)**: Darkened `--hero-kbd-bg` overlay to `hsl(220 60% 10% / 0.22)` to raise 11px `<kbd>` text contrast ratio from 3.31:1 to **6.15:1** (exceeding the WCAG 1.4.3 Level AA 4.5:1 requirement).
+- **Text Contrast (`tokens.css`)**: Darkened `--hero-kbd-bg` overlay in light theme to `hsl(220 60% 10% / 0.22)` to raise 11px `<kbd>` text contrast ratio to roughly **8.27:1** (exceeding the WCAG 1.4.3 Level AA 4.5:1 requirement).
 
 ---
 
@@ -45,10 +45,10 @@ We completed an accessibility audit for Tab Sorter (`extensionId: ooigmlecjgnbii
 
 ---
 
-## 5. Audit Results & Contrast Verification
+## 5. Audit Results & Light-Theme Contrast Verification
 
-- **Popup (`popup.html`)**: `0` violations (`28` passing rules in tested states). `<kbd>` 11px text contrast ratio is **6.15:1** (WCAG 1.4.3 4.5:1 requirement met).
-- **Options (`options.html`)**: `0` violations (`30` passing rules in tested states). Heading contrast ratio is **13.8:1** (WCAG 1.4.3 4.5:1 requirement met).
-- **Incomplete Checks**: Axe-core marked contrast evaluation as `incomplete` on dynamic overlays and gradients. Manual contrast calculations verified all text meets WCAG 2.1 AA thresholds.
+- **Popup (`popup.html`)**: `0` violations (`28` passing rules in tested states). In light theme, `<kbd>` 11px text contrast ratio is **8.27:1** against the composite `#0b47ab` background (WCAG 1.4.3 4.5:1 requirement met).
+- **Options (`options.html`)**: `0` violations (`30` passing rules in tested states). Heading contrast ratio in light theme is **13.8:1** (WCAG 1.4.3 4.5:1 requirement met).
+- **Incomplete Checks**: Axe-core marked contrast evaluation as `incomplete` on dynamic overlays and gradients. Manual contrast calculations verified light-theme text values against WCAG 2.1 AA thresholds.
 - **Test Suite**: 365 vitest unit tests passing (`bun run test`).
 - **Type Safety**: 0 diagnostics (`bun run check-types && bun run lint`).
