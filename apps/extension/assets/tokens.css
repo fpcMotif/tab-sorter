@@ -74,8 +74,8 @@
   --ease: cubic-bezier(0.2, 0, 0, 1);
   --dur: 140ms;
   /* On-primary chip inside the popup's hero-tidy button (DESIGN-SPEC §1.2/§4.1). */
-  --hero-kbd-bg: hsl(0 0% 100% / 0.18);
-  --hero-kbd-border: hsl(0 0% 100% / 0.32);
+  --hero-kbd-bg: hsl(220 60% 10% / 0.22);
+  --hero-kbd-border: hsl(220 60% 10% / 0.35);
 }
 
 /* ---- Tokens: dark ---- */
