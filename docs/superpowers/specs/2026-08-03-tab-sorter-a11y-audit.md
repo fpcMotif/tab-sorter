@@ -2,7 +2,7 @@
 
 ## 1. Summary of Changes
 
-We completed a WCAG 2.1 AA accessibility audit for Tab Sorter (`extensionId: ooigmlecjgnbiicjbkkecflhgikaoiop`) using `agent-browser@0.33.2` with `axe-core 4.12.1` over CDP port 9222.
+We completed an accessibility audit for Tab Sorter (`extensionId: ooigmlecjgnbiicjbkkecflhgikaoiop`) using `agent-browser@0.33.2` with `axe-core 4.12.1` over CDP port 9222.
 
 ### Code & CSS Changes
 - **App Heading (`App.tsx`)**: Replaced `<span className="app-name">Tab Sorter</span>` with `<h1 className="app-name">Tab Sorter</h1>`.
@@ -17,16 +17,17 @@ We completed a WCAG 2.1 AA accessibility audit for Tab Sorter (`extensionId: ooi
 ### Element Replacements Applied
 1. **`<span>` → `<h1>` for App Title**:
    - *Previous Code*: The app title used `<span className="app-name">Tab Sorter</span>`.
-   - *Why It Was Bad*: A `<span>` is a generic inline container with no semantic meaning. Screen reader software reads document headings (`<h1>`-`<h6>`) to give users an overview of the page structure. Without an `<h1>`, screen readers cannot find the main title of the page.
+   - *Why It Was Bad*: A `<span>` is a generic inline container with no semantic meaning. Screen reader software reads document headings (`<h1>`-`<h6>`) to give users an overview of page structure. Without an `<h1>`, screen readers cannot find the main title heading of the page.
 2. **`<h3>` → `<h2>` for Section Title**:
-   - *Previous Code*: The section title used `<h3 className="section-label">Extract a domain</h3>`.
-   - *Why It Was Bad*: The document jumped directly from `<h1>` to `<h3>`, skipping `<h2>`. Screen readers rely on a strict sequential heading order (`<h1>` → `<h2>` → `<h3>`). Skipping heading levels breaks document structure navigation.
+   - *Previous Sequence*: The page had no `<h1>` and contained an `<h3>` for the domain section.
+   - *Chronological Sequence*: Adding the new `<h1>` for the app title caused the existing `<h3>` to skip a heading level (`<h1>` → `<h3>`).
+   - *Why It Was Fixed*: Upgrading `<h3>` to `<h2>` established a strict sequential heading order (`<h1>` → `<h2>`). Screen readers rely on sequential heading hierarchy to navigate page sections without skipping levels.
 
 ---
 
 ## 3. Why Junior Developers Make Bad Choices
 
-1. **Choosing Tags by Visual Size**: Junior developers often pick HTML tags based on default browser font size rather than semantic meaning.
+1. **Choosing Tags by Visual Size**: Junior developers often pick HTML tags based on default browser font size rather than structural meaning.
 2. **Avoiding CSS Resets**: Browser default headings (`<h1>`, `<h2>`) come with default top/bottom margins. Developers sometimes use `<span>` or `<div>` to avoid writing CSS margin resets.
 3. **Misunderstanding Document Structure**: Developers may confuse headings (which label section boundaries) with list items (which hold collections of data).
 
@@ -46,8 +47,8 @@ We completed a WCAG 2.1 AA accessibility audit for Tab Sorter (`extensionId: ooi
 
 ## 5. Audit Results & Contrast Verification
 
-- **Popup (`popup.html`)**: `0` violations (`28` passing rules). `<kbd>` 11px text contrast ratio is **6.15:1** (WCAG 1.4.3 4.5:1 requirement met).
-- **Options (`options.html`)**: `0` violations (`30` passing rules). Heading contrast ratio is **13.8:1** (WCAG 1.4.3 4.5:1 requirement met).
+- **Popup (`popup.html`)**: `0` violations (`28` passing rules in tested states). `<kbd>` 11px text contrast ratio is **6.15:1** (WCAG 1.4.3 4.5:1 requirement met).
+- **Options (`options.html`)**: `0` violations (`30` passing rules in tested states). Heading contrast ratio is **13.8:1** (WCAG 1.4.3 4.5:1 requirement met).
 - **Incomplete Checks**: Axe-core marked contrast evaluation as `incomplete` on dynamic overlays and gradients. Manual contrast calculations verified all text meets WCAG 2.1 AA thresholds.
 - **Test Suite**: 365 vitest unit tests passing (`bun run test`).
 - **Type Safety**: 0 diagnostics (`bun run check-types && bun run lint`).

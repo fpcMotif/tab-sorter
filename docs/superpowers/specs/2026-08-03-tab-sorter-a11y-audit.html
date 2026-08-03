@@ -64,7 +64,7 @@
     <h1>Tab Sorter Accessibility (a11y) Audit &amp; Remediation Guide</h1>
 
     <div class="card">
-      <span class="badge">WCAG 2.1 AA Compliant</span>
+      <span class="badge">0 Axe Violations in Tested States</span>
       <h2>1. Summary of Changes</h2>
       <p>Audit performed using <code>agent-browser@0.33.2</code> with embedded <code>axe-core 4.12.1</code> over CDP port 9222 attached to Tab Sorter (<code>ooigmlecjgnbiicjbkkecflhgikaoiop</code>).</p>
       <ul>
@@ -82,7 +82,7 @@
       <p>The previous code used a <code>&lt;span&gt;</code> tag for the app title. A <code>&lt;span&gt;</code> has no semantic meaning. Screen reader users query document headings (<code>&lt;h1&gt;</code>-<code>&lt;h6&gt;</code>) to navigate and understand page structure. Without an <code>&lt;h1&gt;</code>, assistive software cannot identify the primary heading of the page.</p>
 
       <h3>2. <code>&lt;h3&gt;</code> &rarr; <code>&lt;h2&gt;</code> for Section Title</h3>
-      <p>The previous code used an <code>&lt;h3&gt;</code> tag for the domain section title, skipping <code>&lt;h2&gt;</code>. Screen readers expect heading levels to increase sequentially (<code>&lt;h1&gt;</code> &rarr; <code>&lt;h2&gt;</code> &rarr; <code>&lt;h3&gt;</code>). Skipping heading levels breaks document structure navigation.</p>
+      <p>The original page had no <code>&lt;h1&gt;</code> and used an <code>&lt;h3&gt;</code> for the domain section. Adding the new <code>&lt;h1&gt;</code> for the app title caused the existing <code>&lt;h3&gt;</code> to skip a level (<code>&lt;h1&gt;</code> &rarr; <code>&lt;h3&gt;</code>). Upgrading <code>&lt;h3&gt;</code> to <code>&lt;h2&gt;</code> established a strict sequential heading hierarchy (<code>&lt;h1&gt;</code> &rarr; <code>&lt;h2&gt;</code>).</p>
     </div>
 
     <div class="card">
@@ -105,8 +105,8 @@
     <div class="card">
       <h2>5. Verification Summary</h2>
       <ul>
-        <li><strong>Popup (<code>popup.html</code>)</strong>: <code>0</code> violations (28 passing rules). 11px <code>&lt;kbd&gt;</code> contrast ratio is <strong>6.15:1</strong>.</li>
-        <li><strong>Options (<code>options.html</code>)</strong>: <code>0</code> violations (30 passing rules). Heading contrast ratio is <strong>13.8:1</strong>.</li>
+        <li><strong>Popup (<code>popup.html</code>)</strong>: <code>0</code> violations (28 passing rules in tested states). 11px <code>&lt;kbd&gt;</code> contrast ratio is <strong>6.15:1</strong>.</li>
+        <li><strong>Options (<code>options.html</code>)</strong>: <code>0</code> violations (30 passing rules in tested states). Heading contrast ratio is <strong>13.8:1</strong>.</li>
         <li><strong>Unit Tests</strong>: 365 vitest tests passing (<code>bun run test</code>).</li>
         <li><strong>Type Safety</strong>: 0 diagnostics (<code>bun run check-types &amp;&amp; bun run lint</code>).</li>
       </ul>
