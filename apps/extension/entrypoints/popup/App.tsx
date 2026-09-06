@@ -608,14 +608,16 @@ const styles = stylex.create({
     borderStyle: "solid",
     borderWidth: 1,
     display: "flex",
-    margin: "0 0 12px",
+    margin: 0,
+    minInlineSize: 0,
     overflow: "hidden",
     padding: 0,
   },
   scopeChip: {
     backgroundColor: "transparent",
-    borderColor: tokens["--outline-variant"],
+    borderColor: "currentColor",
     borderRadius: 0,
+    borderRightColor: tokens["--outline-variant"],
     borderRightStyle: "solid",
     borderRightWidth: 1,
     borderStyle: "none",
@@ -626,12 +628,23 @@ const styles = stylex.create({
     flex: 1,
     fontSize: 12,
     fontWeight: 500,
+    outline: "none",
     padding: "7px 0",
+    whiteSpace: "nowrap",
     ":focus-visible": {
+      outline: `2px solid ${tokens["--primary"]}`,
       outlineOffset: -2,
     },
   },
+  scopeChipHover: {
+    ":hover:not(:disabled)": {
+      backgroundColor: tokens["--surface-container-high"],
+      filter: "none",
+    },
+  },
   scopeChipLast: {
+    borderRightColor: "currentColor",
+    borderRightStyle: "none",
     borderRightWidth: 0,
   },
   scopeChipSelected: {
@@ -1758,7 +1771,7 @@ function App() {
                 type="button"
                 {...stylex.props(
                   styles.scopeChip,
-                  extractScope === "window" && styles.scopeChipSelected,
+                  extractScope === "window" ? styles.scopeChipSelected : styles.scopeChipHover,
                 )}
               >
                 This window
@@ -1771,7 +1784,7 @@ function App() {
                 {...stylex.props(
                   styles.scopeChip,
                   styles.scopeChipLast,
-                  extractScope === "all" && styles.scopeChipSelected,
+                  extractScope === "all" ? styles.scopeChipSelected : styles.scopeChipHover,
                 )}
               >
                 All windows
