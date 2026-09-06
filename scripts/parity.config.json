@@ -1,0 +1,22 @@
+{
+  "viewport": { "width": 800, "height": 800 },
+  "schemes": ["light", "dark"],
+  "darkMode": { "mode": "media" },
+  "resetScript": "window.browser = window.browser || { storage: { sync: { get: () => Promise.resolve({}), set: () => Promise.resolve() }, local: { get: () => Promise.resolve({}), set: () => Promise.resolve() }, onChanged: { addListener: () => {}, removeListener: () => {} } }, runtime: { sendMessage: () => Promise.resolve({ v: 1, ok: true, result: { type: 'tidy', changed: false, moved: 0, grouped: 0, groupsCreated: 0, createdGroups: [] } }) }, tabs: { query: () => Promise.resolve([]) }, windows: { getCurrent: () => Promise.resolve({ id: 1 }), getAll: () => Promise.resolve([]) } }; window.chrome = window.browser;",
+  "readyScript": "document.fonts.ready",
+  "quietMs": 300,
+  "ignoreCustomProperties": "^--(tw|elevation)",
+  "ignoreAttributes": [],
+  "scenarios": [
+    {
+      "name": "popup",
+      "path": "popup.html",
+      "viewport": { "width": 380, "height": 600 }
+    },
+    {
+      "name": "options",
+      "path": "options.html",
+      "viewport": { "width": 800, "height": 800 }
+    }
+  ]
+}
