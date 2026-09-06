@@ -12,7 +12,8 @@
     "check-types": "bun run --filter='*' check-types",
     "test": "bun run --filter='*' test",
     "test:coverage": "bun run --filter='*' test:coverage",
-    "lint": "bun run --filter='*' lint",
+    "lint": "bun run --filter='*' lint && bun run lint:boundaries",
+    "lint:boundaries": "depcruise apps packages",
     "format": "bun run --filter='*' format",
     "format:check": "bun run --filter='*' format:check",
     "check:doctor": "react-doctor --yes --blocking warning"
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@rslint/tsgo": "^0.6.2",
     "@tab-sorter/config": "*",
+    "dependency-cruiser": "^18.1.0",
     "oxfmt": "^0.55.0",
     "oxlint": "^1.70.0",
     "react-doctor": "0.5.6",

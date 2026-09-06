@@ -1,8 +1,8 @@
 import { fakeBrowser } from "@webext-core/fake-browser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getPrefs, onPrefsChanged, setPrefs } from "./storage";
-import { DEFAULT_PREFS } from "./types";
+import { commitPrefsPatch, getPrefs, onPrefsChanged } from "./storage";
+import { DEFAULT_PREFS } from "@tab-sorter/core/types";
 
 describe("prefs storage", () => {
   beforeEach(() => {
@@ -15,8 +15,8 @@ describe("prefs storage", () => {
   });
 
   it("merges partial updates", async () => {
-    await setPrefs({ defaultSort: "domain" });
-    await setPrefs({ regexPresets: [{ label: "Docs", source: "docs", flags: "i" }] });
+    await commitPrefsPatch({ defaultSort: "domain" });
+    await commitPrefsPatch({ regexPresets: [{ label: "Docs", source: "docs", flags: "i" }] });
 
     await expect(getPrefs()).resolves.toEqual({
       ...DEFAULT_PREFS,
@@ -26,10 +26,96 @@ describe("prefs storage", () => {
   });
 
   it("round-trips stored values", async () => {
-    const prefs = await setPrefs({ defaultSort: "domain", ignorePinned: false });
+    const prefs = await commitPrefsPatch({ defaultSort: "domain", ignorePinned: false });
 
     expect(prefs.defaultSort).toBe("domain");
     await expect(getPrefs()).resolves.toMatchObject({ defaultSort: "domain", ignorePinned: false });
+  });
+
+  it("serializes concurrent disjoint patches so neither write is lost", async () => {
+    await Promise.all([
+      commitPrefsPatch({ defaultSort: "domain" }),
+      commitPrefsPatch({ ignorePinned: false }),
+    ]);
+
+    await expect(getPrefs()).resolves.toMatchObject({
+      defaultSort: "domain",
+      ignorePinned: false,
+    });
+  });
+
+  it("rejects an invalid patch without changing stored prefs", async () => {
+    await commitPrefsPatch({ defaultSort: "domain" });
+
+    await expect(commitPrefsPatch({ minGroupSize: 1 })).rejects.toMatchObject({
+      message: "invalid prefs patch",
+      code: "INVALID_REQUEST",
+    });
+    await expect(getPrefs()).resolves.toMatchObject({
+      defaultSort: "domain",
+      minGroupSize: DEFAULT_PREFS.minGroupSize,
+    });
+  });
+
+  it("continues the writer queue after a rejected patch", async () => {
+    await expect(commitPrefsPatch({ minGroupSize: 1 })).rejects.toThrow("invalid prefs patch");
+
+    await expect(commitPrefsPatch({ ignorePinned: false })).resolves.toMatchObject({
+      ignorePinned: false,
+    });
+  });
+
+  it("accepts every preference in one strict patch", async () => {
+    const patch = {
+      defaultSort: "domain" as const,
+      ignorePinned: false,
+      regexPresets: [{ label: "Docs", source: "docs", flags: "i" }],
+      collapseAfterTidy: true,
+      minGroupSize: 99,
+      groupOrder: "sizeDesc" as const,
+      regroupExisting: true,
+      dedupeIgnoreHash: false,
+      dedupeIgnoreQuery: true,
+    };
+
+    await expect(commitPrefsPatch(patch)).resolves.toEqual(patch);
+    await expect(getPrefs()).resolves.toEqual(patch);
+  });
+
+  it.each([
+    ["a primitive", "prefs"],
+    ["null", null],
+    ["an array", []],
+    ["an unknown key", { surprise: true }],
+    ["an invalid sort mode", { defaultSort: "sideways" }],
+    ["an invalid pinned flag", { ignorePinned: "false" }],
+    ["a non-array preset list", { regexPresets: "docs" }],
+    ["an invalid preset", { regexPresets: [{ label: "Docs", source: "docs" }] }],
+    ["an invalid collapse flag", { collapseAfterTidy: 1 }],
+    ["an invalid group order", { groupOrder: "largest" }],
+    ["an invalid regroup flag", { regroupExisting: "true" }],
+    ["an invalid hash flag", { dedupeIgnoreHash: 0 }],
+    ["an invalid query flag", { dedupeIgnoreQuery: null }],
+  ])("rejects %s", async (_description, patch) => {
+    await expect(commitPrefsPatch(patch)).rejects.toMatchObject({
+      message: "invalid prefs patch",
+      code: "INVALID_REQUEST",
+    });
+  });
+
+  it("continues the writer queue after storage rejects a write", async () => {
+    const set = vi.spyOn(fakeBrowser.storage.sync, "set");
+    set.mockRejectedValueOnce(new Error("sync quota exceeded"));
+
+    await expect(commitPrefsPatch({ defaultSort: "domain" })).rejects.toThrow(
+      "sync quota exceeded",
+    );
+
+    set.mockRestore();
+
+    await expect(commitPrefsPatch({ ignorePinned: false })).resolves.toMatchObject({
+      ignorePinned: false,
+    });
   });
 
   it("falls back to defaults and drops malformed presets from untrusted storage", async () => {

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tab Sorter Accessibility (a11y) Audit &amp; Remediation Guide</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        line-height: 1.6;
+        color: #1f1f1f;
+        background-color: #f8fafd;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 32px 20px;
+      }
+      h1 {
+        font-size: 24px;
+        border-bottom: 2px solid #0b57d0;
+        padding-bottom: 8px;
+        color: #0b57d0;
+      }
+      h2 {
+        font-size: 18px;
+        margin-top: 24px;
+        color: #1f1f1f;
+      }
+      h3 {
+        font-size: 15px;
+        color: #444746;
+      }
+      code, kbd {
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 13px;
+        background: #e9eef6;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      .card {
+        background: #ffffff;
+        border: 1px solid #c4c7c5;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 16px;
+      }
+      .badge {
+        display: inline-block;
+        background: #e6f4ea;
+        color: #0d652d;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Tab Sorter Accessibility (a11y) Audit &amp; Remediation Guide</h1>
+
+    <div class="card">
+      <span class="badge">0 Axe Violations in Tested States</span>
+      <h2>1. Summary of Changes</h2>
+      <p>Audit performed using <code>agent-browser@0.33.2</code> with embedded <code>axe-core 4.12.1</code> over CDP port 9222 attached to Tab Sorter (<code>ooigmlecjgnbiicjbkkecflhgikaoiop</code>).</p>
+      <ul>
+        <li><strong>App Heading (<code>App.tsx</code>)</strong>: Replaced <code>&lt;span className="app-name"&gt;Tab Sorter&lt;/span&gt;</code> with <code>&lt;h1 className="app-name"&gt;Tab Sorter&lt;/h1&gt;</code>.</li>
+        <li><strong>Heading Level Order (<code>App.tsx</code>)</strong>: Replaced <code>&lt;h3 className="section-label"&gt;Extract a domain&lt;/h3&gt;</code> with <code>&lt;h2 className="section-label"&gt;Extract a domain&lt;/h2&gt;</code>.</li>
+        <li><strong>Heading Margin (<code>App.css</code>)</strong>: Added <code>margin: 0</code> to <code>.app-name</code> to preserve visual layout geometry.</li>
+        <li><strong>Text Contrast (<code>tokens.css</code>)</strong>: Darkened <code>--hero-kbd-bg</code> overlay in light theme to <code>hsl(220 60% 10% / 0.22)</code> to raise 11px <code>&lt;kbd&gt;</code> text contrast ratio to roughly <strong>8.27:1</strong> (exceeding WCAG 1.4.3 Level AA 4.5:1 requirement).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>2. Technical Explanation &amp; Why Previous Code Was Bad Practice</h2>
+      
+      <h3>1. <code>&lt;span&gt;</code> &rarr; <code>&lt;h1&gt;</code> for App Title</h3>
+      <p>The previous code used a <code>&lt;span&gt;</code> tag for the app title. A <code>&lt;span&gt;</code> has no semantic meaning. Screen reader users query document headings (<code>&lt;h1&gt;</code>-<code>&lt;h6&gt;</code>) to navigate and understand page structure. Without an <code>&lt;h1&gt;</code>, assistive software cannot identify the primary heading of the page.</p>
+
+      <h3>2. <code>&lt;h3&gt;</code> &rarr; <code>&lt;h2&gt;</code> for Section Title</h3>
+      <p>The original page had no <code>&lt;h1&gt;</code> and used an <code>&lt;h3&gt;</code> for the domain section. Adding the new <code>&lt;h1&gt;</code> for the app title caused the existing <code>&lt;h3&gt;</code> to skip a level (<code>&lt;h1&gt;</code> &rarr; <code>&lt;h3&gt;</code>). Upgrading <code>&lt;h3&gt;</code> to <code>&lt;h2&gt;</code> established a strict sequential heading hierarchy (<code>&lt;h1&gt;</code> &rarr; <code>&lt;h2&gt;</code>).</p>
+    </div>
+
+    <div class="card">
+      <h2>3. Why Junior Developers Make Bad Choices</h2>
+      <ul>
+        <li><strong>Choosing Tags by Visual Size</strong>: Junior developers often select HTML tags based on default browser font size rather than structural meaning.</li>
+        <li><strong>Avoiding CSS Resets</strong>: Default headings (<code>&lt;h1&gt;</code>, <code>&lt;h2&gt;</code>) carry default margins. Developers sometimes use <code>&lt;span&gt;</code> or <code>&lt;div&gt;</code> to avoid writing CSS margin resets.</li>
+        <li><strong>Misunderstanding Document Structure</strong>: Developers may confuse headings (which define section boundaries) with list items (which hold data collections).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>4. Headings (<code>&lt;h1&gt;</code>, <code>&lt;h2&gt;</code>) vs. List Items (<code>&lt;li&gt;</code>)</h2>
+      <ul>
+        <li><strong>Headings (<code>&lt;h1&gt;</code>, <code>&lt;h2&gt;</code>)</strong>: Used to label structural section titles. Use <code>&lt;h1&gt;</code> for page title, and <code>&lt;h2&gt;</code> for major sub-sections. Keep hierarchy sequential.</li>
+        <li><strong>List Items (<code>&lt;li&gt;</code>)</strong>: Used for grouping collections of related data items inside <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code> (e.g. domain rows). List items are not used for section titles.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>5. Audit Results &amp; Light-Theme Contrast Verification Summary</h2>
+      <ul>
+        <li><strong>Popup (<code>popup.html</code>)</strong>: <code>0</code> violations (28 passing rules in tested states). In light theme, 11px <code>&lt;kbd&gt;</code> contrast ratio against composite <code>#0b47ab</code> is roughly <strong>8.27:1</strong>.</li>
+        <li><strong>Options (<code>options.html</code>)</strong>: <code>0</code> violations (30 passing rules in tested states). Heading contrast ratio in light theme is <strong>13.8:1</strong>.</li>
+        <li><strong>Unit Tests</strong>: 365 vitest tests passing (<code>bun run test</code>).</li>
+        <li><strong>Type Safety</strong>: 0 diagnostics (<code>bun run check-types &amp;&amp; bun run lint</code>).</li>
+      </ul>
+    </div>
+  </body>
+</html>

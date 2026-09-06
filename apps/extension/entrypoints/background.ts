@@ -1,9 +1,13 @@
-import { getDomain } from "@/lib/domain";
-import { runDefaultSort, runExtract, runSort, runTidy, runUndo } from "@/lib/orchestration";
+import { getDomain } from "@tab-sorter/core/domain";
+import { executeMutation } from "@/lib/mutation";
+import { createBackgroundDispatcher, createBackgroundListener } from "@/lib/runtime";
+import { commitPrefsPatch } from "@/lib/storage";
+import { getCurrentWindowId } from "@/lib/tabs-service";
 
 const MENU_IDS = {
   tidy: "tidy",
   extractSite: "extract-site",
+  extractSiteAll: "extract-site-all",
   sortByDomain: "sort-by-domain",
   sortByTitle: "sort-by-title",
   sortDefault: "sort-default",
@@ -17,6 +21,7 @@ interface MenuClickInfo {
 
 interface ClickedTab {
   url?: string;
+  windowId?: number;
 }
 
 async function setupContextMenus(): Promise<void> {
@@ -49,74 +54,104 @@ async function setupContextMenus(): Promise<void> {
   });
   browser.contextMenus.create({
     contexts: ["page"],
+    id: MENU_IDS.extractSiteAll,
+    title: "Extract this site from all windows",
+  });
+  browser.contextMenus.create({
+    contexts: ["page"],
     id: MENU_IDS.undo,
     title: "Undo last tidy",
   });
 }
 
+async function executeMenuMutation(
+  menuItemId: string | number,
+  windowId: number,
+): Promise<boolean> {
+  if (menuItemId === MENU_IDS.tidy) {
+    await executeMutation({ type: "tidy", windowId });
+
+    return true;
+  }
+
+  if (menuItemId === MENU_IDS.sortDefault) {
+    await executeMutation({ type: "sort", windowId });
+
+    return true;
+  }
+
+  if (menuItemId === MENU_IDS.sortByTitle) {
+    await executeMutation({ type: "sort", windowId, mode: "title" });
+
+    return true;
+  }
+
+  if (menuItemId === MENU_IDS.sortByDomain) {
+    await executeMutation({ type: "sort", windowId, mode: "domain" });
+
+    return true;
+  }
+
+  if (menuItemId === MENU_IDS.undo) {
+    await executeMutation({ type: "undo", windowId });
+
+    return true;
+  }
+
+  return false;
+}
+
 async function handleCommand(command: string): Promise<void> {
-  if (command === MENU_IDS.tidy) {
-    await runTidy();
+  const windowId = await getCurrentWindowId();
+
+  await executeMenuMutation(command, windowId);
+}
+
+async function dispatchSiteExtract(
+  url: string | undefined,
+  windowId: number,
+  scope: "all" | undefined,
+): Promise<void> {
+  if (url === undefined) {
     return;
   }
 
-  if (command === MENU_IDS.sortDefault) {
-    await runDefaultSort();
-    return;
-  }
+  const result = await executeMutation({
+    type: "extract",
+    windowId,
+    matcher: { type: "domain", domain: getDomain(url) },
+    scope,
+  });
 
-  if (command === MENU_IDS.sortByTitle) {
-    await runSort("title");
-    return;
-  }
-
-  if (command === MENU_IDS.sortByDomain) {
-    await runSort("domain");
-    return;
-  }
-
-  if (command === MENU_IDS.undo) {
-    await runUndo();
+  // No popup to survive an all-windows sweep, so bring the new window forward.
+  if (scope === "all" && typeof result.newWindowId === "number") {
+    await browser.windows.update(result.newWindowId, { focused: true });
   }
 }
 
 async function handleContextMenu(info: MenuClickInfo, tab: ClickedTab | undefined): Promise<void> {
-  if (info.menuItemId === MENU_IDS.tidy) {
-    await runTidy();
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.sortDefault) {
-    await runDefaultSort();
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.sortByTitle) {
-    await runSort("title");
-    return;
-  }
-
-  if (info.menuItemId === MENU_IDS.sortByDomain) {
-    await runSort("domain");
-    return;
-  }
+  const windowId = typeof tab?.windowId === "number" ? tab.windowId : await getCurrentWindowId();
 
   if (info.menuItemId === MENU_IDS.extractSite) {
-    const url = tab?.url ?? info.pageUrl;
-
-    if (url !== undefined) {
-      await runExtract({ type: "domain", domain: getDomain(url) });
-    }
+    await dispatchSiteExtract(tab?.url ?? info.pageUrl, windowId, undefined);
 
     return;
   }
 
-  if (info.menuItemId === MENU_IDS.undo) {
-    await runUndo();
+  if (info.menuItemId === MENU_IDS.extractSiteAll) {
+    await dispatchSiteExtract(tab?.url ?? info.pageUrl, windowId, "all");
+
+    return;
   }
+
+  await executeMenuMutation(info.menuItemId, windowId);
 }
 
 export default defineBackground(() => {
+  const dispatch = createBackgroundDispatcher({ executeMutation, commitPrefsPatch });
+
+  browser.runtime.onMessage.addListener(createBackgroundListener(dispatch));
+
   // Run once on every service-worker startup so the menus also reappear after a
   // mid-session disable/re-enable (which fires neither onInstalled nor onStartup).
   // removeAll() inside makes this idempotent.
