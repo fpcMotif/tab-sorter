@@ -53,6 +53,7 @@ function validatePreset(draft: PresetDraft, existingCount: number): string {
 }
 
 const MIN_GROUP_SIZE_ERROR = `Enter a whole number from ${MIN_GROUP_SIZE_FLOOR} to ${MIN_GROUP_SIZE_CEIL}.`;
+const MIN_GROUP_SIZE_SAVE_DEBOUNCE_MS = 400;
 
 function parseMinGroupSize(raw: string): number | undefined {
   const trimmed = raw.trim();
@@ -257,6 +258,17 @@ function App() {
   const [saveVisible, setSaveVisible] = useState(false);
   const saveTimerRef = useRef<number | undefined>(undefined);
 
+  const minGroupSizeInputRef = useRef<HTMLInputElement | null>(null);
+  const minGroupSizeSaveTimerRef = useRef<number | undefined>(undefined);
+  // True from the first keystroke until the draft is persisted or resynced.
+  // Blur must never write back an untouched draft: with the focus guard below,
+  // a focused-but-unedited field holds a stale draft when prefs change
+  // underneath it (another options tab, a synced device, or the initial
+  // getPrefs load), and persisting that on blur would revert the newer value.
+  const minGroupSizeDirtyRef = useRef(false);
+
+  useEffect(() => () => window.clearTimeout(minGroupSizeSaveTimerRef.current), []);
+
   useEffect(() => {
     void getPrefs()
       .then((loaded) => dispatch({ type: "prefsLoaded", prefs: loaded }))
@@ -272,7 +284,15 @@ function App() {
   // Resyncs the typed draft whenever the committed value actually changes
   // (our own save round-tripping, or another surface writing prefs) — an
   // in-progress invalid keystroke is never clobbered by an unrelated pref save.
+  // Never resync while the user is typing in the field: their own in-flight
+  // save's round-trip would otherwise clobber a longer entry ("45") back to
+  // its first digit mid-keystroke.
   useEffect(() => {
+    if (document.activeElement === minGroupSizeInputRef.current) {
+      return;
+    }
+
+    minGroupSizeDirtyRef.current = false;
     setMinGroupSizeDraft(String(prefs.minGroupSize));
     setMinGroupSizeError("");
   }, [prefs.minGroupSize]);
@@ -334,7 +354,9 @@ function App() {
   }
 
   function handleMinGroupSizeInput(raw: string) {
+    minGroupSizeDirtyRef.current = true;
     setMinGroupSizeDraft(raw);
+    window.clearTimeout(minGroupSizeSaveTimerRef.current);
 
     const parsed = parseMinGroupSize(raw);
 
@@ -344,10 +366,40 @@ function App() {
     }
 
     setMinGroupSizeError("");
-    void persistPrefs({ minGroupSize: parsed });
+    minGroupSizeSaveTimerRef.current = window.setTimeout(() => {
+      void persistPrefs({ minGroupSize: parsed });
+    }, MIN_GROUP_SIZE_SAVE_DEBOUNCE_MS);
+  }
+
+  function handleMinGroupSizeBlur() {
+    window.clearTimeout(minGroupSizeSaveTimerRef.current);
+
+    if (!minGroupSizeDirtyRef.current) {
+      return;
+    }
+
+    minGroupSizeDirtyRef.current = false;
+
+    const parsed = parseMinGroupSize(minGroupSizeDraft);
+
+    if (parsed === undefined) {
+      // Leaving the field with an invalid entry reverts to the committed value
+      // instead of leaving a stale error behind.
+      setMinGroupSizeDraft(String(prefs.minGroupSize));
+      setMinGroupSizeError("");
+      return;
+    }
+
+    // Flush the debounced save immediately so a quick type-then-close persists.
+    if (parsed !== prefs.minGroupSize) {
+      void persistPrefs({ minGroupSize: parsed });
+    }
   }
 
   function handleMinGroupSizeStep(delta: number) {
+    window.clearTimeout(minGroupSizeSaveTimerRef.current);
+    minGroupSizeDirtyRef.current = false;
+
     const next = Math.max(
       MIN_GROUP_SIZE_FLOOR,
       Math.min(MIN_GROUP_SIZE_CEIL, prefs.minGroupSize + delta),
@@ -488,9 +540,10 @@ function App() {
                 aria-invalid={minGroupSizeError.length > 0}
                 aria-label="Minimum tabs to form a group"
                 className={`stepper-input${minGroupSizeError.length > 0 ? " is-invalid" : ""}`}
-                disabled={pending}
                 inputMode="numeric"
+                onBlur={handleMinGroupSizeBlur}
                 onChange={(event) => handleMinGroupSizeInput(event.target.value)}
+                ref={minGroupSizeInputRef}
                 type="text"
                 value={minGroupSizeDraft}
               />
