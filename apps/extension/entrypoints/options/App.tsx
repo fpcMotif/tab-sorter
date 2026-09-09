@@ -291,18 +291,24 @@ function App() {
     return () => window.clearTimeout(saveTimerRef.current);
   }, [status]);
 
-  function persistPrefs(patch: Partial<Prefs>): Promise<void> {
+  // Resolves true only when the write landed — run() swallows the throw (its
+  // job is routing failures to onError), so callers that must react to the
+  // OUTCOME, not just completion, need this flag.
+  function persistPrefs(patch: Partial<Prefs>): Promise<boolean> {
     dispatch({ type: "saveStarted" });
+
+    let succeeded = false;
 
     return run(
       async () => {
         const nextPrefs = await requestPrefsPatch(patch);
         dispatch({ type: "saveSucceeded", prefs: nextPrefs });
+        succeeded = true;
       },
       () => {
         dispatch({ type: "saveFailed" });
       },
-    );
+    ).then(() => succeeded);
   }
 
   function handleDefaultSortChange(defaultSort: SortMode) {
@@ -372,8 +378,11 @@ function App() {
       flags: draft.flags,
     };
 
-    void persistPrefs({ regexPresets: [...prefs.regexPresets, preset] });
-    setDraft({ label: "", source: "", flags: "i" });
+    void persistPrefs({ regexPresets: [...prefs.regexPresets, preset] }).then((saved) => {
+      if (saved) {
+        setDraft({ label: "", source: "", flags: "i" });
+      }
+    });
   }
 
   function handleDeletePreset(indexToDelete: number) {
