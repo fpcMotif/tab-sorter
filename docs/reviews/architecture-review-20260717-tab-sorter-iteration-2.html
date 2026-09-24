@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<!-- saved from url=(0096)file:///var/folders/v7/h_d2vp7139bc8tp5k91nk1q40000gn/T/architecture-review-20260717-205140.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>Architecture review — tab-sorter (iteration 2)</title>
+    <script src="./architecture-review-20260717-205140 claude Architecture review — tab-sorter (iteration 2)_files/saved_resource"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .seam { stroke-dasharray: 4 4; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
+    </style>
+  <style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.ml-auto{margin-left:auto}.mr-1{margin-right:0.25rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.h-3{height:0.75rem}.w-3{width:0.75rem}.w-6{width:1.5rem}.max-w-5xl{max-width:64rem}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.items-baseline{align-items:baseline}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-4{gap:1rem}.space-x-3 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.75rem * var(--tw-space-x-reverse));margin-left:calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-0\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.125rem * var(--tw-space-y-reverse))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-10 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2.5rem * var(--tw-space-y-reverse))}.space-y-12 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(3rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(3rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t-2{border-top-width:2px}.border-dashed{border-style:dashed}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138 / var(--tw-border-opacity, 1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-400{--tw-border-opacity:1;border-color:rgb(148 163 184 / var(--tw-border-opacity, 1))}.border-slate-600{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.border-stone-200{--tw-border-opacity:1;border-color:rgb(231 229 228 / var(--tw-border-opacity, 1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229 / var(--tw-bg-opacity, 1))}.bg-red-100{--tw-bg-opacity:1;background-color:rgb(254 226 226 / var(--tw-bg-opacity, 1))}.bg-red-200{--tw-bg-opacity:1;background-color:rgb(254 202 202 / var(--tw-bg-opacity, 1))}.bg-red-50\/40{background-color:rgb(254 242 242 / 0.4)}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-200{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.bg-stone-50{--tw-bg-opacity:1;background-color:rgb(250 250 249 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.pb-4{padding-bottom:1rem}.text-center{text-align:center}.align-middle{vertical-align:middle}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.font-sans{font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"}.font-serif{font-family:ui-serif, Georgia, Cambria, "Times New Roman", Times, serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.tracking-wider{letter-spacing:0.05em}.text-amber-900{--tw-text-opacity:1;color:rgb(120 53 15 / var(--tw-text-opacity, 1))}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87 / var(--tw-text-opacity, 1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70 / var(--tw-text-opacity, 1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-red-700{--tw-text-opacity:1;color:rgb(185 28 28 / var(--tw-text-opacity, 1))}.text-red-900{--tw-text-opacity:1;color:rgb(127 29 29 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.decoration-slate-500{-webkit-text-decoration-color:#64748b;text-decoration-color:#64748b}.opacity-50{opacity:0.5}</style></head>
+  <body class="bg-stone-50 text-slate-900 font-sans">
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-12">
+      <header class="flex items-baseline justify-between border-b border-stone-200 pb-4">
+        <div>
+          <h1 class="font-serif text-3xl">tab-sorter — architecture review</h1>
+          <p class="text-sm text-slate-500 mt-1">Iteration 2 · 2026-07-17 · post-<span class="font-mono">a4ef574</span> · KB-grilled (PoEAA / Refactoring / Clean Code / Pragmatic)</p>
+        </div>
+        <div class="text-xs text-slate-500 space-x-3">
+          <span><span class="inline-block w-3 h-3 border border-slate-600 align-middle mr-1"></span>module</span>
+          <span><span class="inline-block w-6 border-t-2 border-dashed border-slate-400 align-middle mr-1"></span>seam</span>
+          <span><span class="inline-block w-3 h-3 deep align-middle mr-1"></span>deep</span>
+          <span><span class="inline-block w-3 h-3 bg-red-200 align-middle mr-1"></span>invariant copy</span>
+        </div>
+      </header>
+
+      <section id="candidates" class="space-y-10">
+
+        <!-- Candidate B -->
+        <article class="rounded-xl border border-stone-200 bg-white p-6 space-y-4" id="cand-assemble">
+          <div class="flex items-center gap-2">
+            <h2 class="font-serif text-xl">Own the pinned-first invariant once: <span class="font-mono text-lg">assemblePlan</span></h2>
+            <span class="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">Strong</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">in-process</span>
+          </div>
+          <p class="font-mono text-sm text-slate-600">lib/plan.ts:13-17 · lib/tidy.ts:35-36,76-81 · lib/undo.ts:23-30 · lib/types.ts:52-64</p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="rounded-lg border border-slate-200 p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">Before — invariant ×3, fuzz guard ×1</p>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2"><div class="border border-slate-600 px-2 py-1 text-xs uppercase tracking-wider">plan</div><div class="bg-red-200 text-red-900 text-xs px-2 py-1 rounded">[...pinned, ...rest]</div><span class="text-[10px] text-emerald-700">fuzz ✓</span></div>
+                <div class="flex items-center gap-2"><div class="border border-slate-600 px-2 py-1 text-xs uppercase tracking-wider">tidy</div><div class="bg-red-200 text-red-900 text-xs px-2 py-1 rounded">[...pinned, ...blocks, ...groups, ...rest]</div><span class="text-[10px] text-red-600">no guard</span></div>
+                <div class="flex items-center gap-2"><div class="border border-slate-600 px-2 py-1 text-xs uppercase tracking-wider">undo</div><div class="bg-red-200 text-red-900 text-xs px-2 py-1 rounded">[...pinned, ...survivors]</div><span class="text-[10px] text-red-600">no guard</span></div>
+                <div class="flex items-center gap-2 opacity-50"><div class="border border-dashed border-slate-400 px-2 py-1 text-xs uppercase tracking-wider">producer #4 (roadmap)</div><div class="bg-red-100 text-red-400 text-xs px-2 py-1 rounded">re-derive by hand</div></div>
+              </div>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">After — invariant ×1, fuzz guard ×all</p>
+              <div class="flex flex-col items-center gap-2">
+                <div class="flex gap-2">
+                  <div class="border border-slate-400 px-2 py-1 text-xs uppercase tracking-wider">plan</div>
+                  <div class="border border-slate-400 px-2 py-1 text-xs uppercase tracking-wider">tidy</div>
+                  <div class="border border-slate-400 px-2 py-1 text-xs uppercase tracking-wider">undo</div>
+                  <div class="border border-dashed border-slate-400 px-2 py-1 text-xs uppercase tracking-wider">#4…</div>
+                </div>
+                <svg width="200" height="28"><line x1="100" y1="0" x2="100" y2="28" stroke="#94a3b8" stroke-width="2" class="seam"></line></svg>
+                <div class="deep text-white rounded px-4 py-2 text-center">
+                  <div class="text-xs uppercase tracking-wider">assemblePlan(parts)</div>
+                  <div class="text-[10px] text-slate-300">pinned-first by construction · one shared fuzz invariant</div>
+                </div>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-3 text-center">interleave bug unrepresentable at the plan seam</p>
+            </div>
+          </div>
+
+          <p><strong>Problem</strong> — the clamp-avoidance rule (pinned block = frozen contiguous prefix) is hand-encoded in three producers; only one has a fuzz guard; the roadmap adds more producers.</p>
+          <p><strong>Solution</strong> — one constructor owns the concatenation; producers pass regions; one property test asserts pinned-first for every producer's output.</p>
+          <ul class="text-sm space-y-1">
+            <li>▪ locality: clamp rule lives beside TabPlan</li>
+            <li>▪ leverage: producer #4 inherits the guarantee</li>
+            <li>▪ closes tidy/undo invariant-test hole</li>
+            <li>▪ interface: one function, plain data in</li>
+          </ul>
+          <div class="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-900">Grazes ADR-0002 ("plan stays passive") — a constructor adds no fields and moves no phase ordering into the data. Within bounds; noted.</div>
+          <p class="text-xs text-slate-500">KB grill: Pragmatic acid test, Clean Code actor + concept-vs-token tests all classify the concat as <em>essential knowledge</em>; rule of three breached. Constructor + test, not test alone.</p>
+        </article>
+
+        <!-- Hold: do-not-split -->
+        <article class="rounded-xl border border-stone-200 bg-white p-6 space-y-4" id="cand-hold">
+          <div class="flex items-center gap-2">
+            <h2 class="font-serif text-xl">Hold: <span class="font-mono text-lg">tabs-service</span> stays one module</h2>
+            <span class="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">Strong (anti-candidate)</span>
+          </div>
+          <p class="font-mono text-sm text-slate-600">lib/tabs-service.ts (349 lines, one importer: orchestration.ts)</p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="rounded-lg border border-slate-200 p-4">
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">Today — one module, private vocabulary</p>
+              <div class="deep text-white rounded p-3">
+                <div class="text-xs uppercase tracking-wider mb-1">browser boundary</div>
+                <div class="text-[10px] text-slate-300 space-y-0.5">
+                  <div>reads · toTabLite / getLiveStrip</div>
+                  <div>snapshot · snapshotWindow</div>
+                  <div>executor · applyPlan phases</div>
+                  <div class="text-slate-400 italic">RawTab, asNonEmpty… stay hidden</div>
+                </div>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-2">interface: 8 symbols → 1 caller</p>
+            </div>
+            <div class="rounded-lg border border-red-200 p-4 bg-red-50/40">
+              <p class="text-xs uppercase tracking-wider text-red-400 mb-3">KB-prescribed split — rejected</p>
+              <div class="flex gap-2">
+                <div class="border border-slate-400 bg-white px-2 py-1 text-xs uppercase tracking-wider">finder</div>
+                <div class="border border-slate-400 bg-white px-2 py-1 text-xs uppercase tracking-wider">snapshot</div>
+                <div class="border border-slate-400 bg-white px-2 py-1 text-xs uppercase tracking-wider">executor</div>
+              </div>
+              <p class="text-[11px] text-red-700 mt-2">same 8 symbols to the same 1 caller — no interface shrinks; RawTab/getLiveStrip forced public. Deletion test: relocates, concentrates nothing.</p>
+            </div>
+          </div>
+          <p><strong>Why hold</strong> — three pattern names (Gateway, snapshot, executor), one responsibility: the chrome.* contract. One reason to change = one module. The hard math already left (ADR-0003).</p>
+          <div class="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-900">Recorded as ADR-0004 so future reviews don't re-suggest it.</div>
+        </article>
+
+        <!-- Nits -->
+        <article class="rounded-xl border border-stone-200 bg-white p-6 space-y-3" id="cand-nits">
+          <div class="flex items-center gap-2">
+            <h2 class="font-serif text-xl">Nits (bundled with the survivor)</h2>
+            <span class="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">Cosmetic</span>
+          </div>
+          <ul class="text-sm space-y-2">
+            <li>▪ <span class="font-mono">runGroups</span> lacks the empty-groups early return its sibling phases have — a plain sort pays 2 wasted queries per applyPlan. Behavior-identical fix.</li>
+            <li>▪ <span class="font-mono">applyOrder</span> stays exported: the fuzz test is its second caller — the interface is the test surface. No change.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section id="top-recommendation" class="rounded-xl deep text-white p-8">
+        <p class="text-xs uppercase tracking-wider text-slate-300 mb-2">Top recommendation</p>
+        <h2 class="font-serif text-2xl mb-2"><a href="file:///var/folders/v7/h_d2vp7139bc8tp5k91nk1q40000gn/T/architecture-review-20260717-205140.html#cand-assemble" class="underline decoration-slate-500">assemblePlan + shared pinned-first fuzz invariant</a></h2>
+        <p class="text-sm text-slate-300">The one place knowledge is still duplicated. Constructor makes the interleave bug unrepresentable; one property test covers every producer, present and future. Everything else scanned is correctly shaped — the well is otherwise dry.</p>
+      </section>
+    </main>
+  
+
+</body></html>
