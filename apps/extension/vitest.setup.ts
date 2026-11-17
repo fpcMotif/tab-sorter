@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 import { fakeBrowser } from "@webext-core/fake-browser";
 
 // Provide a fake chrome global for code that uses chrome.* directly.
