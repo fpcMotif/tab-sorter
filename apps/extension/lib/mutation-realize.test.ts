@@ -543,4 +543,35 @@ describe("realizePlan", () => {
       collapsed: false,
     });
   });
+
+  it("creates a new group when an equal-title live group has no members in the strip", async () => {
+    const group = vi.fn().mockResolvedValue(6);
+    const update = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("browser", {
+      tabs: {
+        query: vi.fn().mockResolvedValue([{ id: 10, pinned: false, groupId: TAB_GROUP_NONE }]),
+        group,
+      },
+      tabGroups: {
+        query: vi
+          .fn()
+          .mockResolvedValue([{ id: 9, title: "Work", color: "blue", collapsed: false }]),
+        update,
+      },
+    });
+
+    await realizePlan(
+      {
+        order: [],
+        groups: [{ key: "work", title: "Work", color: "blue", collapsed: false, tabIds: [10] }],
+        ungroup: [],
+        close: [],
+      },
+      1,
+    );
+
+    expect(group).toHaveBeenCalledWith({ tabIds: [10] });
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(update).toHaveBeenCalledWith(6, { title: "Work", color: "blue", collapsed: false });
+  });
 });

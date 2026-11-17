@@ -251,8 +251,8 @@ async function runOrder(windowId: number, plan: TabPlan): Promise<void> {
     }
     reordered.add(groupId);
 
-    const currentMembers = currentMembersByGroup.get(groupId) ?? [];
-    const desiredMembers = desiredMembersByGroup.get(groupId) ?? [];
+    const currentMembers = currentMembersByGroup.get(groupId)!;
+    const desiredMembers = desiredMembersByGroup.get(groupId)!;
     const spanStart = groupStartById.get(groupId)!;
 
     for (const move of planMoves(currentMembers, desiredMembers)) {

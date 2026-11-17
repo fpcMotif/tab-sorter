@@ -10,7 +10,7 @@
 - **Date:** 2026-06-21
 - **Status:** Design — build-ready. No code committed yet. Types below are *design*, not edits to `lib/`.
 - **Parent vision:** [`../2026-06-21-tab-intelligence-vision.md`](../2026-06-21-tab-intelligence-vision.md) — this is **Pillar F (Automation / rules)** of that map, and a Layer-1.5/Layer-2 surface.
-- **Builds on:** the **`TabPlan` IR** defined in [`../2026-06-21-layer1-tidy-groups-undo.md`](../2026-06-21-layer1-tidy-groups-undo.md) and the domain glossary ([`../../../CONTEXT.md`](../../../CONTEXT.md), see *"Where the seam extends"*).
+- **Builds on:** the **`TabPlan` IR** defined in [`../2026-06-21-layer1-tidy-groups-undo.md`](../2026-06-21-layer1-tidy-groups-undo.md) and the domain glossary ([`../../../GLOSSARY.md`](../../../GLOSSARY.md), see *"Where the seam extends"*).
 - **Sibling surfaces:** the **sessions/snapshots** surface (snapshot-before-destructive-action; `chrome.sessions`), the **tabctl CLI** and **MCP server** surfaces (they own the same rules file on disk; this engine is the *in-extension* evaluator of it). Where this doc says "see the sessions spec," it means `surfaces/2026-06-21-sessions-snapshots.md`.
 - **Verify-before-build flags:** ⚠️ marks the channel/version-dependent facts an implementer must confirm against the live `chrome.*` contract first. Every ⚠️ has a matching row in the PRD index Verification log.
 
@@ -192,7 +192,7 @@ A `when` table is an **AND of all present keys**. Arrays inside a key are **OR**
 
 ### 4c. Validated JSON form + TypeScript types (`lib/rules/types.ts`)
 
-This is the in-extension source of truth and the shape the AI command bar / MCP may emit (structured output). `parse.ts` compiles TOML→this and `zod`-validates; an invalid ruleset is **rejected whole** (non-throwing verdict, mirroring the `match.ts` `PatternVerdict` pattern in CONTEXT.md).
+This is the in-extension source of truth and the shape the AI command bar / MCP may emit (structured output). `parse.ts` compiles TOML→this and `zod`-validates; an invalid ruleset is **rejected whole** (non-throwing verdict, mirroring the `match.ts` `PatternVerdict` pattern in GLOSSARY.md).
 
 ```ts
 type Duration = `${number}${"m" | "h" | "d"}`;       // "30m" | "2h" | "3d"

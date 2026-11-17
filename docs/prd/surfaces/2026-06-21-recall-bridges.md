@@ -14,7 +14,7 @@
 - **Date:** 2026-06-21
 - **Status:** Design — build-ready. No code committed yet. Types below are *design*, not edits to `lib/`.
 - **Parent vision:** [`../2026-06-21-tab-intelligence-vision.md`](../2026-06-21-tab-intelligence-vision.md) — this is **Pillar E (Recall / search)** + **Pillar G (Bridges)**, the "find any tab fast, then hand a tab-set to my knowledge tools" surface.
-- **Builds on:** the seam glossary ([`../../../CONTEXT.md`](../../../CONTEXT.md) — *"Where the seam extends"*) and the **`TabPlan` IR** defined in [`../2026-06-21-layer1-tidy-groups-undo.md`](../2026-06-21-layer1-tidy-groups-undo.md).
+- **Builds on:** the seam glossary ([`../../../GLOSSARY.md`](../../../GLOSSARY.md) — *"Where the seam extends"*) and the **`TabPlan` IR** defined in [`../2026-06-21-layer1-tidy-groups-undo.md`](../2026-06-21-layer1-tidy-groups-undo.md).
 - **Sibling surfaces (cross-referenced, lower together):**
   - `tabctl` / native-messaging + MCP — *export piping, the `find` verb, `tabctl export --json`*. See `surfaces/2026-06-21-tabctl-cli.md` (companion spec).
   - AI / on-device planner — *model availability, embedding runtime, BYO-key*. See `surfaces/2026-06-21-ai-command-bar.md` (companion spec).
@@ -555,7 +555,7 @@ const plan: TabPlan = {
 };
 ```
 
-> This extends the Layer-1 `TabPlan` (which defined `order`/`groups`/`close`) with the `find` verb named in `CONTEXT.md`'s verb list (`sort | group | move | close | stash | extract | restore | find`). `find` is the **only** verb whose realization mutates *focus* but not *arrangement* — preview is a no-op (nothing to diff), undo is "focus the previously-active tab" (cheap snapshot). The seam's preview+undo guarantees still hold trivially.
+> This extends the Layer-1 `TabPlan` (which defined `order`/`groups`/`close`) with the `find` verb named in `GLOSSARY.md`'s verb list (`sort | group | move | close | stash | extract | restore | find`). `find` is the **only** verb whose realization mutates *focus* but not *arrangement* — preview is a no-op (nothing to diff), undo is "focus the previously-active tab" (cheap snapshot). The seam's preview+undo guarantees still hold trivially.
 
 **BRIDGES → `extract` (optional) + an artifact, never `close`.** A pure URL/title bridge emits **no `TabPlan` at all** — it's a pure read + `bridge.ts` format + `handoff.ts` write, with no mutation to preview or undo. A *content* bridge first lowers to the existing **`extract`** verb only if the user asked to move the set to a new window (reusing today's `moveTabsToNewWindow` / `runExtract` path), then captures consented content; it still never emits `close`. So a bridge is at most as destructive as today's extract, and usually fully read-only.
 

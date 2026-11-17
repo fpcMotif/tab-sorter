@@ -4,7 +4,7 @@
 - **Status:** Shipped v1 (2026-07-10) — see [`docs/adr/0002-tabplan-realize.md`](../adr/0002-tabplan-realize.md). Proposed types below are the *original design*; where the shipped code deviates (realize order, `TabPlan.ungroup`, undo's save-not-clear, `windowId` omission), the ADR is authoritative.
 - **Parent vision:** [`2026-06-21-tab-intelligence-vision.md`](2026-06-21-tab-intelligence-vision.md) — this is its **Layer 1**.
 - **PRD index / roadmap:** [`README.md`](README.md) — the dependency-ordered map of Layer 1 + all six downstream surfaces, plus the fact-check [Verification log](README.md#verification-log).
-- **Builds on:** the shipped MVP ([`../superpowers/specs/2026-06-18-tab-sorter-extension-design.md`](../superpowers/specs/2026-06-18-tab-sorter-extension-design.md)) and the domain glossary ([`../../CONTEXT.md`](../../CONTEXT.md)).
+- **Builds on:** the shipped MVP ([`../superpowers/specs/2026-06-18-tab-sorter-extension-design.md`](../superpowers/specs/2026-06-18-tab-sorter-extension-design.md)) and the domain glossary ([`../../GLOSSARY.md`](../../GLOSSARY.md)).
 - **Verify-before-build flags:** ⚠️ marks the 3 channel/version-dependent facts an implementer should confirm against the live `chrome.*` contract first.
 
 ---

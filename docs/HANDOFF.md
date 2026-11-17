@@ -25,7 +25,7 @@ Implementation is **complete and tested**. The project now uses **Bun** as its p
 
 ## Canonical design
 
-Read [`CONTEXT.md`](../CONTEXT.md), ADRs
+Read [`GLOSSARY.md`](../GLOSSARY.md), ADRs
 [`0002`](adr/0002-tabplan-realize.md)–[`0005`](adr/0005-single-writer-prefs.md), and the
 [background mutation spec](superpowers/specs/2026-07-16-background-mutation-architecture.md).
 The 2026-06-18 design spec records the original MVP.
@@ -61,7 +61,7 @@ Root scripts (`bun run dev|build|check-types|test|lint|format|format:check|check
 
 ## Reference
 
-- Current architecture: `CONTEXT.md`, ADRs `0002`–`0005`
+- Current architecture: `GLOSSARY.md`, ADRs `0002`–`0005`
 - Original MVP spec: `docs/superpowers/specs/2026-06-18-tab-sorter-extension-design.md`
 - Better-T-Stack config: `bts.jsonc`
 - WXT docs: https://wxt.dev

@@ -5,6 +5,7 @@
 
 /* ---- Tokens: light (default) ---- */
 :root {
+  color-scheme: light dark;
   --font-sans:
     "Google Sans Text", "Google Sans", Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial,
     sans-serif;
@@ -141,10 +142,26 @@
 * {
   box-sizing: border-box;
 }
-body {
+html {
   background: var(--surface);
+}
+body {
+  accent-color: var(--primary);
+  background: var(--surface);
+  caret-color: var(--primary);
   color: var(--on-surface);
   font-family: var(--font-sans);
+  font-synthesis: none;
+  line-height: 1.5;
+  margin: 0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+::selection {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
 }
 h1,
 h2,
@@ -183,39 +200,13 @@ button:disabled {
   cursor: default;
   opacity: 0.55;
 }
-.btn-secondary {
-  background: transparent;
-  border-color: var(--outline);
-  box-shadow: none;
-  color: var(--on-surface);
-}
-.btn-secondary:hover:not(:disabled) {
-  background: var(--surface-container-high);
-  filter: none;
-}
-.btn-danger {
-  background: var(--error);
-  border-color: transparent;
-  color: var(--on-error);
-}
-.btn-ghost {
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
-  color: var(--on-surface-variant);
-}
-.btn-ghost:hover:not(:disabled) {
-  background: var(--surface-container-high);
-  color: var(--on-surface);
-  filter: none;
-}
 
 /* ---- Form controls ---- */
 input,
 select,
 textarea {
   background: var(--surface-container-low);
-  border: 1px solid var(--outline-variant);
+  border: 1px solid var(--outline);
   border-radius: var(--radius-s);
   color: var(--on-surface);
   font: inherit;
@@ -224,7 +215,11 @@ textarea {
 input:hover,
 select:hover,
 textarea:hover {
-  border-color: var(--outline);
+  border-color: var(--on-surface-variant);
+}
+::placeholder {
+  color: color-mix(in srgb, var(--on-surface-variant) 78%, var(--surface-container-low));
+  opacity: 1;
 }
 
 /* ---- Focus ---- */
@@ -237,7 +232,20 @@ textarea:hover {
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  button,
+  kbd,
+  .dot {
+    border: 1px solid CanvasText;
+  }
+  [aria-pressed="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
   }
 }
 

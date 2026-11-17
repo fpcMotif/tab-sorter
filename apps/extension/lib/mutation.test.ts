@@ -41,9 +41,8 @@ function createBrowser(initialTabs: FakeTab[], initialGroups: FakeGroup[] = []) 
   let nextGroupId = Math.max(0, ...initialGroups.map((group) => group.id)) + 1;
   let nextTabId = Math.max(99, ...initialTabs.map((tab) => tab.id)) + 1;
 
-  const query = vi.fn(
-    (_queryInfo?: { windowId?: number }): Promise<FakeQueryTab[]> =>
-      Promise.resolve(tabs.map((tab, index) => Object.assign({}, tab, { index, windowId: 7 }))),
+  const query = vi.fn((_queryInfo?: { windowId?: number }): Promise<FakeQueryTab[]> =>
+    Promise.resolve(tabs.map((tab, index) => Object.assign({}, tab, { index, windowId: 7 }))),
   );
   const move = vi.fn((id: number, options: { index: number; windowId?: number }) => {
     if (options.windowId !== undefined) {

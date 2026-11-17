@@ -49,7 +49,7 @@ export interface GroupSpec {
   tabIds: number[];
 }
 
-// The widened seam (CONTEXT.md "TabPlan"). Invariants the pure layer guarantees:
+// The widened seam (GLOSSARY.md "TabPlan"). Invariants the pure layer guarantees:
 // - `order` is a permutation of the live unclosed tab ids, pinned-first
 //   (never-interleave construction, generalized). Empty `order` means
 //   "leave positions alone" (the dedupe case).

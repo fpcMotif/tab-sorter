@@ -3,6 +3,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { reasonToString, validatePattern } from "@tab-sorter/core/match";
 import { requestPrefsPatch } from "@/lib/runtime";
+import { shortcutKeys } from "@/lib/shortcut-keys";
 import { getPrefs, onPrefsChanged } from "@/lib/storage";
 import type { GroupColor, GroupOrder, Prefs, RegexPreset, SortMode } from "@tab-sorter/core/types";
 import { DEFAULT_PREFS } from "@tab-sorter/core/types";
@@ -52,6 +53,17 @@ function validatePreset(draft: PresetDraft, existingCount: number): string {
   return "";
 }
 
+function presetRowKeys(presets: RegexPreset[]): string[] {
+  const seen = new Map<string, number>();
+
+  return presets.map((preset) => {
+    const identity = `${preset.label}:${preset.source}:${preset.flags}`;
+    const occurrence = seen.get(identity) ?? 0;
+    seen.set(identity, occurrence + 1);
+    return `${identity}:${occurrence}`;
+  });
+}
+
 const MIN_GROUP_SIZE_ERROR = `Enter a whole number from ${MIN_GROUP_SIZE_FLOOR} to ${MIN_GROUP_SIZE_CEIL}.`;
 
 function parseMinGroupSize(raw: string): number | undefined {
@@ -78,6 +90,13 @@ const DEFAULT_SORT_OPTIONS: readonly { label: string; value: SortMode }[] = [
 const GROUP_ORDER_OPTIONS: readonly { label: string; value: GroupOrder }[] = [
   { label: "Alphabetical", value: "alpha" },
   { label: "Largest first", value: "sizeDesc" },
+];
+
+const SHORTCUTS: readonly { name: string; key: string }[] = [
+  { name: "Tidy this window", key: "Space" },
+  { name: "Undo", key: "Z" },
+  { name: "Sort A to Z", key: "T" },
+  { name: "Default sort", key: "S" },
 ];
 
 function IconSparkle() {
@@ -165,12 +184,14 @@ function Segmented<T extends string>({
     <fieldset aria-labelledby={labelledBy} className="segmented">
       {options.map((option) => (
         <button
+          aria-pressed={option.value === value}
           className={option.value === value ? "is-selected" : undefined}
           disabled={disabled}
           key={option.value}
           onClick={() => onChange(option.value)}
           type="button"
         >
+          {option.value === value ? <IconCheck /> : null}
           {option.label}
         </button>
       ))}
@@ -211,7 +232,6 @@ function Switch({
 
 interface SaveState {
   prefs: Prefs;
-  status: string;
   error: string;
 }
 
@@ -220,12 +240,10 @@ type SaveAction =
   | { type: "loadFailed" }
   | { type: "saveStarted" }
   | { type: "saveSucceeded"; prefs: Prefs }
-  | { type: "saveFailed" }
-  | { type: "validationFailed"; error: string };
+  | { type: "saveFailed" };
 
 const INITIAL_SAVE_STATE: SaveState = {
   prefs: DEFAULT_PREFS,
-  status: "",
   error: "",
 };
 
@@ -234,25 +252,25 @@ function saveReducer(state: SaveState, action: SaveAction): SaveState {
     case "prefsLoaded":
       return { ...state, prefs: action.prefs };
     case "loadFailed":
-      return { ...state, error: "Could not load preferences." };
+      return { ...state, error: "Couldn't load your settings. Reload this page to try again." };
     case "saveStarted":
-      return { ...state, error: "", status: "" };
+      return { ...state, error: "" };
     case "saveSucceeded":
-      return { ...state, prefs: action.prefs, status: "Saved." };
+      return { ...state, prefs: action.prefs };
     case "saveFailed":
-      return { ...state, error: "Could not save preferences." };
-    case "validationFailed":
-      return { ...state, error: action.error };
+      return { ...state, error: "Couldn't save that change. Try again." };
   }
 }
 
 function App() {
-  const [{ prefs, status, error }, dispatch] = useReducer(saveReducer, INITIAL_SAVE_STATE);
+  const [{ prefs, error }, dispatch] = useReducer(saveReducer, INITIAL_SAVE_STATE);
   const [draft, setDraft] = useState<PresetDraft>({ label: "", source: "", flags: "i" });
+  const [presetError, setPresetError] = useState("");
   const { pending, run } = useAsyncAction();
 
   const [minGroupSizeDraft, setMinGroupSizeDraft] = useState(() => String(prefs.minGroupSize));
   const [minGroupSizeError, setMinGroupSizeError] = useState("");
+  const [syncedMinGroupSize, setSyncedMinGroupSize] = useState(prefs.minGroupSize);
 
   const [saveVisible, setSaveVisible] = useState(false);
   const saveTimerRef = useRef<number | undefined>(undefined);
@@ -272,24 +290,21 @@ function App() {
   // Resyncs the typed draft whenever the committed value actually changes
   // (our own save round-tripping, or another surface writing prefs) — an
   // in-progress invalid keystroke is never clobbered by an unrelated pref save.
-  useEffect(() => {
+  if (syncedMinGroupSize !== prefs.minGroupSize) {
+    setSyncedMinGroupSize(prefs.minGroupSize);
     setMinGroupSizeDraft(String(prefs.minGroupSize));
     setMinGroupSizeError("");
-  }, [prefs.minGroupSize]);
+  }
+
+  useEffect(() => () => window.clearTimeout(saveTimerRef.current), []);
 
   // Quiet "Saved." chip (DESIGN-SPEC §4.9): fades in on every live-save and
   // fades back out on its own 1.6s timer, independent of whatever triggered it.
-  useEffect(() => {
-    if (status.length === 0) {
-      return;
-    }
-
+  function flashSaved() {
     setSaveVisible(true);
     window.clearTimeout(saveTimerRef.current);
     saveTimerRef.current = window.setTimeout(() => setSaveVisible(false), 1600);
-
-    return () => window.clearTimeout(saveTimerRef.current);
-  }, [status]);
+  }
 
   function persistPrefs(patch: Partial<Prefs>): Promise<void> {
     dispatch({ type: "saveStarted" });
@@ -298,6 +313,7 @@ function App() {
       async () => {
         const nextPrefs = await requestPrefsPatch(patch);
         dispatch({ type: "saveSucceeded", prefs: nextPrefs });
+        flashSaved();
       },
       () => {
         dispatch({ type: "saveFailed" });
@@ -361,8 +377,9 @@ function App() {
   function handleAddPreset() {
     const validationError = validatePreset(draft, prefs.regexPresets.length);
 
+    setPresetError(validationError);
+
     if (validationError.length > 0) {
-      dispatch({ type: "validationFailed", error: validationError });
       return;
     }
 
@@ -382,6 +399,8 @@ function App() {
     });
   }
 
+  const presetKeys = presetRowKeys(prefs.regexPresets);
+
   return (
     <main className="page">
       <div className="page-header">
@@ -396,11 +415,19 @@ function App() {
             </p>
           </div>
         </div>
-        <output aria-live="polite" className={`save-indicator${saveVisible ? " is-visible" : ""}`}>
+        <span aria-hidden="true" className={`save-indicator${saveVisible ? " is-visible" : ""}`}>
           <IconCheck />
           Saved
-        </output>
+        </span>
+        <span className="sr-only" role="status">
+          {saveVisible ? "Saved" : ""}
+        </span>
       </div>
+
+      <p className="page-error" hidden={error.length === 0} role="alert">
+        <IconWarning />
+        <span>{error}</span>
+      </p>
 
       <section aria-labelledby="sorting-h" className="settings-section">
         <h2 id="sorting-h">Sorting</h2>
@@ -409,7 +436,7 @@ function App() {
           <div className="pref-text">
             <span id="lbl-default-sort">Default sort</span>
             <p className="consequence">
-              Used when you click Sort without choosing A to Z or By domain.
+              Used by the Default sort shortcut and the right-click menu.
             </p>
           </div>
           <div className="pref-control">
@@ -653,8 +680,8 @@ function App() {
           <button className="btn-filled" disabled={pending} onClick={handleAddPreset} type="button">
             Add preset
           </button>
-          <p className="form-error" hidden={error.length === 0} role="alert">
-            {error}
+          <p className="form-error" hidden={presetError.length === 0} role="alert">
+            {presetError}
           </p>
         </div>
 
@@ -663,7 +690,7 @@ function App() {
         ) : (
           <ul className="preset-list">
             {prefs.regexPresets.map((preset, index) => (
-              <li className="preset-row" key={`${preset.label}:${preset.source}:${preset.flags}`}>
+              <li className="preset-row" key={presetKeys[index]}>
                 <span
                   className={`preset-dot dot-${PRESET_DOT_COLORS[index % PRESET_DOT_COLORS.length]}`}
                 />
@@ -692,46 +719,16 @@ function App() {
         </p>
 
         <ul className="shortcut-list">
-          <li className="shortcut-row">
-            <span className="shortcut-name">Tidy this window</span>
-            <span className="kbd-group">
-              <kbd>Alt</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Shift</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Space</kbd>
-            </span>
-          </li>
-          <li className="shortcut-row">
-            <span className="shortcut-name">Undo</span>
-            <span className="kbd-group">
-              <kbd>Alt</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Shift</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Z</kbd>
-            </span>
-          </li>
-          <li className="shortcut-row">
-            <span className="shortcut-name">Sort A to Z</span>
-            <span className="kbd-group">
-              <kbd>Alt</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Shift</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>T</kbd>
-            </span>
-          </li>
-          <li className="shortcut-row">
-            <span className="shortcut-name">Default sort</span>
-            <span className="kbd-group">
-              <kbd>Alt</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>Shift</kbd>
-              <span className="kbd-plus">+</span>
-              <kbd>S</kbd>
-            </span>
-          </li>
+          {SHORTCUTS.map((shortcut) => (
+            <li className="shortcut-row" key={shortcut.name}>
+              <span className="shortcut-name">{shortcut.name}</span>
+              <span className="kbd-group">
+                {shortcutKeys(navigator.platform, shortcut.key).map((key) => (
+                  <kbd key={key}>{key}</kbd>
+                ))}
+              </span>
+            </li>
+          ))}
         </ul>
         <p className="shortcuts-note">
           Shortcuts are global to Chrome and may be reassigned by other extensions. Manage all of
