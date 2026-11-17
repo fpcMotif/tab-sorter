@@ -21,6 +21,7 @@ import {
 import { MATCH_SAFETY_CAP, matchPattern, reasonToString } from "@tab-sorter/core/match";
 import type { ExtractMatcher, ExtractScope } from "@/lib/mutation";
 import { requestMutation } from "@/lib/runtime";
+import { shortcutKeys, shortcutText } from "@/lib/shortcut-keys";
 import type {
   ClipboardFormat,
   DomainGroup,
@@ -39,6 +40,7 @@ import {
 // Esc, any other action, or this timeout disarms the two-step dedupe confirm
 // (DESIGN-SPEC §4.3's armed state: a 4-second timer).
 const DEDUPE_ARM_MS = 4000;
+const SKELETON_ROW_WIDTHS = ["60%", "45%", "70%", "52%", "38%"];
 
 const FORMAT_SHORT_LABELS: Record<ClipboardFormat, string> = {
   markdown: "MD",
@@ -46,6 +48,10 @@ const FORMAT_SHORT_LABELS: Record<ClipboardFormat, string> = {
   url: "URL",
   html: "HTML",
 };
+
+const TIDY_KEYS = shortcutKeys(navigator.platform, "Space");
+const SORT_TITLE_KEYS = shortcutText(navigator.platform, "T");
+const UNDO_KEYS = shortcutText(navigator.platform, "Z");
 
 function pluralize(count: number, word: string): string {
   return `${count} ${count === 1 ? word : `${word}s`}`;
@@ -351,6 +357,10 @@ type Action =
   | { type: "statusSet"; status: Status };
 
 const IDLE_STATUS: Status = { message: "", tone: "idle" };
+const ACTION_FAILED_STATUS: Status = {
+  message: "Couldn't complete that action. Try again.",
+  tone: "error",
+};
 
 function extractErrorStatus(error: unknown): Status {
   // A cross-window extract blocked by a mid-recovery window arrives as a
@@ -368,7 +378,7 @@ function extractErrorStatus(error: unknown): Status {
     };
   }
 
-  return { message: "Couldn't complete that action.", tone: "error" };
+  return ACTION_FAILED_STATUS;
 }
 
 const initialState: State = {
@@ -540,10 +550,7 @@ function App() {
     dispatch({ type: "statusSet", status: IDLE_STATUS });
 
     return run(action, () => {
-      dispatch({
-        type: "statusSet",
-        status: { message: "Couldn't complete that action.", tone: "error" },
-      });
+      dispatch({ type: "statusSet", status: ACTION_FAILED_STATUS });
     });
   }
 
@@ -565,7 +572,7 @@ function App() {
       dispatch({
         type: "statusSet",
         status: {
-          message: `Grouped ${result.grouped} tabs into ${result.groupsCreated} groups · ${result.moved} moved`,
+          message: `Grouped ${pluralize(result.grouped, "tab")} into ${pluralize(result.groupsCreated, "group")} · ${result.moved} moved`,
           tone: "success",
           dots: result.createdGroups.map((group) => group.color),
         },
@@ -585,7 +592,8 @@ function App() {
       dispatch({
         type: "statusSet",
         status: {
-          message: result.moved === 0 ? "Already sorted." : `Sorted ${result.moved} tabs.`,
+          message:
+            result.moved === 0 ? "Already sorted." : `Sorted ${pluralize(result.moved, "tab")}.`,
           tone: "success",
         },
       });
@@ -641,8 +649,8 @@ function App() {
         status: {
           message:
             result.reopened > 0
-              ? `Restored ${result.restored} tabs, reopened ${result.reopened}.`
-              : `Restored ${result.restored} tabs.`,
+              ? `Restored ${pluralize(result.restored, "tab")}, reopened ${result.reopened}.`
+              : `Restored ${pluralize(result.restored, "tab")}.`,
           tone: "success",
         },
       });
@@ -704,7 +712,9 @@ function App() {
         type: "statusSet",
         status: {
           message:
-            result.moved === 0 ? emptyMessage : `Moved ${result.moved} tabs to a new window.`,
+            result.moved === 0
+              ? emptyMessage
+              : `Moved ${pluralize(result.moved, "tab")} to a new window.`,
           tone: "success",
         },
       });
@@ -777,6 +787,9 @@ function App() {
         anchor.download = `tab-sorter-export.${extension}`;
         anchor.click();
         URL.revokeObjectURL(url);
+
+        setCopyAnnounce(`Downloaded ${pluralize(tabs.length, "tab")}.`);
+        window.setTimeout(() => setCopyAnnounce(""), 1200);
       },
       () => {
         dispatch({
@@ -802,6 +815,17 @@ function App() {
         ? `Move ${pluralize(regexPreview.count, "tab")} from all windows`
         : `Move ${pluralize(regexPreview.count, "tab")} to new window`
       : "Move to new window";
+
+  const dismissToast = (
+    <button
+      aria-label="Dismiss"
+      className="toast-close"
+      onClick={() => dispatch({ type: "statusSet", status: IDLE_STATUS })}
+      type="button"
+    >
+      <IconClose />
+    </button>
+  );
 
   return (
     <main className="popup-shell">
@@ -838,15 +862,26 @@ function App() {
               <span className="toast-body">{status.message}</span>
             </div>
           ) : (
-            <>
-              <div className="loading-block">
-                <IconSpinner className="spinner spin" />
-                <span className="loading-text">Counting tabs and sites…</span>
+            <div aria-hidden="true" className="skeleton-layout">
+              <div className="skeleton skeleton-hero" />
+              <div className="skeleton-chips">
+                <div className="skeleton skeleton-chip" />
+                <div className="skeleton skeleton-chip" />
               </div>
-              <div className="skeleton" />
-              <div className="skeleton" style={{ opacity: 0.7 }} />
-              <div className="skeleton" style={{ opacity: 0.45 }} />
-            </>
+              <hr className="rule" />
+              <div>
+                <div className="skeleton skeleton-label" />
+                {SKELETON_ROW_WIDTHS.map((width) => (
+                  <div className="skeleton-row" key={width}>
+                    <span className="skeleton skeleton-dot" />
+                    <span className="skeleton-name">
+                      <span className="skeleton skeleton-bar" style={{ width }} />
+                    </span>
+                    <span className="skeleton skeleton-badge" />
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       ) : isEmpty ? (
@@ -862,44 +897,52 @@ function App() {
         </div>
       ) : (
         <div className="popup-scroll">
-          <div
-            aria-live={isErrorTone ? "assertive" : "polite"}
-            className="toast-slot"
-            role={isErrorTone ? "alert" : "status"}
-          >
-            {status.message.length > 0 ? (
-              <div className={`toast${isErrorTone ? " is-error" : ""}`}>
-                {isErrorTone ? <IconWarning /> : <IconCheckCircle />}
-                <span className="toast-body">
-                  {status.message}
-                  {status.dots !== undefined && status.dots.length > 0 ? (
-                    <span aria-hidden="true" className="group-dots">
-                      {status.dots.map((color, index) => (
-                        <span className={`dot dot-${color}`} key={`${color}-${index}`} />
-                      ))}
-                    </span>
-                  ) : null}
-                </span>
-                <button
-                  aria-label="Dismiss"
-                  className="toast-close"
-                  onClick={() => dispatch({ type: "statusSet", status: IDLE_STATUS })}
-                  type="button"
-                >
-                  <IconClose />
-                </button>
-              </div>
-            ) : data.recoveryRequired ? (
-              <div className="toast is-error">
-                <IconWarning />
-                <span className="toast-body">An interrupted change needs recovery.</span>
-              </div>
-            ) : null}
+          <div className="toast-slot">
+            <div aria-live="assertive" role="alert">
+              {isErrorTone ? (
+                <div className="toast is-error">
+                  <IconWarning />
+                  <span className="toast-body">{status.message}</span>
+                  {dismissToast}
+                </div>
+              ) : status.message.length === 0 && data.recoveryRequired ? (
+                <div className="toast is-error">
+                  <IconWarning />
+                  <span className="toast-body">
+                    An interrupted change needs recovery. Press Recover to finish it.
+                  </span>
+                </div>
+              ) : null}
+            </div>
+            <div aria-live="polite" role="status">
+              {status.tone === "success" ? (
+                <div className="toast">
+                  <IconCheckCircle />
+                  <span className="toast-body">
+                    {status.message}
+                    {status.dots !== undefined && status.dots.length > 0 ? (
+                      <span aria-hidden="true" className="group-dots">
+                        {status.dots.map((color, index) => (
+                          <span className={`dot dot-${color}`} key={`${color}-${index}`} />
+                        ))}
+                      </span>
+                    ) : null}
+                  </span>
+                  {dismissToast}
+                </div>
+              ) : null}
+            </div>
             {data.canUndo ? (
-              <button className="undo-pill" disabled={pending} onClick={handleUndo} type="button">
+              <button
+                aria-keyshortcuts="Alt+Shift+Z"
+                className="undo-pill"
+                disabled={pending}
+                onClick={handleUndo}
+                type="button"
+              >
                 <IconUndo />
                 {data.recoveryRequired ? "Recover" : "Undo"}
-                <kbd>⌥⇧Z</kbd>
+                <kbd aria-hidden="true">{UNDO_KEYS}</kbd>
               </button>
             ) : null}
             {newWindowId !== undefined ? (
@@ -915,7 +958,9 @@ function App() {
           </div>
 
           <button
-            className="hero-tidy"
+            aria-keyshortcuts="Alt+Shift+Space"
+            autoFocus
+            className={`hero-tidy${tidyPending ? " is-busy" : ""}`}
             disabled={mutationDisabled}
             onClick={handleTidy}
             type="button"
@@ -931,22 +976,23 @@ function App() {
                 {tidyPending ? "Sorting and grouping by site" : "Sort and group by site"}
               </span>
             </span>
-            <span className="hero-keys">
-              <kbd>⌥</kbd>
-              <kbd>⇧</kbd>
-              <kbd>Space</kbd>
+            <span aria-hidden="true" className="hero-keys">
+              {TIDY_KEYS.map((key) => (
+                <kbd key={key}>{key}</kbd>
+              ))}
             </span>
           </button>
 
           <fieldset aria-label="Sort tabs" className="sort-row">
             <button
+              aria-keyshortcuts="Alt+Shift+T"
               className="chip-btn"
               disabled={mutationDisabled}
               onClick={() => handleSort("title")}
               type="button"
             >
               <IconSort />
-              A to Z<kbd>⌥⇧T</kbd>
+              A to Z<kbd aria-hidden="true">{SORT_TITLE_KEYS}</kbd>
             </button>
             <button
               className="chip-btn"
@@ -965,18 +1011,22 @@ function App() {
                 <span className="dedupe-icon">
                   <IconDuplicate />
                 </span>
-                <span className="dedupe-text num">{data.duplicateCount} duplicates found</span>
+                <span className="dedupe-text">Keeps the oldest copy</span>
                 <button
-                  className={dedupeArmed ? "btn-danger-armed" : "btn-outline"}
+                  aria-describedby={dedupeArmed ? "armed-hint" : undefined}
+                  className={`num ${dedupeArmed ? "btn-danger-armed" : "btn-outline"}`}
                   disabled={mutationDisabled}
                   onClick={handleDedupeClick}
                   type="button"
                 >
-                  Close {data.duplicateCount} duplicates{dedupeArmed ? "?" : ""}
+                  Close {pluralize(data.duplicateCount, "duplicate")}
+                  {dedupeArmed ? "?" : ""}
                 </button>
               </div>
               {dedupeArmed ? (
-                <p className="armed-hint">Press again to confirm — closes the newer copy of each</p>
+                <p className="armed-hint" id="armed-hint">
+                  Press again to confirm, or Esc to cancel
+                </p>
               ) : null}
             </div>
           ) : null}
@@ -992,6 +1042,7 @@ function App() {
                 onClick={() => dispatch({ type: "scopeChanged", scope: "window" })}
                 type="button"
               >
+                {extractScope === "window" ? <IconCheck /> : null}
                 This window
               </button>
               <button
@@ -1001,6 +1052,7 @@ function App() {
                 onClick={() => dispatch({ type: "scopeChanged", scope: "all" })}
                 type="button"
               >
+                {extractScope === "all" ? <IconCheck /> : null}
                 All windows
               </button>
             </fieldset>
@@ -1017,9 +1069,11 @@ function App() {
                 {scopeGroups.map((group) => (
                   <li key={group.domain}>
                     <button
+                      aria-label={`Move ${pluralize(group.count, "tab")} from ${group.domain} to a new window`}
                       className="domain-row"
                       disabled={mutationDisabled}
                       onClick={() => handleDomainExtract(group)}
+                      title={group.domain}
                       type="button"
                     >
                       <span className={`dot dot-${assignColor(group.domain)}`} />
@@ -1055,126 +1109,132 @@ function App() {
             </span>
           </button>
 
-          {patternOpen ? (
-            <div className="pattern-panel" id="pattern-panel">
-              <div className="field">
-                <label htmlFor="regex-input">Pattern</label>
-                <input
-                  aria-describedby="match-count"
-                  autoComplete="off"
-                  className={`regex-input${regexPreview.error.length > 0 ? " is-invalid" : ""}`}
-                  disabled={pending}
-                  id="regex-input"
-                  maxLength={MATCH_SAFETY_CAP}
-                  onChange={(event) =>
-                    dispatch({ type: "regexSourceChanged", source: event.target.value })
-                  }
-                  placeholder="github|docs"
-                  spellCheck={false}
-                  value={regexSource}
-                />
-              </div>
-              <div className="flags-row">
-                <button
-                  aria-pressed={regexFlags.includes("i")}
-                  className={`flag-chip${regexFlags.includes("i") ? " on" : ""}`}
-                  disabled={pending}
-                  onClick={() => dispatch({ type: "caseFlagToggled" })}
-                  type="button"
-                >
-                  Case-insensitive
-                </button>
-              </div>
-              <p
-                className={`match-count num${regexPreview.error.length > 0 ? " is-invalid" : ""}`}
-                id="match-count"
-              >
-                {regexPreview.error.length > 0
-                  ? regexPreview.error
-                  : regexSource.trim().length === 0
-                    ? "Enter a pattern to preview matches."
-                    : `Matches ${regexPreview.count} of ${scopeTabs.length} tabs${
-                        extractScope === "all"
-                          ? ` across ${pluralize(data.windowCount, "window")}`
-                          : ""
-                      }`}
-              </p>
-              <div className="preset-chips">
-                {data.prefs.regexPresets.map((preset) => (
-                  <button
-                    className="preset-chip"
-                    disabled={pending}
-                    key={`${preset.label}:${preset.source}:${preset.flags}`}
-                    onClick={() =>
-                      dispatch({
-                        type: "presetApplied",
-                        source: preset.source,
-                        flags: preset.flags,
-                      })
-                    }
-                    type="button"
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-              <button
-                className="move-btn"
-                disabled={
-                  mutationDisabled || regexPreview.error.length > 0 || regexPreview.count === 0
+          <div className="pattern-panel" hidden={!patternOpen} id="pattern-panel">
+            <div className="field">
+              <label htmlFor="regex-input">Pattern</label>
+              <input
+                aria-describedby="match-count"
+                autoComplete="off"
+                className={`regex-input${regexPreview.error.length > 0 ? " is-invalid" : ""}`}
+                disabled={pending}
+                id="regex-input"
+                maxLength={MATCH_SAFETY_CAP}
+                onChange={(event) =>
+                  dispatch({ type: "regexSourceChanged", source: event.target.value })
                 }
-                onClick={handleRegexExtract}
+                placeholder="github|docs"
+                spellCheck={false}
+                value={regexSource}
+              />
+            </div>
+            <div className="flags-row">
+              <button
+                aria-pressed={regexFlags.includes("i")}
+                className={`flag-chip${regexFlags.includes("i") ? " on" : ""}`}
+                disabled={pending}
+                onClick={() => dispatch({ type: "caseFlagToggled" })}
                 type="button"
               >
-                {moveLabel}
+                Case-insensitive
               </button>
             </div>
-          ) : null}
-
-          <div className="copy-row">
-            <span className="copy-label">Copy tabs</span>
-            <fieldset aria-label="Copy format" className="format-group">
-              {COPY_FORMATS.map((option) => (
+            <p
+              className={`match-count num${regexPreview.error.length > 0 ? " is-invalid" : ""}`}
+              id="match-count"
+            >
+              {regexPreview.error.length > 0
+                ? regexPreview.error
+                : regexSource.trim().length === 0
+                  ? "Enter a pattern to preview matches."
+                  : `Matches ${regexPreview.count} of ${scopeTabs.length} tabs${
+                      extractScope === "all"
+                        ? ` across ${pluralize(data.windowCount, "window")}`
+                        : ""
+                    }`}
+            </p>
+            <div className="preset-chips">
+              {data.prefs.regexPresets.map((preset) => (
                 <button
-                  className={`format-chip${copyFormat === option.format ? " is-selected" : ""}`}
+                  className="preset-chip"
                   disabled={pending}
-                  key={option.format}
-                  onClick={() => dispatch({ type: "copyFormatChanged", format: option.format })}
+                  key={`${preset.label}:${preset.source}:${preset.flags}`}
+                  onClick={() =>
+                    dispatch({
+                      type: "presetApplied",
+                      source: preset.source,
+                      flags: preset.flags,
+                    })
+                  }
                   type="button"
                 >
-                  {FORMAT_SHORT_LABELS[option.format]}
+                  {preset.label}
                 </button>
               ))}
-            </fieldset>
+            </div>
             <button
-              aria-label="Copy tabs"
-              className={`icon-btn copy-btn${copyDone ? " is-copied" : ""}`}
-              disabled={pending}
-              onClick={handleCopy}
+              className="move-btn"
+              disabled={
+                mutationDisabled || regexPreview.error.length > 0 || regexPreview.count === 0
+              }
+              onClick={handleRegexExtract}
               type="button"
             >
-              {copyDone ? <IconCheck /> : <IconCopy />}
+              {moveLabel}
             </button>
-            <span aria-live="polite" className="sr-only">
-              {copyAnnounce}
-            </span>
           </div>
 
-          <div className="copy-row">
-            <span className="copy-label">Download tabs</span>
-            <fieldset aria-label="Download format" className="format-group">
-              {DOWNLOAD_FORMATS.map((option) => (
-                <button
-                  className="format-chip"
-                  disabled={pending}
-                  key={option.format}
-                  onClick={() => handleDownload(option.format)}
-                  type="button"
-                >
-                  {option.label}
-                </button>
-              ))}
-            </fieldset>
+          <hr className="rule" />
+
+          <div className="export-block">
+            <h2 className="section-label">Selected tabs</h2>
+            <div className="copy-row">
+              <span className="copy-label">Copy as</span>
+              <fieldset aria-label="Copy format" className="format-group">
+                {COPY_FORMATS.map((option) => (
+                  <button
+                    aria-label={option.label}
+                    aria-pressed={copyFormat === option.format}
+                    className={`format-chip${copyFormat === option.format ? " is-selected" : ""}`}
+                    disabled={pending}
+                    key={option.format}
+                    onClick={() => dispatch({ type: "copyFormatChanged", format: option.format })}
+                    type="button"
+                  >
+                    {copyFormat === option.format ? <IconCheck /> : null}
+                    {FORMAT_SHORT_LABELS[option.format]}
+                  </button>
+                ))}
+              </fieldset>
+              <button
+                aria-label="Copy selected tabs"
+                className={`icon-btn copy-btn${copyDone ? " is-copied" : ""}`}
+                disabled={pending}
+                onClick={handleCopy}
+                type="button"
+              >
+                {copyDone ? <IconCheck /> : <IconCopy />}
+              </button>
+              <span aria-live="polite" className="sr-only">
+                {copyAnnounce}
+              </span>
+            </div>
+
+            <div className="copy-row">
+              <span className="copy-label">Download as</span>
+              <fieldset aria-label="Download selected tabs" className="download-group">
+                {DOWNLOAD_FORMATS.map((option) => (
+                  <button
+                    className="chip-btn"
+                    disabled={pending}
+                    key={option.format}
+                    onClick={() => handleDownload(option.format)}
+                    type="button"
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </fieldset>
+            </div>
           </div>
         </div>
       )}

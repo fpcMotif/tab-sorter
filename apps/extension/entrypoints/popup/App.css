@@ -92,9 +92,26 @@ ol {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-height: 508px;
+  border-top: 1px solid transparent;
+  margin-top: 6px;
+  max-height: 502px;
   overflow-y: auto;
-  padding: 8px 14px 14px;
+  padding: 2px 14px 14px;
+}
+@supports (animation-timeline: scroll()) {
+  .popup-scroll {
+    animation: scroll-edge linear both;
+    animation-range: 0 12px;
+    animation-timeline: scroll(self);
+  }
+}
+@keyframes scroll-edge {
+  to {
+    border-top-color: var(--outline-variant);
+  }
+}
+.popup-scroll > * {
+  flex: none;
 }
 
 /* ---- Hero ---- */
@@ -120,6 +137,9 @@ ol {
 }
 .hero-tidy:disabled {
   filter: none;
+  opacity: 0.55;
+}
+.hero-tidy.is-busy:disabled {
   opacity: 0.85;
 }
 .hero-icon {
@@ -257,8 +277,8 @@ ol {
 .armed-hint {
   color: var(--on-surface-variant);
   font-size: 11px;
-  margin-top: -6px;
-  padding: 0 2px;
+  margin-top: 6px;
+  padding: 0 10px;
 }
 
 hr.rule {
@@ -273,7 +293,7 @@ hr.rule {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.05em;
-  margin: 0 0 6px 2px;
+  margin: 0 0 6px 8px;
   text-transform: uppercase;
 }
 
@@ -305,7 +325,8 @@ hr.rule {
   background: var(--surface-container-low);
   filter: none;
 }
-.domain-row:hover .row-go {
+.domain-row:hover .row-go,
+.domain-row:focus-visible .row-go {
   opacity: 1;
   transform: translateX(0);
 }
@@ -341,7 +362,6 @@ hr.rule {
   border-radius: 10px;
   color: var(--on-surface-variant);
   flex: none;
-  font-family: var(--font-mono);
   font-size: 11.5px;
   font-weight: 500;
   min-width: 22px;
@@ -405,7 +425,10 @@ hr.rule {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 10px 8px 4px;
+  padding: 0 8px 4px;
+}
+.pattern-panel[hidden] {
+  display: none;
 }
 @keyframes expand {
   from {
@@ -471,6 +494,9 @@ hr.rule {
   flex-wrap: wrap;
   gap: 6px;
 }
+.preset-chips:empty {
+  display: none;
+}
 .preset-chip {
   background: var(--surface-container-lowest);
   border: 1px solid var(--outline-variant);
@@ -503,7 +529,7 @@ hr.rule {
   align-items: center;
   display: flex;
   gap: 8px;
-  padding: 2px 4px;
+  padding: 2px 8px;
 }
 .copy-label {
   color: var(--on-surface-variant);
@@ -521,16 +547,50 @@ hr.rule {
   padding: 0;
 }
 .format-chip {
+  align-items: center;
   background: transparent;
   border: none;
   border-radius: 0;
   border-right: 1px solid var(--outline-variant);
   box-shadow: none;
   color: var(--on-surface-variant);
+  display: flex;
   flex: 1;
   font-size: 11px;
   font-weight: 500;
+  gap: 3px;
+  justify-content: center;
   padding: 6px 0;
+}
+.format-chip svg {
+  flex: none;
+  height: 11px;
+  width: 11px;
+}
+.format-chip:hover:not(.is-selected):not(:disabled),
+.scope-chip:hover:not(.is-selected):not(:disabled) {
+  background: var(--surface-container-high);
+}
+.download-group {
+  border: 0;
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  margin: 0;
+  min-inline-size: 0;
+  padding: 0;
+}
+.download-group .chip-btn {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+.export-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.export-block .section-label {
+  margin-bottom: 0;
 }
 .format-chip:hover:not(:disabled) {
   filter: none;
@@ -549,21 +609,33 @@ hr.rule {
   border: 1px solid var(--outline-variant);
   border-radius: 16px;
   display: flex;
-  margin: 0 0 12px;
+  margin: 0;
   overflow: hidden;
   padding: 0;
 }
 .scope-chip {
+  align-items: center;
   background: transparent;
   border: none;
   border-radius: 0;
   border-right: 1px solid var(--outline-variant);
   box-shadow: none;
   color: var(--on-surface-variant);
+  display: flex;
   flex: 1;
   font-size: 12px;
   font-weight: 500;
+  gap: 4px;
+  justify-content: center;
   padding: 7px 0;
+}
+.scope-chip:hover:not(:disabled) {
+  filter: none;
+}
+.scope-chip svg {
+  flex: none;
+  height: 13px;
+  width: 13px;
 }
 .scope-chip:last-child {
   border-right: none;
@@ -587,8 +659,18 @@ hr.rule {
 }
 
 /* ---- Toasts + undo pill ---- */
-.toast-slot:empty {
+.toast-slot {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast-slot:not(:has(.toast, .undo-pill)),
+.toast-slot > [aria-live]:empty {
   display: none;
+}
+.toast-slot > [aria-live] {
+  align-self: stretch;
 }
 .toast {
   align-items: flex-start;
@@ -610,15 +692,19 @@ hr.rule {
   width: 18px;
 }
 .toast-body {
+  align-items: center;
+  display: flex;
   flex: 1;
+  flex-wrap: wrap;
   font-size: 12.5px;
+  gap: 4px 6px;
   line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .group-dots {
   display: inline-flex;
   gap: 3px;
-  margin-left: 6px;
-  vertical-align: middle;
 }
 .group-dots .dot {
   height: 6px;
@@ -633,10 +719,10 @@ hr.rule {
   color: inherit;
   display: flex;
   flex: none;
-  height: 22px;
+  height: 24px;
   justify-content: center;
   opacity: 0.7;
-  width: 22px;
+  width: 24px;
 }
 .toast-close:hover:not(:disabled) {
   filter: none;
@@ -676,20 +762,6 @@ hr.rule {
 }
 
 /* ---- Loading ---- */
-.loading-block {
-  align-items: center;
-  color: var(--on-surface-variant);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  justify-content: center;
-  padding: 56px 20px 60px;
-}
-.spinner {
-  color: var(--primary);
-  height: 28px;
-  width: 28px;
-}
 .spin {
   animation: spin 900ms linear infinite;
 }
@@ -698,15 +770,60 @@ hr.rule {
     transform: rotate(360deg);
   }
 }
-.loading-text {
-  font-size: 13px;
+.skeleton-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 .skeleton {
   background: var(--surface-container-high);
-  border-radius: 10px;
-  height: 34px;
+  border-radius: 5px;
+  display: block;
   overflow: hidden;
   position: relative;
+}
+.skeleton-hero {
+  border-radius: 28px;
+  height: 56px;
+}
+.skeleton-chips {
+  display: flex;
+  gap: 8px;
+}
+.skeleton-chip {
+  border-radius: 20px;
+  flex: 1;
+  height: 41px;
+}
+.skeleton-label {
+  height: 8px;
+  margin: 5px 0 10px 8px;
+  width: 104px;
+}
+.skeleton-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  height: 36px;
+  padding: 0 8px;
+}
+.skeleton-dot {
+  border-radius: 50%;
+  flex: none;
+  height: 10px;
+  width: 10px;
+}
+.skeleton-name {
+  flex: 1;
+}
+.skeleton-bar {
+  height: 10px;
+}
+.skeleton-badge {
+  border-radius: 10px;
+  flex: none;
+  height: 21px;
+  width: 24px;
 }
 .skeleton::after {
   animation: shimmer 1.3s var(--ease) infinite;

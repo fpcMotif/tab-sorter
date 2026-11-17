@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // The async lifecycle shared by every user-triggered action in the popup and
 // options pages: flip a `pending` flag, run the action, route a failure to a
@@ -11,9 +11,28 @@ export function useAsyncAction(): {
   run: (action: () => Promise<void>, onError: (error: unknown) => void) => Promise<void>;
 } {
   const [pending, setPending] = useState(false);
+  const focusBeforeRunRef = useRef<Element | null>(null);
+
+  useEffect(() => {
+    if (pending) {
+      return;
+    }
+
+    const focusBeforeRun = focusBeforeRunRef.current;
+    focusBeforeRunRef.current = null;
+
+    if (
+      document.activeElement === document.body &&
+      focusBeforeRun instanceof HTMLElement &&
+      focusBeforeRun.isConnected
+    ) {
+      focusBeforeRun.focus();
+    }
+  }, [pending]);
 
   const run = useCallback(
     async (action: () => Promise<void>, onError: (error: unknown) => void) => {
+      focusBeforeRunRef.current = document.activeElement;
       setPending(true);
 
       try {
