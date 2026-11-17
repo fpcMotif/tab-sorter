@@ -30,7 +30,7 @@ The user's stated aim — _"help me more conveniently use Google Chrome"_ — is
 
 ## 2. The unifying idea — one seam, many surfaces
 
-The MVP's `CONTEXT.md` already names the key seam:
+The MVP's `GLOSSARY.md` already names the key seam:
 
 > _"The seam between pure planning and the side-effect adapter is this bare `number[]`, anchored at index 0."_
 
