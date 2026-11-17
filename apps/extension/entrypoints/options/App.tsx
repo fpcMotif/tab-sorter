@@ -53,6 +53,17 @@ function validatePreset(draft: PresetDraft, existingCount: number): string {
   return "";
 }
 
+function presetRowKeys(presets: RegexPreset[]): string[] {
+  const seen = new Map<string, number>();
+
+  return presets.map((preset) => {
+    const identity = `${preset.label}:${preset.source}:${preset.flags}`;
+    const occurrence = seen.get(identity) ?? 0;
+    seen.set(identity, occurrence + 1);
+    return `${identity}:${occurrence}`;
+  });
+}
+
 const MIN_GROUP_SIZE_ERROR = `Enter a whole number from ${MIN_GROUP_SIZE_FLOOR} to ${MIN_GROUP_SIZE_CEIL}.`;
 
 function parseMinGroupSize(raw: string): number | undefined {
@@ -388,6 +399,8 @@ function App() {
     });
   }
 
+  const presetKeys = presetRowKeys(prefs.regexPresets);
+
   return (
     <main className="page">
       <div className="page-header">
@@ -677,10 +690,7 @@ function App() {
         ) : (
           <ul className="preset-list">
             {prefs.regexPresets.map((preset, index) => (
-              <li
-                className="preset-row"
-                key={`${index}:${preset.label}:${preset.source}:${preset.flags}`}
-              >
+              <li className="preset-row" key={presetKeys[index]}>
                 <span
                   className={`preset-dot dot-${PRESET_DOT_COLORS[index % PRESET_DOT_COLORS.length]}`}
                 />
