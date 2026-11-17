@@ -10,6 +10,21 @@
       {
         "files": ["entrypoints/**", "hooks/**"],
         "rules": ["deslop/unused-file"]
+      },
+      {
+        "files": ["lib/mutation-realize.ts", "lib/mutation.ts", "lib/tabs-service.ts"],
+        "rules": ["react-doctor/async-await-in-loop"]
+      },
+      {
+        "files": ["lib/runtime.ts"],
+        "rules": ["react-doctor/js-set-map-lookups"]
+      },
+      {
+        "files": ["entrypoints/popup/App.tsx", "entrypoints/options/App.tsx"],
+        "rules": [
+          "react-doctor/no-giant-component",
+          "react-doctor/no-high-complexity-react-function"
+        ]
       }
     ],
     "rules": ["deslop/unused-dev-dependency"]
