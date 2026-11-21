@@ -12,7 +12,7 @@
 - **Date:** 2026-06-21
 - **Status:** Future capability spec — build-ready design. No code committed yet. Types below are *design*, not edits to `lib/`.
 - **Parent vision:** [`../2026-06-21-tab-intelligence-vision.md`](../2026-06-21-tab-intelligence-vision.md) — Pillar C (Hygiene & sessions) + signature workflows #4 (branch-linked context) and #6 (nightly hygiene).
-- **Builds on:** [`../2026-06-21-layer1-tidy-groups-undo.md`](../2026-06-21-layer1-tidy-groups-undo.md) (the `TabPlan` IR + `applyPlan` adapter + undo snapshot) and the domain glossary ([`../../../CONTEXT.md`](../../../CONTEXT.md)).
+- **Builds on:** [`../2026-06-21-layer1-tidy-groups-undo.md`](../2026-06-21-layer1-tidy-groups-undo.md) (the `TabPlan` IR + `applyPlan` adapter + undo snapshot) and the domain glossary ([`../../../GLOSSARY.md`](../../../GLOSSARY.md)).
 - **Sibling surfaces (parallel specs, referenced by expected path):**
   - `./2026-06-21-tabctl-cli.md` — owns the `tabctl` verb grammar, the native-messaging transport, and the host process. This surface **consumes** `tabctl save/restore --for <branch>` and the host-owned session file; it does not redefine them.
   - `./2026-06-21-mcp-server.md` — exposes `save_session` / `restore_session` as agent tools over the same host.

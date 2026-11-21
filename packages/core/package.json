@@ -29,12 +29,12 @@
   },
   "devDependencies": {
     "@tab-sorter/config": "*",
-    "@rslint/tsgo": "^0.6.2",
-    "@types/node": "^25.9.3",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.9",
-    "@vitest/coverage-v8": "^4.1.9",
-    "oxlint": "^1.70.0",
-    "oxfmt": "^0.55.0"
+    "@rslint/tsgo": "^0.7.3",
+    "@types/node": "^26.6.4",
+    "typescript": "next",
+    "vitest": "^5.0.3",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.87.0",
+    "oxfmt": "^0.72.0"
   }
 }
