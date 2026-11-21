@@ -26,7 +26,7 @@ The PRD proposed order → groups → close (§4, §7). Building `runOrder` agai
 already has live groups showed this is backwards.
 
 `chrome.tabs.group()` does not merely label tabs — it **moves** them, unilaterally, to make
-every member contiguous. Same class of behavior as the pinned-front clamp (`CONTEXT.md`): Chrome
+every member contiguous. Same class of behavior as the pinned-front clamp (`GLOSSARY.md`): Chrome
 silently overrides the position you just set. ORDER first would let the GROUPS phase's
 `tabs.group()` calls yank members back into contiguity wherever Chrome chooses, undoing part of
 the ordering ORDER just set.

@@ -10,7 +10,7 @@ function byIndex(a: { index: number }, b: { index: number }): number {
 // NOT restored — the user's pin changes since the snapshot are respected — so
 // survivors are partitioned by their CURRENT pinned flag (never the snapshot's
 // one), each partition ordered by snapshot index, and concatenated
-// pinned-first to preserve the pinned-front invariant (CONTEXT.md). A tab
+// pinned-first to preserve the pinned-front invariant (GLOSSARY.md). A tab
 // whose pin state flipped since the snapshot just migrates to the other
 // partition, still landing at its old relative position within it.
 export function planUndo(snapshot: WindowSnapshot, current: TabLite[]): TabPlan {
